@@ -1,0 +1,1185 @@
+{
+  "source": "C:/Users/user_hrW6O1R0N/Desktop/StartEditor_修复版.html",
+  "sha256": "b7f2374f5da11c1c4863f91f10403bd5939a27b570614ae424901ef019963461",
+  "blocks": [
+    {
+      "order": 0,
+      "marker": "B00",
+      "tag": "script",
+      "id": "-",
+      "bytes": 9213,
+      "file": "src/boot/000-b00.js",
+      "title": "DEFLATE 同步解码器"
+    },
+    {
+      "order": 1,
+      "marker": "B01",
+      "tag": "script",
+      "id": "-",
+      "bytes": 14579,
+      "file": "src/boot/001-b01.js",
+      "title": "运行时性能优化总线"
+    },
+    {
+      "order": 2,
+      "marker": "B107",
+      "tag": "script",
+      "id": "-",
+      "bytes": 11843,
+      "file": "src/boot/002-b107.js",
+      "title": "同步注入总线 v3（低负载版）"
+    },
+    {
+      "order": 3,
+      "marker": "B02",
+      "tag": "style",
+      "id": "-",
+      "bytes": 2841,
+      "file": "src/boot/003-b02.css",
+      "title": "原生启动屏样式"
+    },
+    {
+      "order": 4,
+      "marker": "B03",
+      "tag": "style",
+      "id": "bl-loading-css",
+      "bytes": 9925,
+      "file": "src/boot/004-bl-loading-css.css",
+      "title": "加载界面样式"
+    },
+    {
+      "order": 5,
+      "marker": "B85",
+      "tag": "script",
+      "id": "-",
+      "bytes": 13103,
+      "file": "src/boot/005-b85.js",
+      "title": "扩展库卡片 LOGO"
+    },
+    {
+      "order": 6,
+      "marker": "B04",
+      "tag": "script",
+      "id": "-",
+      "bytes": 1393,
+      "file": "src/boot/006-b04.js",
+      "title": "加载页 · 主题预判"
+    },
+    {
+      "order": 7,
+      "marker": "B05",
+      "tag": "script",
+      "id": "-",
+      "bytes": 911,
+      "file": "src/boot/007-b05.js",
+      "title": "加载页 · 收起与兜底"
+    },
+    {
+      "order": 8,
+      "marker": "B06",
+      "tag": "script",
+      "id": "-",
+      "bytes": 3365,
+      "file": "src/boot/008-b06.js",
+      "title": "原生启动屏逻辑"
+    },
+    {
+      "order": 9,
+      "marker": "B07",
+      "tag": "script",
+      "id": "-",
+      "bytes": 151,
+      "file": "src/boot/009-b07.js",
+      "title": "单文件模式标记"
+    },
+    {
+      "order": 10,
+      "marker": "B20",
+      "tag": "script",
+      "id": "-",
+      "bytes": 5311334,
+      "file": "src/assets/010-b20.js",
+      "title": "kuDt]#GS _:84rsv9#wJ2i!#.+xd5b.xCSk@@oGnZFNo%7Ue%)$QA-#B?_Lu"
+    },
+    {
+      "order": 11,
+      "marker": "-",
+      "tag": "script",
+      "id": "bl-embedded-bundle",
+      "bytes": 11903936,
+      "file": "src/assets/011-bl-embedded-bundle.txt",
+      "title": "内嵌资源 · js/gleba/1.5bc098520ad3f36fde3e.js"
+    },
+    {
+      "order": 15,
+      "marker": "B13",
+      "tag": "script",
+      "id": "-",
+      "bytes": 2768,
+      "file": "src/bridge/015-b13.js",
+      "title": "单 bundle 索引读取层"
+    },
+    {
+      "order": 16,
+      "marker": "B14",
+      "tag": "script",
+      "id": "-",
+      "bytes": 3067,
+      "file": "src/bridge/016-b14.js",
+      "title": "webpack chunk → Blob URL"
+    },
+    {
+      "order": 17,
+      "marker": "B15",
+      "tag": "script",
+      "id": "-",
+      "bytes": 5315,
+      "file": "src/bridge/017-b15.js",
+      "title": "资源 URL 重写层"
+    },
+    {
+      "order": 18,
+      "marker": "-",
+      "tag": "script",
+      "id": "bl-ec-0",
+      "bytes": 138556,
+      "file": "src/vendor/chunks/018-bl-ec-0.txt",
+      "title": "压缩 / 二进制资源块 · bl-ec-0（无注释头）"
+    },
+    {
+      "order": 19,
+      "marker": "-",
+      "tag": "script",
+      "id": "-",
+      "bytes": 329,
+      "file": "src/vendor/loaders/019-git-libs.js",
+      "title": "压缩 / 二进制资源块（无注释头）"
+    },
+    {
+      "order": 20,
+      "marker": "-",
+      "tag": "script",
+      "id": "bl-ec-1",
+      "bytes": 275669,
+      "file": "src/vendor/chunks/020-bl-ec-1.txt",
+      "title": "压缩 / 二进制资源块 · bl-ec-1（无注释头）"
+    },
+    {
+      "order": 21,
+      "marker": "-",
+      "tag": "script",
+      "id": "-",
+      "bytes": 329,
+      "file": "src/vendor/loaders/021-scratch-engine.js",
+      "title": "压缩 / 二进制资源块（无注释头）"
+    },
+    {
+      "order": 22,
+      "marker": "-",
+      "tag": "script",
+      "id": "bl-ec-2",
+      "bytes": 123616,
+      "file": "src/vendor/chunks/022-bl-ec-2.txt",
+      "title": "压缩 / 二进制资源块 · bl-ec-2（无注释头）"
+    },
+    {
+      "order": 23,
+      "marker": "-",
+      "tag": "script",
+      "id": "-",
+      "bytes": 329,
+      "file": "src/vendor/loaders/023-scratch-paint.js",
+      "title": "压缩 / 二进制资源块（无注释头）"
+    },
+    {
+      "order": 24,
+      "marker": "-",
+      "tag": "script",
+      "id": "bl-ec-3",
+      "bytes": 76398,
+      "file": "src/vendor/chunks/024-bl-ec-3.txt",
+      "title": "压缩 / 二进制资源块 · bl-ec-3（无注释头）"
+    },
+    {
+      "order": 25,
+      "marker": "-",
+      "tag": "script",
+      "id": "-",
+      "bytes": 329,
+      "file": "src/vendor/loaders/025-vendors~addon-settings~community~editor~embed~fullscreen~player.js",
+      "title": "压缩 / 二进制资源块（无注释头）"
+    },
+    {
+      "order": 26,
+      "marker": "-",
+      "tag": "script",
+      "id": "bl-ec-4",
+      "bytes": 103140,
+      "file": "src/vendor/chunks/026-bl-ec-4.txt",
+      "title": "压缩 / 二进制资源块 · bl-ec-4（无注释头）"
+    },
+    {
+      "order": 27,
+      "marker": "-",
+      "tag": "script",
+      "id": "-",
+      "bytes": 329,
+      "file": "src/vendor/loaders/027-vendors~community~editor~embed~fullscreen~player.js",
+      "title": "压缩 / 二进制资源块（无注释头）"
+    },
+    {
+      "order": 28,
+      "marker": "-",
+      "tag": "script",
+      "id": "bl-ec-5",
+      "bytes": 744249,
+      "file": "src/vendor/chunks/028-bl-ec-5.txt",
+      "title": "压缩 / 二进制资源块 · bl-ec-5（无注释头）"
+    },
+    {
+      "order": 29,
+      "marker": "-",
+      "tag": "script",
+      "id": "-",
+      "bytes": 330,
+      "file": "src/vendor/loaders/029-vendors~editor~embed~fullscreen~player.js",
+      "title": "压缩 / 二进制资源块（无注释头）"
+    },
+    {
+      "order": 30,
+      "marker": "-",
+      "tag": "script",
+      "id": "bl-ec-6",
+      "bytes": 75384,
+      "file": "src/vendor/chunks/030-bl-ec-6.txt",
+      "title": "压缩 / 二进制资源块 · bl-ec-6（无注释头）"
+    },
+    {
+      "order": 31,
+      "marker": "-",
+      "tag": "script",
+      "id": "-",
+      "bytes": 329,
+      "file": "src/vendor/loaders/031-addon-settings~community~editor~embed~fullscreen~player.js",
+      "title": "压缩 / 二进制资源块（无注释头）"
+    },
+    {
+      "order": 32,
+      "marker": "-",
+      "tag": "script",
+      "id": "bl-ec-7",
+      "bytes": 107928,
+      "file": "src/vendor/chunks/032-bl-ec-7.txt",
+      "title": "压缩 / 二进制资源块 · bl-ec-7（无注释头）"
+    },
+    {
+      "order": 33,
+      "marker": "-",
+      "tag": "script",
+      "id": "-",
+      "bytes": 329,
+      "file": "src/vendor/loaders/033-community~editor~embed~fullscreen~player.js",
+      "title": "压缩 / 二进制资源块（无注释头）"
+    },
+    {
+      "order": 34,
+      "marker": "-",
+      "tag": "script",
+      "id": "bl-ec-8",
+      "bytes": 26403,
+      "file": "src/vendor/chunks/034-bl-ec-8.txt",
+      "title": "压缩 / 二进制资源块 · bl-ec-8（无注释头）"
+    },
+    {
+      "order": 35,
+      "marker": "-",
+      "tag": "script",
+      "id": "-",
+      "bytes": 328,
+      "file": "src/vendor/loaders/035-addon-settings~editor~embed~fullscreen~player.js",
+      "title": "压缩 / 二进制资源块（无注释头）"
+    },
+    {
+      "order": 36,
+      "marker": "-",
+      "tag": "script",
+      "id": "bl-ec-9",
+      "bytes": 609185,
+      "file": "src/vendor/chunks/036-bl-ec-9.txt",
+      "title": "压缩 / 二进制资源块 · bl-ec-9（无注释头）"
+    },
+    {
+      "order": 37,
+      "marker": "-",
+      "tag": "script",
+      "id": "-",
+      "bytes": 330,
+      "file": "src/vendor/loaders/037-editor~embed~fullscreen~player.js",
+      "title": "压缩 / 二进制资源块（无注释头）"
+    },
+    {
+      "order": 38,
+      "marker": "-",
+      "tag": "script",
+      "id": "bl-ec-10",
+      "bytes": 19513,
+      "file": "src/vendor/chunks/038-bl-ec-10.txt",
+      "title": "压缩 / 二进制资源块 · bl-ec-10（无注释头）"
+    },
+    {
+      "order": 39,
+      "marker": "-",
+      "tag": "script",
+      "id": "-",
+      "bytes": 329,
+      "file": "src/vendor/loaders/039-editor~fullscreen~player.js",
+      "title": "压缩 / 二进制资源块（无注释头）"
+    },
+    {
+      "order": 40,
+      "marker": "-",
+      "tag": "script",
+      "id": "bl-ec-11",
+      "bytes": 4791,
+      "file": "src/vendor/chunks/040-bl-ec-11.txt",
+      "title": "压缩 / 二进制资源块 · bl-ec-11（无注释头）"
+    },
+    {
+      "order": 41,
+      "marker": "-",
+      "tag": "script",
+      "id": "-",
+      "bytes": 328,
+      "file": "src/vendor/loaders/041-editor.js",
+      "title": "压缩 / 二进制资源块（无注释头）"
+    },
+    {
+      "order": 42,
+      "marker": "B28",
+      "tag": "script",
+      "id": "-",
+      "bytes": 2367,
+      "file": "src/patches/js/042-b28.js",
+      "title": "启动期自动新建工程"
+    },
+    {
+      "order": 43,
+      "marker": "B29",
+      "tag": "style",
+      "id": "bilup-custom-layout",
+      "bytes": 141366,
+      "file": "src/patches/css/043-bilup-custom-layout.css",
+      "title": "主样式表 · 第 1～33 轮累积"
+    },
+    {
+      "order": 44,
+      "marker": "B79",
+      "tag": "script",
+      "id": "-",
+      "bytes": 393706,
+      "file": "src/patches/js/044-b79.js",
+      "title": "在 window 捕获阶段统一驱动：各模块的最小化"
+    },
+    {
+      "order": 45,
+      "marker": "B82",
+      "tag": "script",
+      "id": "-",
+      "bytes": 29317,
+      "file": "src/patches/js/045-b82.js",
+      "title": "工程文件工作区"
+    },
+    {
+      "order": 46,
+      "marker": "B83",
+      "tag": "script",
+      "id": "-",
+      "bytes": 6221,
+      "file": "src/patches/js/046-b83.js",
+      "title": "除「代码」外全部工作区：不显示舞台"
+    },
+    {
+      "order": 47,
+      "marker": "B32",
+      "tag": "script",
+      "id": "-",
+      "bytes": 45225,
+      "file": "src/patches/js/047-b32.js",
+      "title": "油猴插件运行器"
+    },
+    {
+      "order": 48,
+      "marker": "B33",
+      "tag": "script",
+      "id": "-",
+      "bytes": 44607,
+      "file": "src/patches/js/048-b33.js",
+      "title": "DOCK 栏"
+    },
+    {
+      "order": 49,
+      "marker": "B34",
+      "tag": "script",
+      "id": "-",
+      "bytes": 74410,
+      "file": "src/patches/js/049-b34.js",
+      "title": "液态玻璃"
+    },
+    {
+      "order": 50,
+      "marker": "B35",
+      "tag": "script",
+      "id": "-",
+      "bytes": 61340,
+      "file": "src/patches/js/050-b35.js",
+      "title": "八音盒（Vinyl Player）"
+    },
+    {
+      "order": 51,
+      "marker": "-",
+      "tag": "script",
+      "id": "-",
+      "bytes": 131154,
+      "file": "src/patches/js/051-chunk.js",
+      "title": "压缩 / 二进制资源块（无注释头）"
+    },
+    {
+      "order": 52,
+      "marker": "B92",
+      "tag": "script",
+      "id": "-",
+      "bytes": 30601,
+      "file": "src/patches/js/052-b92.js",
+      "title": "在线音乐素材库 —— 配合回退后的「音乐工坊」"
+    },
+    {
+      "order": 53,
+      "marker": "B37",
+      "tag": "script",
+      "id": "-",
+      "bytes": 140920,
+      "file": "src/patches/js/053-b37.js",
+      "title": "STAR · 编辑器内 AI 助手"
+    },
+    {
+      "order": 54,
+      "marker": "B38",
+      "tag": "script",
+      "id": "-",
+      "bytes": 50949,
+      "file": "src/patches/js/054-b38.js",
+      "title": "studio.js · 工作区增强"
+    },
+    {
+      "order": 55,
+      "marker": "B94",
+      "tag": "script",
+      "id": "-",
+      "bytes": 17966,
+      "file": "src/patches/js/055-b94.js",
+      "title": "STAR 作品格式 · 打包 / 还原 / 加载接管"
+    },
+    {
+      "order": 56,
+      "marker": "B39",
+      "tag": "script",
+      "id": "-",
+      "bytes": 26194,
+      "file": "src/patches/js/056-b39.js",
+      "title": "RJ 作品兼容层"
+    },
+    {
+      "order": 57,
+      "marker": "B40",
+      "tag": "script",
+      "id": "-",
+      "bytes": 21736,
+      "file": "src/patches/js/057-b40.js",
+      "title": "save.js · 保存到此电脑"
+    },
+    {
+      "order": 58,
+      "marker": "B41",
+      "tag": "script",
+      "id": "-",
+      "bytes": 5271,
+      "file": "src/patches/js/058-b41.js",
+      "title": "__blSettings 统一设置存储"
+    },
+    {
+      "order": 59,
+      "marker": "B42",
+      "tag": "script",
+      "id": "-",
+      "bytes": 7868,
+      "file": "src/patches/js/059-b42.js",
+      "title": "弹窗外观运行时"
+    },
+    {
+      "order": 60,
+      "marker": "B96",
+      "tag": "script",
+      "id": "-",
+      "bytes": 28093,
+      "file": "src/patches/js/060-b96.js",
+      "title": "项目面板（重做）· 保存 / 导入 / 切换"
+    },
+    {
+      "order": 61,
+      "marker": "B96",
+      "tag": "style",
+      "id": "-",
+      "bytes": 12216,
+      "file": "src/patches/css/061-b96.css",
+      "title": "项目面板样式 · 一行 3 卡片"
+    },
+    {
+      "order": 62,
+      "marker": "B47",
+      "tag": "script",
+      "id": "-",
+      "bytes": 13153,
+      "file": "src/patches/js/062-b47.js",
+      "title": "弹窗按钮运行时"
+    },
+    {
+      "order": 63,
+      "marker": "B48",
+      "tag": "script",
+      "id": "-",
+      "bytes": 2928,
+      "file": "src/patches/js/063-b48.js",
+      "title": "窗口样式引擎"
+    },
+    {
+      "order": 64,
+      "marker": "B49",
+      "tag": "script",
+      "id": "-",
+      "bytes": 1441,
+      "file": "src/patches/js/064-b49.js",
+      "title": "macOS 拖动性能"
+    },
+    {
+      "order": 65,
+      "marker": "B50",
+      "tag": "script",
+      "id": "-",
+      "bytes": 2395,
+      "file": "src/patches/js/065-b50.js",
+      "title": "加载性能标记"
+    },
+    {
+      "order": 66,
+      "marker": "B51",
+      "tag": "style",
+      "id": "-",
+      "bytes": 2555,
+      "file": "src/patches/css/066-b51.css",
+      "title": "标签栏层级兜底"
+    },
+    {
+      "order": 67,
+      "marker": "B52",
+      "tag": "script",
+      "id": "-",
+      "bytes": 7914,
+      "file": "src/patches/js/067-b52.js",
+      "title": "自定义标签修复补丁"
+    },
+    {
+      "order": 68,
+      "marker": "B53",
+      "tag": "script",
+      "id": "-",
+      "bytes": 12984,
+      "file": "src/patches/js/068-b53.js",
+      "title": "下拉 / 弹窗按钮修复"
+    },
+    {
+      "order": 69,
+      "marker": "B54",
+      "tag": "style",
+      "id": "-",
+      "bytes": 1876,
+      "file": "src/patches/css/069-b54.css",
+      "title": "DOCK ↔ 左侧栏迁移动画"
+    },
+    {
+      "order": 70,
+      "marker": "B55",
+      "tag": "script",
+      "id": "-",
+      "bytes": 7748,
+      "file": "src/patches/js/070-b55.js",
+      "title": "设置写入即时生效"
+    },
+    {
+      "order": 71,
+      "marker": "B56",
+      "tag": "style",
+      "id": "-",
+      "bytes": 5248,
+      "file": "src/patches/css/071-b56.css",
+      "title": "版本历史页样式"
+    },
+    {
+      "order": 72,
+      "marker": "B57",
+      "tag": "style",
+      "id": "-",
+      "bytes": 3797,
+      "file": "src/patches/css/072-b57.css",
+      "title": "导入作品元信息弹窗样式"
+    },
+    {
+      "order": 73,
+      "marker": "B58",
+      "tag": "script",
+      "id": "-",
+      "bytes": 23660,
+      "file": "src/patches/js/073-b58.js",
+      "title": "__blProjectMeta 作品存储"
+    },
+    {
+      "order": 74,
+      "marker": "B59",
+      "tag": "style",
+      "id": "-",
+      "bytes": 1013,
+      "file": "src/patches/css/074-b59.css",
+      "title": "液态玻璃设置段兜底"
+    },
+    {
+      "order": 75,
+      "marker": "B60",
+      "tag": "script",
+      "id": "-",
+      "bytes": 2743,
+      "file": "src/patches/js/075-b60.js",
+      "title": "三键动画标记"
+    },
+    {
+      "order": 76,
+      "marker": "B61",
+      "tag": "style",
+      "id": "-",
+      "bytes": 769,
+      "file": "src/patches/css/076-b61.css",
+      "title": "三键快速反馈样式"
+    },
+    {
+      "order": 77,
+      "marker": "B62",
+      "tag": "script",
+      "id": "-",
+      "bytes": 1430,
+      "file": "src/patches/js/077-b62.js",
+      "title": "三键快速反馈兜底"
+    },
+    {
+      "order": 78,
+      "marker": "B63",
+      "tag": "style",
+      "id": "-",
+      "bytes": 1348,
+      "file": "src/patches/css/078-b63.css",
+      "title": "视频壁纸层样式"
+    },
+    {
+      "order": 79,
+      "marker": "B64",
+      "tag": "script",
+      "id": "-",
+      "bytes": 8473,
+      "file": "src/patches/js/079-b64.js",
+      "title": "壁纸看护 + 失效置顶积木"
+    },
+    {
+      "order": 80,
+      "marker": "B65",
+      "tag": "style",
+      "id": "-",
+      "bytes": 813,
+      "file": "src/patches/css/080-b65.css",
+      "title": "舞台分隔条已删除"
+    },
+    {
+      "order": 81,
+      "marker": "B66",
+      "tag": "script",
+      "id": "-",
+      "bytes": 3107,
+      "file": "src/patches/js/081-b66.js",
+      "title": "分隔条运行时兜底"
+    },
+    {
+      "order": 82,
+      "marker": "B67",
+      "tag": "style",
+      "id": "-",
+      "bytes": 2161,
+      "file": "src/patches/css/082-b67.css",
+      "title": "设置侧栏分组动画"
+    },
+    {
+      "order": 83,
+      "marker": "B68",
+      "tag": "script",
+      "id": "-",
+      "bytes": 9956,
+      "file": "src/patches/js/083-b68.js",
+      "title": "第 12 轮运行时补丁"
+    },
+    {
+      "order": 84,
+      "marker": "B69",
+      "tag": "script",
+      "id": "-",
+      "bytes": 3125,
+      "file": "src/patches/js/084-b69.js",
+      "title": "第 14 轮运行时兜底"
+    },
+    {
+      "order": 85,
+      "marker": "B70",
+      "tag": "style",
+      "id": "-",
+      "bytes": 13801,
+      "file": "src/patches/css/085-b70.css",
+      "title": "角色栏两种样式"
+    },
+    {
+      "order": 86,
+      "marker": "B71",
+      "tag": "script",
+      "id": "-",
+      "bytes": 34828,
+      "file": "src/patches/js/086-b71.js",
+      "title": "角色栏运行时"
+    },
+    {
+      "order": 87,
+      "marker": "B72",
+      "tag": "style",
+      "id": "-",
+      "bytes": 13986,
+      "file": "src/patches/css/087-b72.css",
+      "title": "工具箱窗口样式"
+    },
+    {
+      "order": 88,
+      "marker": "B73",
+      "tag": "script",
+      "id": "-",
+      "bytes": 128358,
+      "file": "src/patches/js/088-b73.js",
+      "title": "工具箱运行时 + 全局收口"
+    },
+    {
+      "order": 89,
+      "marker": "B97",
+      "tag": "script",
+      "id": "-",
+      "bytes": 8446,
+      "file": "src/patches/js/089-b97.js",
+      "title": "作品预编译缓存 · 放下积木即后台生成三种格式"
+    },
+    {
+      "order": 90,
+      "marker": "B74",
+      "tag": "style",
+      "id": "bl-os-settings-style",
+      "bytes": 30290,
+      "file": "src/patches/css/090-bl-os-settings-style.css",
+      "title": "设置页 HyperOS 风格排版"
+    },
+    {
+      "order": 91,
+      "marker": "B74",
+      "tag": "script",
+      "id": "-",
+      "bytes": 13293,
+      "file": "src/patches/js/091-b74.js",
+      "title": "设置页 hero 卡片注入"
+    },
+    {
+      "order": 92,
+      "marker": "B75",
+      "tag": "script",
+      "id": "-",
+      "bytes": 10953,
+      "file": "src/patches/js/092-b75.js",
+      "title": "运行时自适应帧率调度器"
+    },
+    {
+      "order": 93,
+      "marker": "B80",
+      "tag": "style",
+      "id": "bl-paint-wide-css",
+      "bytes": 13481,
+      "file": "src/patches/css/093-bl-paint-wide-css.css",
+      "title": "绘图工具单列 + 顶部工具一行"
+    },
+    {
+      "order": 94,
+      "marker": "B80",
+      "tag": "script",
+      "id": "-",
+      "bytes": 16702,
+      "file": "src/patches/js/094-b80.js",
+      "title": "单列工具栏的高度兜底：max-height:100% 在父级 height:auto"
+    },
+    {
+      "order": 95,
+      "marker": "-",
+      "tag": "script",
+      "id": "-",
+      "bytes": 4200,
+      "file": "src/patches/js/095-chunk.js",
+      "title": "压缩 / 二进制资源块（无注释头）"
+    },
+    {
+      "order": 96,
+      "marker": "-",
+      "tag": "style",
+      "id": "bl-genie-css",
+      "bytes": 1801,
+      "file": "src/patches/css/096-bl-genie-css.css",
+      "title": "── 隐藏锁 ─────────────────────────────────────────────────────"
+    },
+    {
+      "order": 97,
+      "marker": "B107",
+      "tag": "script",
+      "id": "-",
+      "bytes": 21805,
+      "file": "src/patches/js/097-b107.js",
+      "title": "同帧补挂：首帧扫描不再等各自的定时巡检 */"
+    },
+    {
+      "order": 98,
+      "marker": "-",
+      "tag": "style",
+      "id": "bl-paint-plus-css",
+      "bytes": 1192,
+      "file": "src/patches/css/098-bl-paint-plus-css.css",
+      "title": "工具按钮右下角：一枚小小的快捷键徽标 */"
+    },
+    {
+      "order": 99,
+      "marker": "B107",
+      "tag": "script",
+      "id": "-",
+      "bytes": 9005,
+      "file": "src/patches/js/099-b107.js",
+      "title": "同帧补挂：首帧扫描不再等各自的定时巡检 */"
+    },
+    {
+      "order": 100,
+      "marker": "-",
+      "tag": "style",
+      "id": "bl-dock-fix-css",
+      "bytes": 1924,
+      "file": "src/patches/css/100-bl-dock-fix-css.css",
+      "title": "① 宿主没有有效 rect 时，一律整屏。JS 只设/清 data-bl-rect-ok，"
+    },
+    {
+      "order": 101,
+      "marker": "-",
+      "tag": "script",
+      "id": "-",
+      "bytes": 1390,
+      "file": "src/patches/js/101-chunk.js",
+      "title": "宿主自愈：低频核对一次「标记 ↔ inline 尺寸」是否一致。"
+    },
+    {
+      "order": 102,
+      "marker": "-",
+      "tag": "style",
+      "id": "bl-dock-fix2-css",
+      "bytes": 1866,
+      "file": "src/patches/css/102-bl-dock-fix2-css.css",
+      "title": "① 定位容器与按钮本身：透明、无边框、无阴影、不建模糊层。"
+    },
+    {
+      "order": 103,
+      "marker": "B107",
+      "tag": "script",
+      "id": "-",
+      "bytes": 2371,
+      "file": "src/patches/js/103-b107.js",
+      "title": "同帧补挂：首帧扫描不再等各自的定时巡检 */"
+    },
+    {
+      "order": 104,
+      "marker": "-",
+      "tag": "style",
+      "id": "bl-dock-glass-css",
+      "bytes": 3442,
+      "file": "src/patches/css/104-bl-dock-glass-css.css",
+      "title": "① 玻璃态底座：实体浅色凝胶 → 半透明玻璃面"
+    },
+    {
+      "order": 105,
+      "marker": "B107",
+      "tag": "script",
+      "id": "-",
+      "bytes": 6495,
+      "file": "src/patches/js/105-b107.js",
+      "title": "同帧补挂：首帧扫描不再等各自的定时巡检 */"
+    },
+    {
+      "order": 106,
+      "marker": "B106",
+      "tag": "style",
+      "id": "bl-starai-css",
+      "bytes": 3372,
+      "file": "src/patches/css/106-bl-starai-css.css",
+      "title": "兜底必须带「STAR AI 侧栏项确实处于选中态」这个条件。"
+    },
+    {
+      "order": 107,
+      "marker": "B98",
+      "tag": "style",
+      "id": "bl-ver-themes-css",
+      "bytes": 20172,
+      "file": "src/patches/css/107-bl-ver-themes-css.css",
+      "title": "版本历史卡 · 七个版本各自一套视觉"
+    },
+    {
+      "order": 108,
+      "marker": "B37",
+      "tag": "script",
+      "id": "-",
+      "bytes": 14551,
+      "file": "src/patches/js/108-b37.js",
+      "title": "内置的那三个免费模型，id 与 FREE_LIST 一致 */"
+    },
+    {
+      "order": 109,
+      "marker": "B107",
+      "tag": "script",
+      "id": "-",
+      "bytes": 5515,
+      "file": "src/patches/js/109-b107.js",
+      "title": "同帧补挂：首帧扫描不再等各自的定时巡检 */"
+    },
+    {
+      "order": 110,
+      "marker": "-",
+      "tag": "style",
+      "id": "bl-stage-pop-css",
+      "bytes": 6474,
+      "file": "src/patches/css/110-bl-stage-pop-css.css",
+      "title": "窗口本体：position:fixed 由自己钉死，其余观感交给 .addon-window 的皮肤 */"
+    },
+    {
+      "order": 111,
+      "marker": "-",
+      "tag": "script",
+      "id": "-",
+      "bytes": 29320,
+      "file": "src/patches/js/111-chunk.js",
+      "title": "压缩 / 二进制资源块（无注释头）"
+    },
+    {
+      "order": 112,
+      "marker": "-",
+      "tag": "style",
+      "id": "bl-hero-themes-css",
+      "bytes": 30667,
+      "file": "src/patches/css/112-bl-hero-themes-css.css",
+      "title": "---------- 通用：把大卡文字区变成可重排 grid ---------- */"
+    },
+    {
+      "order": 113,
+      "marker": "B107",
+      "tag": "script",
+      "id": "-",
+      "bytes": 10315,
+      "file": "src/patches/js/113-b107.js",
+      "title": "同帧补挂：首帧扫描不再等各自的定时巡检 */"
+    },
+    {
+      "order": 114,
+      "marker": "-",
+      "tag": "style",
+      "id": "bl-snap-enhance-css",
+      "bytes": 11439,
+      "file": "src/patches/css/114-bl-snap-enhance-css.css",
+      "title": "---------- 面板外壳：主题变量 + 弹出动画 ---------- */"
+    },
+    {
+      "order": 115,
+      "marker": "B104",
+      "tag": "script",
+      "id": "-",
+      "bytes": 11606,
+      "file": "src/patches/js/115-b104.js",
+      "title": "窗口化后标题/提示属于内容区，不能插到 addon-window 根下"
+    },
+    {
+      "order": 116,
+      "marker": "-",
+      "tag": "style",
+      "id": "bl-uni-window-css",
+      "bytes": 12873,
+      "file": "src/patches/css/116-bl-uni-window-css.css",
+      "title": "============ 1. 菜单类浮层：干净单层玻璃，杜绝图层偏移 ============ */"
+    },
+    {
+      "order": 117,
+      "marker": "-",
+      "tag": "script",
+      "id": "-",
+      "bytes": 16369,
+      "file": "src/patches/js/117-chunk.js",
+      "title": "压缩 / 二进制资源块（无注释头）"
+    },
+    {
+      "order": 118,
+      "marker": "-",
+      "tag": "style",
+      "id": "bl-tour-v2-css",
+      "bytes": 6583,
+      "file": "src/patches/css/118-bl-tour-v2-css.css",
+      "title": "---------- 最高层遮罩：四块拼出「洞」 ---------- */"
+    },
+    {
+      "order": 119,
+      "marker": "-",
+      "tag": "script",
+      "id": "-",
+      "bytes": 33746,
+      "file": "src/patches/js/119-chunk.js",
+      "title": "压缩 / 二进制资源块（无注释头）"
+    },
+    {
+      "order": 120,
+      "marker": "-",
+      "tag": "style",
+      "id": "bl-settings-heal-css",
+      "bytes": 495,
+      "file": "src/patches/css/120-bl-settings-heal-css.css",
+      "title": "正常项永远完整可见：中和 B67 动画结束后残留的 56px 裁切。"
+    },
+    {
+      "order": 121,
+      "marker": "-",
+      "tag": "script",
+      "id": "-",
+      "bytes": 7233,
+      "file": "src/patches/js/121-chunk.js",
+      "title": "压缩 / 二进制资源块（无注释头）"
+    },
+    {
+      "order": 122,
+      "marker": "B108",
+      "tag": "style",
+      "id": "bl-theme108-css",
+      "bytes": 4703,
+      "file": "src/patches/css/122-bl-theme108-css.css",
+      "title": "主题色 / 顶部栏 / 弹窗优化 */"
+    },
+    {
+      "order": 123,
+      "marker": "B108",
+      "tag": "script",
+      "id": "-",
+      "bytes": 4351,
+      "file": "src/patches/js/123-b108.js",
+      "title": "主题色 / 顶部栏宽度 / 文案兜底 */"
+    },
+    {
+      "order": 124,
+      "marker": "B110",
+      "tag": "script",
+      "id": "-",
+      "bytes": 25245,
+      "file": "src/patches/js/124-b110.js",
+      "title": "插件设置页：右侧分类导航栏"
+    },
+    {
+      "order": 125,
+      "marker": "-",
+      "tag": "style",
+      "id": "bl-dock-103-css",
+      "bytes": 3074,
+      "file": "src/patches/css/125-bl-dock-103-css.css",
+      "title": "① 工作区限定：不是「代码」标签就隐藏整个 DOCK 宿主（含最小化托盘）。"
+    },
+    {
+      "order": 126,
+      "marker": "-",
+      "tag": "script",
+      "id": "-",
+      "bytes": 5158,
+      "file": "src/patches/js/126-chunk.js",
+      "title": "压缩 / 二进制资源块（无注释头）"
+    },
+    {
+      "order": 127,
+      "marker": "B112",
+      "tag": "style",
+      "id": "bl-hud-css",
+      "bytes": 3232,
+      "file": "src/patches/css/127-bl-hud-css.css",
+      "title": "底部信息条 · 书包上移"
+    },
+    {
+      "order": 128,
+      "marker": "B112",
+      "tag": "script",
+      "id": "-",
+      "bytes": 14641,
+      "file": "src/patches/js/128-b112.js",
+      "title": "底部信息条：书包上移 + 鼠标/时间/作品/用户/角色 一行数据"
+    },
+    {
+      "order": 129,
+      "marker": "-",
+      "tag": "style",
+      "id": "bl-xq-css",
+      "bytes": 79,
+      "file": "src/patches/css/129-bl-xq-css.css",
+      "title": "压缩 / 二进制资源块 · bl-xq-css（无注释头）"
+    },
+    {
+      "order": 130,
+      "marker": "B114",
+      "tag": "style",
+      "id": "bl-panel-solid-css",
+      "bytes": 2406,
+      "file": "src/patches/css/130-bl-panel-solid-css.css",
+      "title": "渐变 / 自定义主题下弹窗底色保持不透明"
+    },
+    {
+      "order": 131,
+      "marker": "-",
+      "tag": "script",
+      "id": "-",
+      "bytes": 6258,
+      "file": "src/patches/js/131-chunk.js",
+      "title": "压缩 / 二进制资源块（无注释头）"
+    },
+    {
+      "order": 132,
+      "marker": "-",
+      "tag": "style",
+      "id": "bl-dw-css",
+      "bytes": 5362,
+      "file": "src/patches/css/132-bl-dw-css.css",
+      "title": "---------- 1. 两枚窗口：只管布局，外观全部继承原生 .addon-window / .bl-us-wind"
+    },
+    {
+      "order": 133,
+      "marker": "-",
+      "tag": "script",
+      "id": "-",
+      "bytes": 4719,
+      "file": "src/patches/js/133-chunk.js",
+      "title": "压缩 / 二进制资源块（无注释头）"
+    }
+  ]
+}

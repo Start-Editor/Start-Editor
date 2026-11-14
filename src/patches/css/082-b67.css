@@ -1,0 +1,39 @@
+/* ── [B67] 设置侧栏分组动画 ───────────────────────────────────────────────
+   依赖：B41
+   维护：展开 190ms 淡入下滑 / 收回同长淡出
+   ───────────────────────────────────────────────────────────── */
+
+/* --------------------------------------------------------------------------
+ * 设置侧栏分组：列出 / 收回动画
+ * 原组件条件渲染子项（DOM 瞬间增删），只有箭头会转；这里给插入的项加入场，
+ * 收回由脚本拦截点击先播退场再放行给 React。
+ * -------------------------------------------------------------------------- */
+@keyframes blSidebarItemIn {
+    from { opacity: 0; transform: translateY(-8px); max-height: 0; }
+    to   { opacity: 1; transform: translateY(0);    max-height: 56px; }
+}
+@keyframes blSidebarItemOut {
+    from { opacity: 1; transform: translateY(0);    max-height: 56px; }
+    to   { opacity: 0; transform: translateY(-8px); max-height: 0; }
+}
+@keyframes blOptIn {
+    from { opacity: 0; transform: translateY(6px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+[class*="modal-sidebar_group_"] [class*="modal-sidebar_item_"] {
+    animation: blSidebarItemIn 0.19s cubic-bezier(0.2, 0.8, 0.3, 1) both;
+    overflow: hidden;
+}
+[class*="modal-sidebar_group_"] [class*="modal-sidebar_item_"].bl-sidebar-out {
+    animation: blSidebarItemOut 0.19s cubic-bezier(0.5, 0, 0.8, 0.4) both;
+    pointer-events: none;
+}
+/* 条件显示的选项（渐变色 1/2、音谱颜色、取消/恢复…）列出时淡入 */
+[class*="settings-modal_contentArea_"] [class*="setting_"] {
+    animation: blOptIn 0.22s cubic-bezier(0.2, 0.8, 0.3, 1) both;
+}
+@media (prefers-reduced-motion: reduce) {
+    [class*="modal-sidebar_group_"] [class*="modal-sidebar_item_"],
+    [class*="modal-sidebar_group_"] [class*="modal-sidebar_item_"].bl-sidebar-out,
+    [class*="settings-modal_contentArea_"] [class*="setting_"] { animation: none !important; }
+}

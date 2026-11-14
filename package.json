@@ -1,0 +1,25 @@
+{
+  "name": "starteditor",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "StartEditor —— 单文件 Web 应用的分层工程化仓库（分层源码 + 零依赖拼装构建）",
+  "engines": {
+    "node": ">=20.11"
+  },
+  "scripts": {
+    "dev": "node scripts/dev.mjs",
+    "build": "node scripts/build.mjs",
+    "check": "node scripts/check.mjs",
+    "verify": "node scripts/build.mjs --strict",
+    "import": "node scripts/import-single-file.mjs"
+  },
+  "keywords": [
+    "starteditor",
+    "scratch-editor",
+    "single-file",
+    "static-site",
+    "cloudflare-pages"
+  ],
+  "license": "MIT"
+}

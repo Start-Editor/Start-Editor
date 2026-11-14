@@ -1,0 +1,13 @@
+/* ── [B59] 液态玻璃设置段兜底 ───────────────────────────────────────────────
+   依赖：B34
+   维护：抄不到原生类名时的外观
+   ───────────────────────────────────────────────────────────── */
+
+/* 液态玻璃设置段：抄不到原生类名时的兜底外观（不再需要点开毛玻璃去抄） */
+.bl-lg-setting { padding: 8px 0; }
+.bl-lg-label { display: flex; align-items: center; justify-content: space-between;
+    gap: 10px; font-size: 13px; margin-bottom: 6px; }
+.bl-lg-header { font-size: 13px; font-weight: 700; padding: 10px 0 6px; }
+.bl-lg-value { opacity: .7; font-size: 12px; }
+.bl-lg-rangeLabels { display: flex; justify-content: space-between; font-size: 11px; opacity: .6; }
+input[type="range"].bl-lg-range { width: 100%; accent-color: #4c97ff; }

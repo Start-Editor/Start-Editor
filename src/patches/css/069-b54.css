@@ -1,0 +1,45 @@
+/* ── [B54] DOCK ↔ 左侧栏迁移动画 ───────────────────────────────────────────────
+   依赖：B33 / B52
+   维护：隐藏 DOCK 时三个入口滑入左侧，显示时滑出
+   ───────────────────────────────────────────────────────────── */
+
+/* ==========================================================================
+ * DOCK 栏 ↔ 左侧导航：三个入口的迁移动画
+ * ========================================================================== */
+.bl-dock {
+    transition: opacity .22s ease, transform .22s cubic-bezier(.2, .8, .2, 1);
+}
+.bl-dock.bl-dock-leaving {
+    opacity: 0 !important;
+    transform: translateY(14px) scale(.94);
+    pointer-events: none !important;
+}
+@keyframes blDockEnter {
+    from { opacity: 0; transform: translateY(14px) scale(.94); }
+    to   { opacity: 1; transform: none; }
+}
+.bl-dock.bl-dock-entering {
+    animation: blDockEnter .28s cubic-bezier(.2, .8, .2, 1) both;
+}
+@keyframes blDockNavIn {
+    from { opacity: 0; transform: translateX(-18px) scale(.86); }
+    to   { opacity: 1; transform: none; }
+}
+@keyframes blDockNavOut {
+    from { opacity: 1; transform: none; }
+    to   { opacity: 0; transform: translateX(-18px) scale(.86); }
+}
+li.bl-dock-nav.bl-dock-nav-in {
+    animation: blDockNavIn .3s cubic-bezier(.2, .8, .2, 1) both;
+}
+li.bl-dock-nav.bl-dock-nav-out {
+    animation: blDockNavOut .22s ease both;
+    pointer-events: none;
+}
+@media (prefers-reduced-motion: reduce) {
+    .bl-dock, .bl-dock.bl-dock-entering,
+    li.bl-dock-nav.bl-dock-nav-in, li.bl-dock-nav.bl-dock-nav-out {
+        animation-duration: .01ms !important;
+        transition-duration: .01ms !important;
+    }
+}

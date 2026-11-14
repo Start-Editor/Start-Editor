@@ -1,0 +1,14 @@
+/* ── [B65] 舞台分隔条已删除 ───────────────────────────────────────────────
+   依赖：无
+   维护：保留一条规则压住插件放回的 resizer
+   ───────────────────────────────────────────────────────────── */
+
+/* 舞台 / 角色栏边缘拖动调整大小：功能已删除。
+   保留这条规则是为了压住任何运行时注入 / 插件放回的同名分隔条。 */
+[class*="gui_stage-pane-resizer"] {
+    display: none !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+    cursor: default !important;
+    opacity: 0 !important;
+}

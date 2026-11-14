@@ -1,0 +1,398 @@
+
+/* ── [B98] 版本历史卡 · 七个版本各自一套视觉 ─────────────────────────────
+   依赖：B56 版本历史页结构 / B74 版本页排版
+   维护：每个 data-ver-theme 都有独立的配色、背景图案、关键帧动画、
+         宣传语/小标/日期文本格式与 grid 排版；互不相同，互不复用的动效。
+   ------------------------------------------------------------------
+   设计约束：
+     · 纯 2D，不使用任何三维变换，与版本大卡一致；
+     · 强调色用 color-mix 与 --text-primary 混合，深浅主题都可读，
+       老浏览器不支持时回退到 --vh-a；
+     · 所有动画作用在 320px 上下的半透明装饰层，不进文字与模糊；
+     · prefers-reduced-motion / 窄屏都有收敛分支。
+   ========================================================================== */
+
+/* ---------- 通用骨架：把卡片变成可重排的 grid ---------- */
+.bl-ver-entry[data-ver-theme] > .bl-ver-card2 {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas: "eyebrow" "row1" "title" "slogan" "note" "items";
+    gap: 7px 14px;
+    align-items: start;
+    padding: 14px 16px;
+    border-radius: 16px;
+    background-color: var(--ui-secondary, #f6f8fc);
+    border: 1px solid rgba(0, 0, 0, .08);
+    border-color: color-mix(in srgb, var(--vh-a, #4c97ff) 30%, transparent);
+    box-shadow: 0 4px 16px color-mix(in srgb, var(--vh-a, #4c97ff) 12%, transparent);
+    transition: transform .28s ease, box-shadow .28s ease;
+}
+.bl-ver-entry[data-ver-theme]:hover > .bl-ver-card2 {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 26px color-mix(in srgb, var(--vh-a, #4c97ff) 20%, transparent);
+}
+.bl-ver-entry[data-ver-theme] .bl-ver-deco {
+    position: absolute; inset: 0; z-index: 0; pointer-events: none;
+}
+.bl-ver-entry[data-ver-theme] > .bl-ver-card2 > :not(.bl-ver-deco) { z-index: 1; }
+
+.bl-ver-entry[data-ver-theme] .bl-ver-eyebrow {
+    grid-area: eyebrow;
+    font-size: 10px; font-weight: 800; letter-spacing: .17em;
+    text-transform: uppercase;
+    color: var(--vh-ink, var(--vh-a, #4c97ff)); opacity: .92;
+}
+.bl-ver-entry[data-ver-theme] .bl-ver-row1 {
+    grid-area: row1; display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+}
+.bl-ver-entry[data-ver-theme] .bl-ver-v {
+    font-size: 15px; font-weight: 800; letter-spacing: -.01em;
+    color: var(--vh-ink, var(--vh-a, #4c97ff));
+}
+.bl-ver-entry[data-ver-theme] .bl-ver-tag {
+    font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 5px;
+    color: #fff; background: var(--vh-a, #2fa46f);
+}
+.bl-ver-entry[data-ver-theme] .bl-ver-date {
+    margin-left: auto; display: inline-flex; align-items: center; gap: 4px;
+    font-size: 11px; white-space: nowrap;
+    color: var(--text-primary-transparent, rgba(87,94,117,.7));
+}
+.bl-ver-entry[data-ver-theme] .bl-ver-title {
+    grid-area: title; margin: 0; font-size: 12px; font-weight: 600;
+    color: var(--text-primary-transparent, rgba(87,94,117,.9));
+}
+.bl-ver-entry[data-ver-theme] .bl-ver-slogan {
+    grid-area: slogan; font-size: 14px; font-weight: 800; letter-spacing: .01em;
+    color: var(--vh-ink, var(--vh-a, #4c97ff));
+}
+.bl-ver-entry[data-ver-theme] .bl-ver-note {
+    grid-area: note; font-size: 11px; opacity: .82;
+    color: var(--text-primary-transparent, rgba(87,94,117,.8));
+}
+.bl-ver-entry[data-ver-theme] .bl-ver-items {
+    grid-area: items; margin: 2px 0 0; padding-left: 17px;
+}
+.bl-ver-entry[data-ver-theme] .bl-ver-items li {
+    font-size: 12px; margin: 2px 0;
+    color: var(--text-primary-transparent, rgba(87,94,117,.85));
+}
+.bl-ver-entry[data-ver-theme] .bl-ver-dot { border-color: var(--vh-a, #4c97ff); }
+.bl-ver-entry[data-ver-theme].is-current .bl-ver-dot {
+    background: var(--vh-a, #4c97ff);
+    box-shadow: 0 0 0 3px var(--ui-modal-background, #fff),
+                0 0 12px color-mix(in srgb, var(--vh-a, #4c97ff) 70%, transparent);
+}
+
+/* ---------- ① SEA · 深海潮汐：左大版本号 + 右双列清单 ---------- */
+.bl-ver-entry.bl-ver-t-sea {
+    --vh-a: #0e7490; --vh-b: #22d3ee; --vh-c: #6366f1;
+    --vh-ink: color-mix(in srgb, #0e7490 62%, var(--text-primary, #2d3748));
+}
+.bl-ver-entry.bl-ver-t-sea > .bl-ver-card2 {
+    background-image:
+        radial-gradient(ellipse 80% 120% at 6% 112%, rgba(34,211,238,.26), transparent 68%),
+        radial-gradient(ellipse 72% 92% at 98% -12%, rgba(99,102,241,.20), transparent 70%),
+        repeating-linear-gradient(0deg, rgba(14,116,144,.045) 0 1px, transparent 1px 14px);
+}
+.bl-ver-entry.bl-ver-t-sea .bl-ver-deco {
+    background:
+        radial-gradient(ellipse 46% 32% at 18% 86%, rgba(34,211,238,.42), transparent 72%),
+        radial-gradient(ellipse 42% 28% at 76% 18%, rgba(99,102,241,.30), transparent 72%);
+    animation: blVTide 18s ease-in-out infinite;
+}
+.bl-ver-entry[data-ver-layout="feature"] > .bl-ver-card2 {
+    grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
+    grid-template-areas: "eyebrow eyebrow" "row1 items" "title items" "slogan items" "note items";
+    column-gap: 20px;
+}
+.bl-ver-entry[data-ver-layout="feature"] .bl-ver-v { font-size: 30px; letter-spacing: -.035em; }
+.bl-ver-entry[data-ver-layout="feature"] .bl-ver-slogan { font-size: 16px; }
+.bl-ver-entry[data-ver-layout="feature"] .bl-ver-items {
+    columns: 2; column-gap: 18px;
+    border-left: 1px solid color-mix(in srgb, var(--vh-a, #4c97ff) 22%, transparent);
+    padding-left: 16px;
+}
+.bl-ver-entry[data-ver-layout="feature"] .bl-ver-items li { break-inside: avoid; font-size: 11.5px; }
+
+/* ---------- ② ART · 曲面画廊：居中大字 + 胶囊清单 ---------- */
+.bl-ver-entry.bl-ver-t-art {
+    --vh-a: #be2f8e; --vh-b: #f472b6; --vh-c: #7c5cff;
+    --vh-ink: color-mix(in srgb, #be2f8e 60%, var(--text-primary, #2d3748));
+}
+.bl-ver-entry.bl-ver-t-art > .bl-ver-card2 {
+    text-align: center; justify-items: center;
+    background-image:
+        radial-gradient(circle at 14% 16%, rgba(244,114,182,.22), transparent 46%),
+        radial-gradient(circle at 88% 88%, rgba(124,92,255,.22), transparent 48%),
+        linear-gradient(120deg, rgba(255,132,176,.10), rgba(126,116,255,.10));
+    padding-top: 18px; padding-bottom: 18px;
+}
+.bl-ver-entry.bl-ver-t-art .bl-ver-deco {
+    inset: auto; left: 50%; top: -84px; width: 360px; height: 360px;
+    margin-left: -180px; border-radius: 52% 48% 40% 60% / 55% 45% 60% 40%;
+    background: radial-gradient(circle at 36% 34%, rgba(255,214,240,.52),
+                rgba(244,114,182,.30) 46%, rgba(124,92,255,.18) 72%, transparent 82%);
+    filter: blur(12px);
+    animation: blVMorph 12s ease-in-out infinite;
+}
+.bl-ver-entry[data-ver-layout="canvas"] .bl-ver-row1 { justify-content: center; }
+.bl-ver-entry[data-ver-layout="canvas"] .bl-ver-date { margin-left: 0; }
+.bl-ver-entry[data-ver-layout="canvas"] .bl-ver-v { font-size: 40px; letter-spacing: -.04em; }
+.bl-ver-entry[data-ver-layout="canvas"] .bl-ver-slogan { font-size: 17px; letter-spacing: .06em; }
+.bl-ver-entry[data-ver-layout="canvas"] .bl-ver-items {
+    list-style: none; display: flex; flex-wrap: wrap; justify-content: center;
+    gap: 6px; padding: 0; margin-top: 6px;
+}
+.bl-ver-entry[data-ver-layout="canvas"] .bl-ver-items li {
+    margin: 0; font-size: 11px; padding: 3px 11px; border-radius: 999px;
+    background: color-mix(in srgb, var(--vh-a, #be2f8e) 11%, transparent);
+    border: 1px solid color-mix(in srgb, var(--vh-a, #be2f8e) 24%, transparent);
+}
+
+/* ---------- ③ STAR · 星芒聚光：左侧旋转光轮 + 右移内容 ---------- */
+.bl-ver-entry.bl-ver-t-star {
+    --vh-a: #b45309; --vh-b: #fbbf24; --vh-c: #ef6a3d;
+    --vh-ink: color-mix(in srgb, #b45309 60%, var(--text-primary, #2d3748));
+}
+.bl-ver-entry.bl-ver-t-star > .bl-ver-card2 {
+    background-image:
+        radial-gradient(circle at 84% 12%, rgba(251,191,36,.26), transparent 52%),
+        repeating-linear-gradient(45deg, rgba(245,158,11,.045) 0 2px, transparent 2px 11px);
+}
+.bl-ver-entry.bl-ver-t-star .bl-ver-deco {
+    inset: auto; right: -46px; top: -46px; width: 230px; height: 230px;
+    border-radius: 50%;
+    background: conic-gradient(from 0deg,
+        rgba(251,191,36,0) 0deg, rgba(251,191,36,.34) 22deg, rgba(251,191,36,0) 44deg,
+        rgba(239,106,61,0) 90deg, rgba(239,106,61,.28) 112deg, rgba(239,106,61,0) 134deg,
+        rgba(251,191,36,0) 180deg, rgba(251,191,36,.30) 202deg, rgba(251,191,36,0) 224deg,
+        rgba(239,106,61,0) 270deg, rgba(239,106,61,.26) 292deg, rgba(239,106,61,0) 314deg,
+        rgba(251,191,36,0) 360deg);
+    animation: blVSpin 26s linear infinite;
+}
+.bl-ver-entry[data-ver-layout="spotlight"] > .bl-ver-card2 {
+    padding-left: 118px; min-height: 122px;
+}
+.bl-ver-entry[data-ver-layout="spotlight"] .bl-ver-v { font-size: 23px; }
+.bl-ver-entry[data-ver-layout="spotlight"] .bl-ver-slogan { font-size: 15px; }
+.bl-ver-entry[data-ver-layout="spotlight"] .bl-ver-items { padding-left: 18px; }
+.bl-ver-entry[data-ver-layout="spotlight"] .bl-ver-items li::marker { color: var(--vh-a, #b45309); }
+/* 聚光轮改用卡片自身的左侧圆形徽章，避免两套装饰叠在一起 */
+.bl-ver-entry[data-ver-layout="spotlight"] > .bl-ver-card2::before {
+    content: '✦'; position: absolute; z-index: 2;
+    left: 20px; top: 50%; margin-top: -42px;
+    width: 84px; height: 84px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 38px; color: #fff;
+    background: conic-gradient(from 0deg,
+        rgba(251,191,36,0) 0deg, rgba(251,191,36,.85) 22deg, rgba(251,191,36,0) 44deg,
+        rgba(239,106,61,0) 90deg, rgba(239,106,61,.8) 112deg, rgba(239,106,61,0) 134deg,
+        rgba(251,191,36,0) 180deg, rgba(251,191,36,.85) 202deg, rgba(251,191,36,0) 224deg,
+        rgba(239,106,61,0) 270deg, rgba(239,106,61,.8) 292deg, rgba(239,106,61,0) 314deg,
+        rgba(251,191,36,0) 360deg);
+    box-shadow: 0 6px 20px rgba(180,83,9,.25), inset 0 0 0 8px rgba(255,255,255,.18);
+    animation: blVSpin 26s linear infinite;
+}
+
+/* ---------- ④ GRID · 工程蓝图扫描：左右分栏 + 编号清单 ---------- */
+.bl-ver-entry.bl-ver-t-grid {
+    --vh-a: #1d4ed8; --vh-b: #60a5fa; --vh-c: #64748b;
+    --vh-ink: color-mix(in srgb, #1d4ed8 62%, var(--text-primary, #2d3748));
+}
+.bl-ver-entry.bl-ver-t-grid > .bl-ver-card2 {
+    background-image:
+        linear-gradient(rgba(59,130,246,.055) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(59,130,246,.055) 1px, transparent 1px);
+    background-size: 22px 22px;
+}
+.bl-ver-entry.bl-ver-t-grid .bl-ver-deco { opacity: .9; }
+.bl-ver-entry.bl-ver-t-grid .bl-ver-deco::after {
+    content: ''; position: absolute; left: 0; right: 0; top: 0; height: 2px;
+    background: linear-gradient(90deg, transparent, rgba(96,165,250,.75), transparent);
+    animation: blVScan 6s linear infinite;
+}
+.bl-ver-entry[data-ver-layout="split"] > .bl-ver-card2 {
+    grid-template-columns: minmax(0, 210px) minmax(0, 1fr);
+    grid-template-areas: "eyebrow items" "row1 items" "title items" "slogan items" "note items";
+    column-gap: 22px;
+}
+.bl-ver-entry[data-ver-layout="split"] .bl-ver-row1 { flex-direction: column; align-items: flex-start; gap: 4px; }
+.bl-ver-entry[data-ver-layout="split"] .bl-ver-date { margin-left: 0; }
+.bl-ver-entry[data-ver-layout="split"] .bl-ver-v { font-size: 21px; }
+.bl-ver-entry[data-ver-layout="split"] .bl-ver-slogan { font-size: 13px; }
+.bl-ver-entry[data-ver-layout="split"] .bl-ver-items {
+    list-style: none; counter-reset: blvSplit; padding: 0 0 0 18px; margin: 0;
+    border-left: 1px dashed color-mix(in srgb, var(--vh-a, #1d4ed8) 38%, transparent);
+}
+.bl-ver-entry[data-ver-layout="split"] .bl-ver-items li {
+    counter-increment: blvSplit; display: flex; gap: 9px; margin: 3px 0; font-size: 11.5px;
+}
+.bl-ver-entry[data-ver-layout="split"] .bl-ver-items li::before {
+    content: counter(blvSplit, decimal-leading-zero);
+    flex: 0 0 auto; font-weight: 800; font-variant-numeric: tabular-nums;
+    color: var(--vh-ink, var(--vh-a, #1d4ed8)); opacity: .8;
+}
+
+/* ---------- ⑤ MINT · 斜纹紧凑条：单行元信息 + 标签清单 ---------- */
+.bl-ver-entry.bl-ver-t-mint {
+    --vh-a: #047857; --vh-b: #34d399; --vh-c: #22d3ee;
+    --vh-ink: color-mix(in srgb, #047857 60%, var(--text-primary, #2d3748));
+}
+.bl-ver-entry.bl-ver-t-mint > .bl-ver-card2 {
+    background-image: repeating-linear-gradient(135deg, rgba(16,185,129,.09) 0 10px, transparent 10px 22px);
+}
+.bl-ver-entry.bl-ver-t-mint .bl-ver-deco {
+    background: repeating-linear-gradient(135deg, rgba(52,211,153,.15) 0 8px, transparent 8px 24px);
+    background-size: 56px 56px;
+    animation: blVStripe 9s linear infinite;
+}
+.bl-ver-entry[data-ver-layout="compact"] > .bl-ver-card2 {
+    display: flex; flex-wrap: wrap; align-items: center; gap: 7px 12px; padding: 10px 14px;
+}
+.bl-ver-entry[data-ver-layout="compact"] .bl-ver-eyebrow { order: 0; }
+.bl-ver-entry[data-ver-layout="compact"] .bl-ver-row1 { order: 1; flex: 0 0 auto; }
+.bl-ver-entry[data-ver-layout="compact"] .bl-ver-title { order: 2; flex: 1 1 170px; font-size: 11.5px; }
+.bl-ver-entry[data-ver-layout="compact"] .bl-ver-slogan { order: 3; font-size: 12px; }
+.bl-ver-entry[data-ver-layout="compact"] .bl-ver-note { order: 4; flex: 1 1 100%; font-size: 10.5px; }
+.bl-ver-entry[data-ver-layout="compact"] .bl-ver-items {
+    order: 5; flex: 1 1 100%; list-style: none; display: flex; flex-wrap: wrap;
+    gap: 5px; padding: 0; margin: 2px 0 0;
+}
+.bl-ver-entry[data-ver-layout="compact"] .bl-ver-items li {
+    margin: 0; font-size: 10.5px; padding: 2px 9px; border-radius: 6px;
+    background: color-mix(in srgb, var(--vh-a, #047857) 10%, transparent);
+    border: 1px solid color-mix(in srgb, var(--vh-a, #047857) 20%, transparent);
+}
+.bl-ver-entry[data-ver-layout="compact"] .bl-ver-v { font-size: 14px; }
+
+/* ---------- ⑥ INDIGO · 左侧竖轨：竖排代号 + 呼吸光晕 ---------- */
+.bl-ver-entry.bl-ver-t-indigo {
+    --vh-a: #4338ca; --vh-b: #818cf8; --vh-c: #a855f7;
+    --vh-ink: color-mix(in srgb, #4338ca 62%, var(--text-primary, #2d3748));
+}
+.bl-ver-entry.bl-ver-t-indigo > .bl-ver-card2 {
+    background-image:
+        radial-gradient(circle at 4% 50%, rgba(99,102,241,.20), transparent 56%),
+        radial-gradient(rgba(129,140,248,.16) 1px, transparent 1px);
+    background-size: auto, 14px 14px;
+}
+.bl-ver-entry.bl-ver-t-indigo .bl-ver-deco {
+    inset: auto; left: -70px; top: -70px; width: 270px; height: 270px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(129,140,248,.42), rgba(168,85,247,.18) 58%, transparent 74%);
+    animation: blVBreathe 7s ease-in-out infinite;
+}
+.bl-ver-entry[data-ver-layout="rail"] > .bl-ver-card2 {
+    padding-left: 58px; padding-right: 16px;
+}
+.bl-ver-entry[data-ver-layout="rail"] > .bl-ver-card2::before {
+    content: ''; position: absolute; z-index: 2; left: 0; top: 0; bottom: 0; width: 12px;
+    background: linear-gradient(180deg, var(--vh-b, #818cf8), var(--vh-a, #4338ca), var(--vh-c, #a855f7));
+    opacity: .85;
+}
+.bl-ver-entry[data-ver-layout="rail"] .bl-ver-eyebrow {
+    position: absolute; left: 18px; top: 14px;
+    writing-mode: vertical-rl; letter-spacing: .28em; font-size: 9.5px; opacity: .7;
+}
+.bl-ver-entry[data-ver-layout="rail"] .bl-ver-v { font-size: 20px; }
+.bl-ver-entry[data-ver-layout="rail"] .bl-ver-slogan { font-size: 15px; }
+.bl-ver-entry[data-ver-layout="rail"] .bl-ver-items {
+    padding-left: 16px;
+    border-left: 2px solid color-mix(in srgb, var(--vh-a, #4338ca) 30%, transparent);
+}
+
+/* ---------- ⑦ MONO · 初始蓝图：等宽虚线 + 印章摆动 ---------- */
+.bl-ver-entry.bl-ver-t-mono {
+    --vh-a: #475569; --vh-b: #94a3b8; --vh-c: #cbd5e1;
+    --vh-ink: color-mix(in srgb, #475569 66%, var(--text-primary, #2d3748));
+}
+.bl-ver-entry.bl-ver-t-mono > .bl-ver-card2 {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+    border: 1px dashed color-mix(in srgb, var(--vh-a, #475569) 45%, transparent);
+    border-radius: 6px;
+    background-image:
+        linear-gradient(rgba(100,116,139,.06) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(100,116,139,.06) 1px, transparent 1px);
+    background-size: 18px 18px;
+}
+.bl-ver-entry.bl-ver-t-mono .bl-ver-deco {
+    inset: auto; right: 18px; bottom: -26px; width: 112px; height: 112px;
+    border-radius: 50%; border: 3px double rgba(71,85,105,.32);
+    box-shadow: inset 0 0 0 7px rgba(100,116,139,.10);
+    animation: blVTick 5s ease-in-out infinite;
+}
+.bl-ver-entry.bl-ver-t-mono .bl-ver-deco::after {
+    content: '000'; position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px; font-weight: 800; letter-spacing: .12em;
+    color: rgba(71,85,105,.34);
+}
+.bl-ver-entry[data-ver-layout="blueprint"] .bl-ver-eyebrow { letter-spacing: .12em; }
+.bl-ver-entry[data-ver-layout="blueprint"] .bl-ver-v { font-size: 17px; letter-spacing: .05em; }
+.bl-ver-entry[data-ver-layout="blueprint"] .bl-ver-slogan { font-size: 13px; font-style: italic; letter-spacing: .09em; }
+.bl-ver-entry[data-ver-layout="blueprint"] .bl-ver-note { font-size: 10.5px; }
+.bl-ver-entry[data-ver-layout="blueprint"] .bl-ver-items {
+    list-style: none; counter-reset: blvBlue; padding: 0; margin-top: 2px;
+}
+.bl-ver-entry[data-ver-layout="blueprint"] .bl-ver-items li { font-size: 11.5px; margin: 3px 0; }
+.bl-ver-entry[data-ver-layout="blueprint"] .bl-ver-items li::before {
+    content: '[' counter(blvBlue, decimal-leading-zero) ']  ';
+    counter-increment: blvBlue; font-weight: 700; opacity: .65;
+    color: var(--vh-ink, var(--vh-a, #475569));
+}
+
+/* ---------- 七套互不相同的动画 ---------- */
+@keyframes blVTide {
+    0%, 100% { transform: translate(0, 0) scale(1); opacity: .72; }
+    50%      { transform: translate(16px, -10px) scale(1.08); opacity: 1; }
+}
+@keyframes blVMorph {
+    0%, 100% { border-radius: 52% 48% 40% 60% / 55% 45% 60% 40%; transform: rotate(0deg) scale(1); }
+    50%      { border-radius: 38% 62% 58% 42% / 44% 60% 40% 56%; transform: rotate(14deg) scale(1.1); }
+}
+@keyframes blVSpin   { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+@keyframes blVScan {
+    0%   { transform: translateY(-24px); opacity: 0; }
+    12%  { opacity: 1; }
+    88%  { opacity: 1; }
+    100% { transform: translateY(280px); opacity: 0; }
+}
+@keyframes blVStripe { from { background-position: 0 0; } to { background-position: 56px 0; } }
+@keyframes blVBreathe {
+    0%, 100% { transform: scale(.86); opacity: .45; }
+    50%      { transform: scale(1.18); opacity: .95; }
+}
+@keyframes blVTick {
+    0%, 100% { transform: rotate(-3deg); opacity: .55; }
+    50%      { transform: rotate(3deg); opacity: .9; }
+}
+
+/* ---------- 收敛：减少动态效果 ---------- */
+@media (prefers-reduced-motion: reduce) {
+    .bl-ver-entry[data-ver-theme] .bl-ver-deco,
+    .bl-ver-entry[data-ver-theme] .bl-ver-deco::after,
+    .bl-ver-entry[data-ver-layout="spotlight"] > .bl-ver-card2::before {
+        animation: none !important;
+    }
+    .bl-ver-entry[data-ver-theme] > .bl-ver-card2 {
+        transition: none !important; background-position: 50% 50% !important;
+    }
+    .bl-ver-entry[data-ver-theme]:hover > .bl-ver-card2 { transform: none !important; }
+}
+/* ---------- 收敛：窄屏单列 ---------- */
+@media (max-width: 720px) {
+    .bl-ver-entry[data-ver-layout="feature"] > .bl-ver-card2,
+    .bl-ver-entry[data-ver-layout="split"] > .bl-ver-card2 {
+        grid-template-columns: minmax(0, 1fr);
+        grid-template-areas: "eyebrow" "row1" "title" "slogan" "note" "items";
+    }
+    .bl-ver-entry[data-ver-layout="feature"] .bl-ver-items,
+    .bl-ver-entry[data-ver-layout="split"] .bl-ver-items { columns: 1; border-left: 0; padding-left: 17px; }
+    .bl-ver-entry[data-ver-layout="spotlight"] > .bl-ver-card2 { padding-left: 92px; }
+    .bl-ver-entry[data-ver-layout="spotlight"] > .bl-ver-card2::before { width: 64px; height: 64px; margin-top: -32px; font-size: 28px; }
+    .bl-ver-entry[data-ver-layout="rail"] > .bl-ver-card2 { padding-left: 40px; }
+}

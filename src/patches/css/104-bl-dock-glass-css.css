@@ -1,0 +1,71 @@
+
+/* ① 玻璃态底座：实体浅色凝胶 → 半透明玻璃面
+      特异性 0,4,2，压过 B86 的 html:root .bl-dock ... (0,3,2)。
+      B86 只在 html 没有 .bl-dock-glass-on 时作为关闭态基线保留。 */
+html:root.bl-dock-glass-on .bl-dock .bl-dock-item::before {
+    background-color: var(--bl-dock-glass-body, rgba(255,255,255,0.16)) !important;
+    background-image:
+        radial-gradient(circle at 26% 18%,
+            var(--looks-secondary, #4fd1c5) 0 7%,
+            rgba(255,255,255,0) 18%),
+        radial-gradient(circle at 50% 36%,
+            var(--bl-dock-glass-inner, rgba(255,255,255,0.10)) 0 36%,
+            rgba(255,255,255,0) 72%),
+        radial-gradient(140% 1px at 0% 0%,
+            var(--bl-dock-glass-hi, rgba(255,255,255,0.28)) 0%,
+            rgba(255,255,255,0) 42%),
+        linear-gradient(135deg,
+            var(--bl-dock-glass-hi, rgba(255,255,255,0.28)) 0%,
+            rgba(255,255,255,0) 42%) !important;
+    box-shadow:
+        inset 0 -1px 0 var(--bl-dock-glass-shade, rgba(0,0,0,0.10)),
+        inset 0 0 0 1px var(--bl-dock-glass-line, rgba(255,255,255,0.14)),
+        var(--bl-dock-glass-shadow, 0 2px 6px rgba(0,0,0,0.12)) !important;
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+}
+
+/* ② 按下反馈：玻璃态也要有「压下去」的凹陷，不能被 ① 的 !important 吃掉 */
+html:root.bl-dock-glass-on .bl-dock .bl-dock-item:active::before {
+    box-shadow:
+        inset 0 2px 6px var(--bl-dock-glass-shade, rgba(0,0,0,0.16)),
+        inset 0 0 0 1px var(--bl-dock-glass-line, rgba(255,255,255,0.14)),
+        0 1px 3px rgba(0,0,0,0.14) !important;
+}
+
+/* ③ 图标颜色跟随主题：浅色主题深字 / 深色主题白字。
+      B62 的固定 #4a566b 与白色投影只适合实体浅底，玻璃面上会发灰。 */
+html:root.bl-dock-glass-on .bl-dock .bl-dock-item > svg {
+    color: var(--text-primary, #333333) !important;
+    filter: none !important;
+}
+html:root.bl-dock-glass-on .bl-dock .bl-dock-item > .bl-dock-custom-icon {
+    background: var(--bl-dock-glass-inner, rgba(255,255,255,0.10)) !important;
+    box-shadow: inset 0 0 0 1px var(--bl-dock-glass-line, rgba(255,255,255,0.14)) !important;
+}
+
+/* ④ 托盘横杠 / 分隔线同样跟随主题，不再是一成不变的深灰 */
+html:root.bl-dock-glass-on .bl-dock .bl-dock-item.bl-dock-tray::after,
+html:root.bl-dock-glass-on .bl-dock .bl-dock-item.is-docked::after {
+    background: var(--text-primary, #4a566b) !important;
+}
+html:root.bl-dock-glass-on .bl-dock .bl-dock-sep {
+    background: var(--bl-dock-glass-line, rgba(127,127,127,0.35)) !important;
+}
+
+/* ⑤ 省电模式：只保留静态玻璃面，去掉过渡 */
+html.tb-eco.bl-dock-glass-on .bl-dock-item::before { transition: none !important; }
+
+/* ⑥ DOCK 胶囊：只在液态玻璃开启时把整条顶部亮线收成左段短线，
+      右上角不出现光带。毛玻璃态保持补充表原有的 GLASS_DEPTH 层次。 */
+html:root.bl-dock-liquid-on .bl-dock .bl-dock-inner::before {
+    background-image:
+        radial-gradient(140% 1px at 0% 0%,
+            rgba(255,255,255,0.35) 0%, rgba(255,255,255,0) 42%),
+        linear-gradient(135deg,
+            rgba(255,255,255,0.22) 0%, rgba(255,255,255,0) 42%) !important;
+    box-shadow:
+        inset 0 -1px 0 rgba(0,0,0,0.08),
+        inset 0 0 0 1px rgba(255,255,255,0.16),
+        0 6px 22px rgba(0,0,0,0.20) !important;
+}

@@ -1,0 +1,38 @@
+
+/* 工具按钮右下角：一枚小小的快捷键徽标 */
+html.bl-paint-wide [class*="paint-editor_mode-selector_"] > * {
+    position: relative !important;
+}
+.bl-paint-key {
+    position: absolute;
+    right: 2px; bottom: 1px;
+    z-index: 2;
+    min-width: 13px; height: 13px;
+    box-sizing: border-box;
+    padding: 0 2px;
+    font: 600 9px/12px ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+    font-style: normal;
+    text-align: center;
+    color: #33415c;
+    background: rgba(255, 255, 255, .84);
+    border: 1px solid rgba(90, 120, 180, .30);
+    border-radius: 4px;
+    opacity: .92;
+    pointer-events: none;
+    user-select: none;
+}
+[theme="dark"] .bl-paint-key,
+[data-theme="dark"] .bl-paint-key {
+    color: #dce7ff;
+    background: rgba(22, 30, 48, .88);
+    border-color: rgba(160, 190, 240, .26);
+}
+/* 缩放动画只作用在 paper 画布的 transform 上，不改 paper 内部矩阵 */
+canvas[class*="paper-canvas_"] {
+    transform-origin: 50% 50% !important;
+    will-change: transform;
+}
+@media (prefers-reduced-motion: reduce) {
+    .bl-paint-key { animation: none !important; }
+    canvas[class*="paper-canvas_"] { will-change: auto !important; }
+}

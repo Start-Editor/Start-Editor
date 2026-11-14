@@ -1,0 +1,81 @@
+
+/* 卡片默认不显示；只有切到 STAR AI 分区才显示（React 重绘残留也不会露出） */
+.bl-sa-card { display: none; }
+html.bl-sa-active:has([data-bl-star-ai].is-on) [class*="settings-modal_body_"].bl-starai-mode > *:not([data-bl-starai]) {
+    display: none !important;
+}
+html.bl-sa-active:has([data-bl-star-ai].is-on) [class*="settings-modal_body_"].bl-starai-mode > [data-bl-starai] {
+    display: block !important;
+}
+/* [B106] 兜底必须带「STAR AI 侧栏项确实处于选中态」这个条件。
+   否则窗口关闭 / 语言重挂载后 html.bl-sa-active 残留一次，重新打开
+   设置时所有分类的原生内容会被整页隐藏 —— 即「有时设置选项消失」。
+   状态挂在 html 上，React 换掉内容区子节点也不会丢。 */
+html.bl-sa-active:has([data-bl-star-ai].is-on) [class*="settings-modal_body_"] > *:not([data-bl-starai]) {
+    display: none !important;
+}
+html.bl-sa-active:has([data-bl-star-ai].is-on) [class*="settings-modal_body_"] > [data-bl-starai] {
+    display: block !important;
+}
+/* 卡片内部排版 */
+.bl-sa-card h3 {
+    margin: 0 0 6px !important;
+    font-size: 14.5px !important;
+    font-weight: 700 !important;
+    color: var(--text-primary, #2b3a55) !important;
+}
+.bl-sa-d {
+    margin: 0 0 12px !important;
+    font-size: 12px !important;
+    line-height: 1.55 !important;
+    opacity: .68;
+}
+.bl-sa-row {
+    display: flex !important;
+    align-items: center !important;
+    gap: 10px !important;
+    min-width: 0 !important;
+    font-size: 13.5px !important;
+}
+.bl-sa-row > span:first-child { flex: 0 0 auto; }
+.bl-sa-chk { width: 18px; height: 18px; accent-color: #2f7bff; flex: 0 0 auto; }
+.bl-sa-text, .bl-sa-sel {
+    box-sizing: border-box !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    padding: 7px 10px !important;
+    font-size: 13px !important;
+    border-radius: 9px !important;
+    border: 1px solid rgba(90, 130, 210, .30) !important;
+    background: rgba(255, 255, 255, .66) !important;
+    color: var(--text-primary, #2b3a55) !important;
+    text-overflow: ellipsis !important;
+}
+.bl-sa-val {
+    flex: 0 0 auto; min-width: 42px; text-align: right;
+    font-variant-numeric: tabular-nums; font-weight: 700;
+    color: #2f7bff; font-size: 13px;
+}
+.bl-sa-kbd {
+    display: inline-block; padding: 3px 10px; border-radius: 8px;
+    font: 700 13px/1.4 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    letter-spacing: .12em;
+    background: rgba(47, 123, 255, .14);
+    border: 1px solid rgba(47, 123, 255, .28);
+    color: #2f7bff;
+}
+/* 总开关关闭：下面几项变灰且控件禁用 */
+html.bl-sa-locked .bl-sa-card[data-bl-sa-dep="1"] { opacity: .45 !important; }
+html.bl-sa-locked .bl-sa-card[data-bl-sa-dep="1"] input,
+html.bl-sa-locked .bl-sa-card[data-bl-sa-dep="1"] select { cursor: not-allowed !important; }
+/* 侧栏选项卡的选中反馈（不动原生 selected class，避免与版本页互相抢） */
+[data-bl-star-ai].is-on {
+    background: rgba(59, 130, 246, .16) !important;
+    box-shadow: inset 3px 0 0 #2f7bff !important;
+}
+/* 总开关关闭时隐藏 DOCK 上的 STAR 固定按钮 */
+html.bl-star-ai-off .bl-dock-item[data-dock="star"] { display: none !important; }
+@media (prefers-reduced-motion: reduce) {
+    [data-bl-star-ai] { transition: none !important; }
+}

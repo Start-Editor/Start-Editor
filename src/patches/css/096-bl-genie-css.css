@@ -1,0 +1,36 @@
+
+/* ── 隐藏锁 ──────────────────────────────────────────────────────────
+   最小化点击后各模块会同步给窗口加 .bl-win-docked / .tb-hidden
+   （都是 display:none !important），或直接写 inline display:none。
+   动画期间必须让窗口继续可见，否则什么形变都看不到。
+   用 CSS 变量传 display 原值：inline 自定义属性不会被
+   `win.style.display='none'` 覆盖；高特异性 + !important 压过
+   作者样式表里的 !important 隐藏规则。 */
+html body .bl-genie-lock.bl-genie-lock {
+    display: var(--bl-genie-display, block) !important;
+    visibility: visible !important;
+}
+/* 窗口形变期间：关掉过渡与指针，避免和入场/尺寸过渡抢样式 */
+.bl-genie-running {
+    transition: none !important;
+    pointer-events: none !important;
+    will-change: transform, clip-path, opacity;
+    backface-visibility: hidden;
+}
+/* 神灯：收束入坞时 Dock 图标的高亮 + 弹动反馈 */
+.bl-genie-hit { animation: blGenieHit .42s cubic-bezier(.2,.9,.3,1.2) both; }
+@keyframes blGenieHit {
+    0%   { transform: scale(1);    filter: brightness(1); }
+    45%  { transform: scale(1.28); filter: brightness(1.55); }
+    100% { transform: scale(1);    filter: brightness(1); }
+}
+/* 缩放效果：只一次短促高亮，不弹动 —— 和神灯的手感明确区分 */
+.bl-genie-hit-quick { animation: blGenieHitQuick .2s ease-out both; }
+@keyframes blGenieHitQuick {
+    0%   { filter: brightness(1); }
+    40%  { filter: brightness(1.35); }
+    100% { filter: brightness(1); }
+}
+@media (prefers-reduced-motion: reduce) {
+    .bl-genie-hit, .bl-genie-hit-quick { animation: none !important; }
+}

@@ -1,0 +1,11 @@
+# Cloudflare Pages 项目配置
+# 手动部署：npx wrangler pages deploy dist --project-name=starteditor
+# CI 部署：.github/workflows/deploy-cloudflare-pages.yml 自动执行上面的命令
+
+name = "starteditor"
+compatibility_date = "2026-11-01"
+pages_build_output_dir = "dist"
+
+# 纯静态单文件站点，不使用 Functions。
+# 构建命令不在 wrangler.toml 里配，而由 CF Pages 控制台的
+# Build command = `npm run build` / Output directory = `dist` 决定。

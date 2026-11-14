@@ -1,0 +1,155 @@
+
+/* 窗口本体：position:fixed 由自己钉死，其余观感交给 .addon-window 的皮肤 */
+.bl-sp-win {
+    position: fixed !important;
+    display: flex !important;
+    flex-direction: column !important;
+    box-sizing: border-box !important;
+    min-width: 320px;
+    min-height: 240px;
+    max-width: calc(100vw - 12px);
+    max-height: calc(100vh - 12px);
+    overflow: hidden;
+    border-radius: 14px;
+    pointer-events: auto;
+    padding: 0 !important;
+}
+.bl-sp-win.bl-sp-off { display: none !important; }
+/* 最小化后由 DOCK 接管显隐 */
+.bl-sp-win.bl-win-docked { display: none !important; }
+/* 缩放期间关掉一切过渡，避免跟手延迟 */
+.bl-sp-win.bl-sp-resizing { transition: none !important; }
+
+.bl-sp-head {
+    flex: 0 0 40px;
+    display: flex !important;
+    align-items: center;
+    gap: 8px;
+    padding: 0 8px 0 13px !important;
+    cursor: move;
+    -webkit-user-select: none;
+    user-select: none;
+    box-sizing: border-box !important;
+}
+.bl-sp-ico { flex: 0 0 auto; font-size: 15px; opacity: .72; line-height: 1; }
+.bl-sp-title {
+    flex: 1 1 auto; min-width: 0;
+    font-weight: 600; font-size: 13px;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.bl-sp-scale {
+    flex: 0 0 auto;
+    font: 600 10px/1 ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+    padding: 4px 7px; border-radius: 999px;
+    background: rgba(127, 127, 127, .14);
+    opacity: .82;
+}
+.bl-sp-btns { flex: 0 0 auto; display: flex; align-items: center; gap: 4px; }
+/* 自带视觉兜底：MAC 皮肤会把 .addon-window-btn svg 隐藏，这里用文字，
+   并钉死可见性，避免红黄绿三色规则之外的按钮变成透明小圆点 */
+html .bl-sp-win .bl-sp-btn {
+    width: 26px; height: 24px;
+    display: inline-flex !important;
+    align-items: center; justify-content: center;
+    padding: 0 !important; margin: 0 !important;
+    border: 0 !important; border-radius: 7px;
+    background: rgba(127, 127, 127, .12) !important;
+    color: var(--text-primary, #33415c) !important;
+    font: 600 14px/1 -apple-system, BlinkMacSystemFont, "Segoe UI", "WenQuanYi Micro Hei", sans-serif;
+    opacity: .88 !important;
+    visibility: visible !important;
+    cursor: pointer;
+}
+html .bl-sp-win .bl-sp-btn:hover { background: rgba(127, 127, 127, .24) !important; opacity: 1 !important; }
+html .bl-sp-win .bl-sp-btn.bl-sp-close:hover { background: #ff5f57 !important; color: #fff !important; }
+[theme="dark"] html .bl-sp-win .bl-sp-btn,
+[data-theme="dark"] html .bl-sp-win .bl-sp-btn { color: #e2eaff !important; }
+
+.bl-sp-body {
+    flex: 1 1 auto;
+    min-height: 0;
+    position: relative;
+    overflow: hidden;
+    padding: 0 !important;
+    box-sizing: border-box !important;
+}
+
+/* ── 核心：整块舞台 + 角色栏按窗口大小等比放大 ─────────────────────────
+   B77(bl-paint-wide) / B83(bl-no-stage) 会 display:none 这块 wrapper，
+   用 (0,3,0) + !important 覆盖，弹窗化后它始终可见。
+   inline width/height 由 JS 写成 bodyW/z、bodyH/z，配合 zoom 后
+   实际占位正好等于弹窗 body 尺寸；角色栏 flex-grow 吃到剩余高度。 */
+html.bl-stage-pop .bl-sp-win [class*="gui_stage-and-target-wrapper_"] {
+    display: flex !important;
+    flex-direction: column !important;
+    flex: 1 1 auto !important;
+    flex-basis: auto !important;
+    min-width: 0 !important;
+    min-height: 0 !important;
+    margin: 0 !important;
+    padding: .5rem !important;
+    box-sizing: border-box !important;
+    overflow: hidden;
+    zoom: var(--bl-sp-z, 1);
+}
+html.bl-stage-pop .bl-sp-win [class*="gui_target-wrapper_"] {
+    flex: 1 1 auto !important;
+    flex-basis: auto !important;
+    min-height: 0 !important;
+    height: auto !important;
+    overflow: auto;
+}
+html.bl-stage-pop .bl-sp-win [class*="gui_target-wrapper_"] [class*="selector_wrapper_"] {
+    width: 100% !important;
+    min-width: 0 !important;
+}
+/* 宽度富余时让舞台居中，不要贴着左边留一大块空白 */
+html.bl-stage-pop .bl-sp-win [class*="stage-wrapper_stage-wrapper_"] {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center;
+    width: 100% !important;
+    flex: 0 0 auto !important;
+}
+
+/* 8 方向缩放手柄（自定义类名，避免和工具箱 .resize-handle 混在一起） */
+.bl-sp-rz { position: absolute; z-index: 12; touch-action: none; }
+.bl-sp-rz-n  { top: 0; left: 10px; right: 10px; height: 6px; cursor: n-resize; }
+.bl-sp-rz-s  { bottom: 0; left: 10px; right: 10px; height: 6px; cursor: s-resize; }
+.bl-sp-rz-e  { right: 0; top: 10px; bottom: 10px; width: 6px; cursor: e-resize; }
+.bl-sp-rz-w  { left: 0; top: 10px; bottom: 10px; width: 6px; cursor: w-resize; }
+.bl-sp-rz-ne { top: 0; right: 0; width: 12px; height: 12px; cursor: ne-resize; }
+.bl-sp-rz-nw { top: 0; left: 0; width: 12px; height: 12px; cursor: nw-resize; }
+.bl-sp-rz-se { bottom: 0; right: 0; width: 12px; height: 12px; cursor: se-resize; }
+.bl-sp-rz-sw { bottom: 0; left: 0; width: 12px; height: 12px; cursor: sw-resize; }
+.bl-sp-win.bl-sp-resizing .bl-sp-rz { z-index: 14; }
+@media (prefers-reduced-motion: reduce) {
+    .bl-sp-win, .bl-sp-head { transition: none !important; }
+}
+
+/* ── 设置 → 常规：开关卡片 ───────────────────────────────────────────── */
+.bl-sp-card { display: none !important; }
+[class*="settings-modal_body_"].bl-sp-general .bl-sp-card {
+    display: block !important;
+    grid-column: 1 / -1 !important;
+}
+.bl-sp-card h3 { margin: 0 0 6px; font-size: 14px; font-weight: 700; }
+.bl-sp-card p { margin: 0 0 12px; font-size: 11.5px; line-height: 1.65; opacity: .68; }
+.bl-sp-card .bl-sp-row {
+    display: flex; align-items: center; gap: 10px;
+    font-size: 13px; cursor: pointer;
+}
+.bl-sp-card .bl-sp-row input[type="checkbox"] {
+    width: 18px; height: 18px; accent-color: #2f7bff; cursor: pointer;
+}
+.bl-sp-card .bl-sp-hint {
+    margin-left: auto; font-size: 11px; opacity: .55;
+    font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+}
+.bl-sp-card .bl-sp-reset2 {
+    margin-left: 8px; padding: 4px 10px; border-radius: 8px;
+    border: 1px solid rgba(90, 130, 210, .28);
+    background: rgba(127, 127, 127, .08);
+    color: inherit; font-size: 11.5px; cursor: pointer;
+}
+.bl-sp-card .bl-sp-reset2:hover { background: rgba(127, 127, 127, .18); }

@@ -1,0 +1,38 @@
+
+/* ── [B114] 渐变 / 自定义主题下弹窗底色保持不透明 ──────────────────────
+   applyGradLayer 曾把 ui-modal-background 等浮层专用变量一起 alphaize，
+   渐变主题或自定义渐变预览期间，主题色面板、自定义主题色窗口、设置、
+   原生 modal、搜索框整块透出背后的舞台与积木；用玻璃变量的窗口不受
+   影响，于是表现成「有的弹窗会变成半透明」。
+   变量层已改为实色，这里再给少数直接用 ui-primary / ui-secondary 做底色的
+   浮层钉一层不透明兜底。全部不加 !important；[B115] 再限定仅在玻璃关闭时生效：毛玻璃 /
+   液态玻璃开启时 html 带 bl-dock-glass-on，整段兜底让位，玻璃完整接管。 */
+html.bl-grad-on:not(.bl-dock-glass-on) .tw-panel,
+html.bl-grad-on:not(.bl-dock-glass-on) .tw-panel-head,
+html.bl-grad-on:not(.bl-dock-glass-on) .tw-panel-foot,
+html.bl-grad-on:not(.bl-dock-glass-on) .grad-win,
+html.bl-grad-on:not(.bl-dock-glass-on) .grad-win .addon-window-content,
+html.bl-grad-on:not(.bl-dock-glass-on) .addon-window,
+html.bl-grad-on:not(.bl-dock-glass-on) .addon-window-content,
+html.bl-grad-on:not(.bl-dock-glass-on) [class*="modal_modal-content"],
+html.bl-grad-on:not(.bl-dock-glass-on) [class*="prompt_body"],
+html.bl-grad-on:not(.bl-dock-glass-on) [class*="custom-procedures_container"],
+html.bl-grad-on:not(.bl-dock-glass-on) .bl-search-box,
+html.bl-grad-on:not(.bl-dock-glass-on) .bl-search-results,
+html.bl-grad-on:not(.bl-dock-glass-on) .bl-snap,
+html.bl-grad-on:not(.bl-dock-glass-on) .bl-snap-zone,
+html.bl-grad-on:not(.bl-dock-glass-on) .blp-ask-card,
+html.bl-grad-on:not(.bl-dock-glass-on) .bl-proj-panel,
+html.bl-grad-on:not(.bl-dock-glass-on) .bl-proj-card,
+html.bl-grad-on:not(.bl-dock-glass-on) .bl-site-overlay,
+html.bl-grad-on:not(.bl-dock-glass-on) .bl-site-back {
+    background-color: var(--bl-panel-solid, var(--ui-modal-background, #fff));
+    background-image: none;
+}
+html.bl-grad-on:not(.bl-dock-glass-on) .grad-win input[type="text"],
+html.bl-grad-on:not(.bl-dock-glass-on) .grad-win input[type="color"],
+html.bl-grad-on:not(.bl-dock-glass-on) .grad-win select,
+html.bl-grad-on:not(.bl-dock-glass-on) .grad-preset,
+html.bl-grad-on:not(.bl-dock-glass-on) .tw-swatch-del {
+    background-color: var(--bl-panel-solid-alt, var(--ui-secondary, #f2f5f9));
+}

@@ -1,0 +1,137 @@
+
+/* ---------- 1. 两枚窗口：只管布局，外观全部继承原生 .addon-window / .bl-us-window ---------- */
+.bl-dw-win {
+    position: fixed !important;
+    display: flex !important;
+    flex-direction: column !important;
+    box-sizing: border-box !important;
+    overflow: hidden;
+    pointer-events: auto;
+    padding: 0 !important;
+    min-width: 280px;
+    min-height: 200px;
+    max-width: calc(100vw - 12px);
+    max-height: calc(100vh - 12px);
+}
+.bl-dw-win.bl-dw-off,
+.bl-dw-win.bl-win-docked { display: none !important; }
+.bl-dw-win.bl-dw-resizing { transition: none !important; }
+.bl-dw-head { cursor: move; -webkit-user-select: none; user-select: none; }
+.bl-dw-body {
+    flex: 1 1 auto;
+    min-height: 0;
+    position: relative;
+    overflow: hidden;
+    padding: 0 !important;
+    box-sizing: border-box !important;
+    display: flex !important;
+    flex-direction: column !important;
+}
+.bl-dw-scale {
+    flex: 0 0 auto;
+    margin-right: 6px;
+    font: 600 10px/1 ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+    padding: 4px 7px;
+    border-radius: 999px;
+    background: var(--ui-black-transparent, rgba(0, 0, 0, .08));
+    opacity: .78;
+}
+/* 8 方向缩放手柄 */
+.bl-dw-rz { position: absolute; z-index: 12; touch-action: none; }
+.bl-dw-rz-n  { top: 0; left: 10px; right: 10px; height: 6px; cursor: n-resize; }
+.bl-dw-rz-s  { bottom: 0; left: 10px; right: 10px; height: 6px; cursor: s-resize; }
+.bl-dw-rz-e  { right: 0; top: 10px; bottom: 10px; width: 6px; cursor: e-resize; }
+.bl-dw-rz-w  { left: 0; top: 10px; bottom: 10px; width: 6px; cursor: w-resize; }
+.bl-dw-rz-ne { top: 0; right: 0; width: 12px; height: 12px; cursor: ne-resize; }
+.bl-dw-rz-nw { top: 0; left: 0; width: 12px; height: 12px; cursor: nw-resize; }
+.bl-dw-rz-se { bottom: 0; right: 0; width: 12px; height: 12px; cursor: se-resize; }
+.bl-dw-rz-sw { bottom: 0; left: 0; width: 12px; height: 12px; cursor: sw-resize; }
+.bl-dw-win.bl-dw-resizing .bl-dw-rz { z-index: 14; }
+
+/* 舞台窗口：wrapper 铺满并按窗口大小等比放大。
+   !important 是为了压过 B77/B83「非代码工作区隐藏舞台」的 display:none；
+   弹窗已脱出布局，不再挤压画布，所以它一直浮着。 */
+html.bl-stage-pop .bl-dw-stage .bl-dw-body > * {
+    display: flex !important;
+    flex-direction: column !important;
+    flex: 1 1 auto !important;
+    flex-basis: auto !important;
+    min-width: 0 !important;
+    min-height: 0 !important;
+    margin: 0 !important;
+    padding: .5rem !important;
+    box-sizing: border-box !important;
+    overflow: hidden;
+    zoom: var(--bl-dw-z, 1);
+}
+html.bl-stage-pop .bl-dw-stage [class*="stage-wrapper_stage-wrapper_"] {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center;
+    width: 100% !important;
+    flex: 0 0 auto !important;
+}
+/* 角色栏窗口：pane 是 body 里唯一的子节点，flex 铺满、内部网格自适应重排 */
+html.bl-stage-pop .bl-dw-sprites .bl-dw-body > * {
+    display: flex !important;
+    flex-direction: column !important;
+    flex: 1 1 auto !important;
+    width: 100% !important;
+    height: 100% !important;
+    min-width: 0 !important;
+    min-height: 0 !important;
+    margin: 0 !important;
+    box-sizing: border-box !important;
+    overflow: auto;
+}
+html.bl-stage-pop .bl-dw-sprites [class*="selector_wrapper_"] {
+    width: 100% !important;
+    min-width: 0 !important;
+}
+@media (prefers-reduced-motion: reduce) {
+    .bl-dw-win, .bl-dw-head { transition: none !important; }
+}
+
+/* ---------- 2. 全部可拖动弹窗共用一套基准 ----------
+   只写几何与字体，不写背景/圆角/阴影/按钮颜色：这些仍由主题变量、
+   毛玻璃/液态玻璃表、MAC/WIN 按钮表与「弹窗外观」设置的 !important 规则接管，
+   不会重演「实色兜底压死玻璃」的问题。 */
+html .addon-window,
+html .tb-win,
+html .bl-us-window {
+    box-sizing: border-box;
+    color: var(--text-primary, #575e75);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "WenQuanYi Micro Hei",
+                 "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+html .addon-window .addon-window-header,
+html .tb-win .addon-window-header {
+    cursor: move;
+    user-select: none;
+    box-sizing: border-box;
+    min-height: 44px;
+    padding: 8px 16px;
+}
+html .addon-window .addon-window-title,
+html .tb-win .addon-window-title { font-weight: 600; }
+html .addon-window .addon-window-content,
+html .tb-win .addon-window-content { min-height: 0; }
+
+/* ---------- 3. 快速定位栏：常规界面里的最高层 ----------
+   面板若挂在 #bl-top-layer（宿主 z-index 999998 自成层叠上下文），
+   子元素写多高的 z-index 都出不去，所以宿主本身也要在打开时抬高。
+   2147483638/40 低于教程遮罩(2147483646)、加载界面与扩展权限询问
+   (2147483647/46)，不抢关键系统弹窗。 */
+html:root #bl-top-layer:has(.bl-snap.is-open),
+html.bl-snap-top #bl-top-layer { z-index: 2147483638 !important; }
+html:root .bl-snap.is-open {
+    position: fixed !important;
+    z-index: 2147483640 !important;
+}
+html:root .bl-snap-preview {
+    position: fixed !important;
+    z-index: 2147483639 !important;
+}
+
+/* ---------- 4. 评测残留（旧存档 / React 缓存 / iframe）---------- */
+html [data-bl-noeval="1"] { display: none !important; }

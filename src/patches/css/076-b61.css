@@ -1,0 +1,12 @@
+/* ── [B61] 三键快速反馈样式 ───────────────────────────────────────────────
+   依赖：B60
+   维护：点击时摘掉常驻过渡，避免 0.22s 拖住反馈
+   ───────────────────────────────────────────────────────────── */
+
+/* 三键点击后立刻解除常驻过渡，避免 left/top/width/height 的补间拖住反馈 */
+.addon-window.bl-fast-btn {
+    transition: opacity 0.08s ease-in, transform 0.08s ease-in !important;
+}
+@media (prefers-reduced-motion: reduce) {
+    .addon-window.bl-fast-btn { transition: none !important; }
+}

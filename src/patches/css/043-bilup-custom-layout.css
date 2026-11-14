@@ -1,0 +1,5270 @@
+/* ── [B29] 主样式表 · 第 1～33 轮累积 ───────────────────────────────────────────────
+   依赖：原生 CSS 变量
+   维护：按 0.x / 1.x 分节；新增样式优先接在对应分节末尾
+   ───────────────────────────────────────────────────────────── */
+
+/* ==========================================================================
+   0.2 角色栏：区分「选中」与「悬停」
+   毛玻璃主题插件注入了这样一条规则：
+       [class*="sprite-selector-item_is-selected"],
+       [class*="sprite-selector-item_sprite-selector-item"]:hover {
+           background-color: <同一颜色> !important;
+       }
+   选中态与悬停态被设成了完全相同的颜色，于是鼠标掠过哪个角色，
+   哪个看起来就像"当前选中的" —— 表现为切换角色后角色栏仍显示停在另一个上。
+   这里把两者拆开：选中态保留强调色并加描边，悬停态改成很淡的一层。
+   特异性均高于原规则（用了两个属性选择器 + :not），因此与注入顺序无关。
+   ========================================================================== */
+
+/* 悬停：排除真正选中的那一项，避免盖掉选中态 */
+[class*="sprite-selector-item_sprite-selector-item"]:hover:not([class*="sprite-selector-item_is-selected"]) {
+    background-color: var(--ui-black-transparent, rgba(0, 0, 0, 0.06)) !important;
+    background: var(--ui-black-transparent, rgba(0, 0, 0, 0.06)) !important;
+}
+
+/* 选中：强调色底 + 描边，与悬停明确区分 */
+[class*="sprite-selector-item_sprite-selector-item"][class*="sprite-selector-item_is-selected"],
+[class*="sprite-selector-item_is-selected"] {
+    background-color: var(--looks-transparent, rgba(76, 151, 255, 0.18)) !important;
+    background: var(--looks-transparent, rgba(76, 151, 255, 0.18)) !important;
+    border-color: var(--looks-secondary, #4c97ff) !important;
+    box-shadow: 0 0 0 3px var(--looks-secondary, #4c97ff) !important;
+}
+
+/* ==========================================================================
+   0. 顶层宿主
+   所有自绘浮层（主题轮盘 / 搜索框 / 贴靠面板 / 油猴窗口）统一挂载在这里。
+   宿主挂到 <html>，z-index 极高，且不带 transform / filter，
+   因此内部 fixed 元素仍相对视口定位、不会被任何编辑器面板压住。
+   pointer-events 会继承，需要交互的子元素各自声明 auto。
+   ========================================================================== */
+
+.bl-top-layer {
+    pointer-events: none;
+}
+
+/* 顶层宿主 pointer-events 会继承给子元素，需要交互的浮层各自声明 auto。
+   .tw-panel 与 .grad-win 自身已声明，关闭态用 none，打开态用 auto。 */
+.bl-top-layer > .bl-search-box,
+.bl-top-layer > .bl-snap {
+    pointer-events: auto;
+}
+
+/* ==========================================================================
+   1. 工作区导航栏（代码 / 背景 / 声音）移到积木区左侧，改为纵向排列
+   ========================================================================== */
+
+.gui_tabs_AgmuP {
+    flex-direction: row !important;
+}
+
+.gui_tab-list_87TYM {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    justify-content: flex-start !important;
+    height: 100% !important;
+    width: auto !important;
+    min-width: 0 !important;
+    flex-shrink: 0 !important;
+    padding: 0.3rem 0.25rem !important;
+    gap: 0.35rem !important;
+    border-bottom: 0 !important;
+}
+
+.gui_tab_27Unf {
+    flex-grow: 0 !important;
+    flex-shrink: 0 !important;
+    height: auto !important;
+    width: 3.6rem !important;
+    min-height: 2.9rem;
+    top: 0 !important;
+    margin: 0 !important;
+    padding: 0.4rem 0.2rem !important;
+    flex-direction: column !important;
+    gap: 0.15rem !important;
+    font-size: 0.7rem !important;
+    line-height: 1.15;
+}
+
+.gui_tab_27Unf.gui_is-selected_sHAiu {
+    height: auto !important;
+}
+
+.gui_tab_27Unf svg {
+    margin-right: 0 !important;
+    margin-bottom: 2px !important;
+}
+
+.gui_tab_27Unf:nth-of-type(1) img,
+.gui_tab_27Unf:nth-of-type(3) img {
+    transform: none !important;
+}
+
+/* ==========================================================================
+   2. 移除原生查找栏入口
+   ========================================================================== */
+
+.mw-native-find-bar-container,
+.sa-find-bar {
+    display: none !important;
+}
+
+/* ==========================================================================
+   3. 顶部导航栏「主题」按钮 + 主题轮盘
+   ========================================================================== */
+
+.tw-theme-root {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+.tw-theme-btn {
+    cursor: pointer;
+}
+
+.tw-theme-btn > svg {
+    margin-right: 0.35rem;
+    flex-shrink: 0;
+}
+
+.tw-theme-btn > span {
+    white-space: nowrap;
+}
+
+/* ==========================================================================
+   4. 右键「搜索」弹出的搜索框
+   ========================================================================== */
+
+/* ⚠ 必须挂在 body 直属，且 z-index 高于所有普通窗口。
+   之前挂在 #bl-top-layer 里（宿主 z-index 999998，position:fixed + z-index
+   自成层叠上下文）—— 子元素写多高的 z-index 都只作用在宿主内部，出不去。
+   于是只要有任何原版窗口被 unifyFront 抬到 OVER_HOST_Z(999999)，
+   搜索框就整块被压在下面：用户看到的就是"弹出来一下又没了"。
+   挂到 body、给 1000000：高于原版窗口(999999)与宿主(999998)，
+   又低于扩展权限询问这类关键弹窗(2147483646)与加载界面(2147483647)。 */
+.bl-search-box {
+    position: fixed;
+    z-index: 1000000;
+    pointer-events: auto;
+    width: 368px;
+    max-height: 68vh;
+    display: flex;
+    flex-direction: column;
+    border-radius: 10px;
+    background: var(--ui-primary, #ffffff);
+    border: 1px solid var(--ui-black-transparent, rgba(0, 0, 0, 0.15));
+    box-shadow: 0 14px 36px rgba(0, 0, 0, 0.28);
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    overflow: hidden;
+    opacity: 0;
+    transform: translateY(-6px) scale(0.985);
+    transform-origin: center;
+    transition: opacity 0.16s ease, transform 0.2s cubic-bezier(0.2, 0.9, 0.3, 1.1);
+}
+
+.bl-search-box.is-open {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+}
+
+.bl-search-head {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px;
+    border-bottom: 1px solid var(--ui-black-transparent, rgba(0, 0, 0, 0.12));
+    flex-shrink: 0;
+}
+
+.bl-search-head > svg {
+    flex-shrink: 0;
+    color: var(--text-primary-transparent, rgba(87, 94, 117, 0.7));
+}
+
+.bl-search-input {
+    flex: 1;
+    min-width: 0;
+    height: 26px;
+    box-sizing: border-box;
+    border-radius: 6px;
+    border: 1px solid var(--ui-black-transparent, rgba(0, 0, 0, 0.15));
+    background: var(--ui-secondary, #f8f9fa);
+    color: var(--text-primary, #575e75);
+    font-size: 12px;
+    padding: 0 8px;
+    outline: none;
+    font-family: inherit;
+    transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+
+.bl-search-input:focus {
+    border-color: var(--looks-secondary, #4c97ff);
+    background: var(--ui-primary, #ffffff);
+}
+
+.bl-search-close {
+    flex-shrink: 0;
+    width: 22px;
+    height: 22px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    background: transparent;
+    color: var(--text-primary-transparent, rgba(87, 94, 117, 0.7));
+    font-size: 15px;
+    line-height: 1;
+}
+
+.bl-search-close:hover {
+    background: var(--ui-tertiary, #dee2e6);
+}
+
+.bl-search-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 4px;
+}
+
+.bl-search-item {
+    cursor: pointer;
+    border-radius: 6px;
+    padding: 5px 8px;
+    font-size: 12px;
+    color: var(--text-primary, #575e75);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: background-color 0.12s ease;
+}
+
+.bl-search-item:hover {
+    background: var(--ui-tertiary, #dee2e6);
+}
+
+.bl-search-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    background: var(--looks-secondary, #4c97ff);
+}
+
+.bl-search-text {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.bl-search-empty {
+    padding: 14px 10px;
+    font-size: 12px;
+    color: var(--text-primary-transparent, rgba(87, 94, 117, 0.7));
+    text-align: center;
+}
+
+/* 分类页签：全部 / 积木 / 角色 / 素材 / 变量 / 注释 */
+.bl-search-tabs {
+    display: flex;
+    gap: 4px;
+    padding: 6px 8px;
+    flex-shrink: 0;
+    border-bottom: 1px solid var(--ui-black-transparent, rgba(0, 0, 0, 0.12));
+    overflow-x: auto;
+    scrollbar-width: none;
+}
+
+.bl-search-tabs::-webkit-scrollbar { display: none; }
+
+.bl-search-tab {
+    flex-shrink: 0;
+    border: 0;
+    cursor: pointer;
+    padding: 4px 10px;
+    border-radius: 999px;
+    font: inherit;
+    font-size: 11.5px;
+    background: transparent;
+    color: var(--text-primary-transparent, rgba(87, 94, 117, 0.85));
+    transition: background-color 0.14s ease, color 0.14s ease;
+    white-space: nowrap;
+}
+
+.bl-search-tab:hover {
+    background: var(--ui-tertiary, #dee2e6);
+}
+
+.bl-search-tab.is-on {
+    background: var(--looks-secondary, #4c97ff);
+    color: var(--bl-on-accent, #ffffff);
+}
+
+/* 分组标题：积木按所属角色分堆，一眼看出这条属于谁 */
+.bl-search-group {
+    padding: 6px 8px 3px;
+    font-size: 10.5px;
+    font-weight: 600;
+    letter-spacing: 0.4px;
+    color: var(--text-primary-transparent, rgba(87, 94, 117, 0.65));
+}
+
+.bl-search-meta {
+    flex-shrink: 0;
+    font-size: 10.5px;
+    padding: 1px 6px;
+    border-radius: 999px;
+    background: var(--ui-black-transparent, rgba(0, 0, 0, 0.08));
+    color: var(--text-primary-transparent, rgba(87, 94, 117, 0.85));
+    white-space: nowrap;
+}
+
+.bl-search-text mark {
+    background: var(--looks-secondary, #4c97ff);
+    color: var(--bl-on-accent, #ffffff);
+    border-radius: 2px;
+    padding: 0 1px;
+}
+
+/* 非积木类结果用不同形状的小圆点区分 */
+.bl-search-dot.is-sprite { background: #4c97ff; border-radius: 2px; }
+.bl-search-dot.is-asset { background: #ffab19; border-radius: 2px; }
+.bl-search-dot.is-var { background: #ff8c1a; }
+.bl-search-dot.is-comment { background: #0fbd8c; border-radius: 2px; }
+
+/* 底部操作栏：选择 / 展开 / 运行 / 跳过去 */
+.bl-search-foot {
+    display: flex;
+    gap: 4px;
+    padding: 6px 8px;
+    flex-shrink: 0;
+    border-top: 1px solid var(--ui-black-transparent, rgba(0, 0, 0, 0.12));
+    background: var(--ui-secondary, #f8f9fa);
+}
+
+.bl-search-act {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1px;
+    border: 0;
+    cursor: pointer;
+    padding: 4px 2px;
+    border-radius: 6px;
+    background: transparent;
+    color: var(--text-primary, #575e75);
+    font: inherit;
+    font-size: 11.5px;
+    transition: background-color 0.12s ease;
+}
+
+.bl-search-act:hover { background: var(--ui-tertiary, #dee2e6); }
+
+.bl-search-act kbd {
+    font: inherit;
+    font-size: 9.5px;
+    opacity: 0.6;
+    letter-spacing: 0.2px;
+    white-space: nowrap;
+}
+
+/* ==========================================================================
+   5. 窗口：拖到右上角唤出的「贴靠位置」选择面板
+   ========================================================================== */
+
+.bl-snap {
+    position: fixed;
+    z-index: 30;
+    display: none;
+    padding: 6px;
+    border-radius: 12px;
+    background: var(--ui-primary, #ffffff);
+    border: 1px solid var(--ui-black-transparent, rgba(0, 0, 0, 0.15));
+    box-shadow: 0 14px 34px rgba(0, 0, 0, 0.3);
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+.bl-snap.is-open {
+    display: block;
+}
+
+.bl-snap-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 56px);
+    grid-template-rows: repeat(2, 44px);
+    gap: 5px;
+}
+
+.bl-snap-zone {
+    box-sizing: border-box;
+    border-radius: 8px;
+    border: 2px solid var(--ui-black-transparent, rgba(0, 0, 0, 0.12));
+    background: var(--ui-secondary, #f2f5f9);
+    color: var(--text-primary-transparent, rgba(87, 94, 117, 0.8));
+    font-size: 11px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background-color 0.12s ease, border-color 0.12s ease, color 0.12s ease;
+}
+
+.bl-snap-zone.is-active {
+    background: var(--looks-secondary, #4c97ff);
+    border-color: var(--looks-secondary, #4c97ff);
+    color: var(--bl-on-accent, #ffffff);
+}
+
+.bl-snap-preview {
+    position: fixed;
+    z-index: 29;
+    display: none;
+    pointer-events: none;
+    border-radius: 10px;
+    border: 2px dashed var(--looks-secondary, #4c97ff);
+    background: var(--looks-transparent, rgba(76, 151, 255, 0.18));
+}
+
+.bl-snap-preview.is-open {
+    display: block;
+}
+
+/* 最大化后的窗口不允许拖动 */
+.addon-window.bl-window-maximized .addon-window-header {
+    cursor: default !important;
+}
+
+/* ==========================================================================
+   6. 主题切换过渡（只作用于布局容器，不使用 * 通配，避免全量样式重算）
+   ========================================================================== */
+
+/* ==========================================================================
+   iOS 风格开关 —— 纯 CSS 实现
+
+   之前是 JS 扫描到复选框后在它后面插一个 .bl-ios 元素来画开关，
+   这就有个无法回避的时序问题：设置页每个分类都是 React 按需渲染的，
+   新节点先以"原生方框"的样子出现，等 JS 扫描到（还有防抖）才变成 iOS 样式
+   —— 切分类时肉眼可见地闪一帧原版样子。
+
+   所以改成纯 CSS：直接改 input 自身，元素渲染出来的第一帧就是最终样子。
+   滑块用径向渐变画，靠 background-position 移动（input 是空元素，
+   画不了 ::after，所以只能用背景图层）。
+
+     未选中：圆心 (12,12) → 覆盖 x 2..22，左内距 2px
+     选中  ：圆心右移 18px → 覆盖 x 20..40，右内距 2px
+   ========================================================================== */
+
+input[type="checkbox"]:not(.bl-ios-skip) {
+    -webkit-appearance: none !important;
+    appearance: none !important;
+    position: relative;
+    box-sizing: border-box;
+    flex: 0 0 auto;
+    width: 42px !important;
+    min-width: 42px !important;
+    height: 24px !important;
+    min-height: 24px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+    border-radius: 999px !important;
+    outline: none;
+    cursor: pointer;
+    vertical-align: middle;
+    box-shadow: none !important;
+    background-color: rgba(120, 120, 128, 0.32);
+    background-repeat: no-repeat !important;
+    background-position: 0 0 !important;
+    background-size: 42px 24px !important;
+    /* 第一层：滑块下方的软阴影（略大、下移 1px）；第二层：白色滑块本体 */
+    background-image:
+        radial-gradient(circle at 12px 13px,
+            rgba(0, 0, 0, 0.22) 0 10.8px, rgba(0, 0, 0, 0) 11.4px),
+        radial-gradient(circle at 12px 12px,
+            #ffffff 0 9.6px, rgba(255, 255, 255, 0) 10.2px) !important;
+    transition: background-color 0.22s ease,
+                background-position 0.22s cubic-bezier(0.2, 0.9, 0.3, 1.1);
+}
+
+input[type="checkbox"]:not(.bl-ios-skip):checked {
+    background-color: #34c759;
+    background-position: 18px 0 !important;
+}
+
+/* 禁用态：置灰且不响应（毛玻璃关着时液态开关就是这种状态） */
+input[type="checkbox"]:not(.bl-ios-skip):disabled {
+    background-color: rgba(120, 120, 128, 0.18);
+    cursor: not-allowed;
+}
+
+input[type="checkbox"]:not(.bl-ios-skip):disabled:checked {
+    background-color: rgba(52, 199, 89, 0.45);
+}
+
+/* 液态玻璃段被锁定时整段压暗，开关再叠一层灰度以示不可操作 */
+[data-bl-locked="1"] {
+    opacity: 0.55;
+}
+
+[data-bl-locked="1"] input[type="checkbox"] {
+    filter: grayscale(1);
+    cursor: not-allowed;
+}
+
+/* Blockly 的复选框字段画在 SVG foreignObject 里，是积木的一部分，不能动 */
+svg input[type="checkbox"],
+input[type="checkbox"].bl-ios-skip {
+    -webkit-appearance: auto !important;
+    appearance: auto !important;
+    position: static !important;
+    width: auto !important;
+    min-width: 0 !important;
+    height: auto !important;
+    min-height: 0 !important;
+    margin: initial !important;
+    padding: initial !important;
+    border-radius: 0 !important;
+    background-image: none !important;
+    background-color: transparent !important;
+    background-position: initial !important;
+    box-shadow: none !important;
+    filter: none !important;
+    cursor: default !important;
+    flex: none !important;
+    transition: none !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    input[type="checkbox"]:not(.bl-ios-skip) { transition: none !important; }
+}
+
+/* ==========================================================================
+   统一弹窗动画
+
+   之前每类弹窗各写各的：主题面板 0.2s 回弹曲线、搜索框 0.16s 线性、
+   各类窗口干脆没有出现动画（只有最大化/最小化时的 left/top 过渡）。
+   观感上就是"同一套界面里好几种弹窗节奏"。
+
+   现在全部走同一组参数，由 .bl-pop 这一个"关闭态"类驱动：
+     无 .bl-pop  = 打开态（默认）
+     有 .bl-pop  = 关闭态（透明 + 上移 + 轻微缩小）
+   打开：先加类 → 强制重排 → 去掉类，浏览器自动补间到打开态。
+   关闭：加类 → 等过渡结束 → 真正移除节点。
+   ========================================================================== */
+
+.bl-pop-anim {
+    transition: opacity 0.16s ease,
+                transform 0.2s cubic-bezier(0.2, 0.9, 0.3, 1.1);
+}
+
+/* 窗口除了出现动画，还要保留最大化 / 最小化的尺寸位置过渡。
+   这条选择器的权重高于各窗口自己的类（如 .grad-win），
+   所以写一处即可，不必每个窗口重复声明。 */
+.addon-window.bl-pop-anim {
+    transition: opacity 0.16s ease,
+                transform 0.2s cubic-bezier(0.2, 0.9, 0.3, 1.1),
+                left 0.09s linear, top 0.09s linear,
+                width 0.09s linear, height 0.09s linear;
+}
+
+/* ⚠ 必须 !important：窗口皮肤、窗口主题插件等都会给 .addon-window
+   设 opacity / transform，权重各不相同，不用 important 会被盖掉 ——
+   表现为"加了类却读不到 0"，动画根本不启动。 */
+.bl-pop {
+    opacity: 0 !important;
+    transform: translateY(-6px) scale(0.985) !important;
+    transform-origin: center;
+    pointer-events: none !important;
+}
+
+/* 拖动 / 贴靠期间必须整体关掉过渡，否则每帧改 left/top 都变成一次补间，
+   窗口永远追着指针走（表现为拖不动或拖影）。
+   ⚠ 只清 inline style 不够 —— 窗口可能从 CSS 类继承 transition。 */
+.addon-window.bl-win-dragging {
+    transition: none !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .bl-pop-anim,
+    .addon-window.bl-pop-anim { transition: none !important; }
+    .bl-pop {
+        opacity: 1 !important;
+        transform: none !important;
+    }
+}
+
+html.bl-theme-transition > body,
+html.bl-theme-transition .gui,
+html.bl-theme-transition [class*="gui_"],
+html.bl-theme-transition [class*="menu-bar_"],
+html.bl-theme-transition [class*="stage_"],
+html.bl-theme-transition [class*="modal"],
+html.bl-theme-transition .addon-window,
+html.bl-theme-transition .addon-window-header,
+html.bl-theme-transition .addon-window-content,
+html.bl-theme-transition .blocklySvg,
+html.bl-theme-transition .blocklyToolboxDiv,
+html.bl-theme-transition .blocklyFlyout {
+    transition: background-color 0.22s ease, color 0.22s ease, border-color 0.22s ease,
+        fill 0.22s ease, stroke 0.22s ease;
+}
+
+
+/* ==========================================================================
+   7. 右键菜单弹出动画
+   ========================================================================== */
+
+.blocklyContextMenu {
+    animation: bl-ctx-in 0.18s cubic-bezier(0.2, 0.9, 0.3, 1.15) both;
+    transform-origin: top left;
+}
+
+@keyframes bl-ctx-in {
+    from { opacity: 0; transform: scale(0.88) translateY(-6px); }
+    to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.blocklyContextMenu .goog-menuitem {
+    animation: bl-ctx-item-in 0.16s ease both;
+}
+
+@keyframes bl-ctx-item-in {
+    from { opacity: 0; transform: translateX(-7px); }
+    to { opacity: 1; transform: translateX(0); }
+}
+
+.blocklyContextMenu .goog-menuitem-content {
+    transition: color 0.12s ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .blocklyContextMenu,
+    .blocklyContextMenu .goog-menuitem {
+        animation: none;
+    }
+}
+
+/* ==========================================================================
+   8. 搜索结果：键盘光标项
+   ========================================================================== */
+
+.bl-search-item.is-cursor {
+    background: var(--ui-tertiary, #dee2e6);
+    box-shadow: inset 0 0 0 1px var(--looks-secondary, #4c97ff);
+}
+
+
+/* ==========================================================================
+   9. 播放器模式：「返回编辑界面」按钮
+   ========================================================================== */
+
+.bl-back-editor-wrap {
+    display: flex;
+    justify-content: center;
+    margin: 4px 0 10px;
+}
+
+.bl-back-editor {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 9px 18px;
+    border-radius: 10px;
+    border: 1px solid var(--ui-black-transparent, rgba(0, 0, 0, 0.15));
+    background: var(--looks-secondary, #4c97ff);
+    color: var(--bl-on-accent, #ffffff);
+    font: 600 14px/1 "Helvetica Neue", Helvetica, Arial, sans-serif;
+    cursor: pointer;
+    transition: filter 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.18);
+}
+
+.bl-back-editor > svg {
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+}
+
+.bl-back-editor:hover {
+    filter: brightness(1.08);
+    transform: translateY(-1px);
+}
+
+.bl-back-editor:active {
+    transform: translateY(0);
+    filter: brightness(0.96);
+}
+
+/* 抽屉里被搜索命中的积木：闪烁高亮（抽屉没有 centerOnBlock，用它代替定位） */
+.bl-search-flash {
+    animation: bl-search-flash 0.45s ease-in-out 3;
+}
+
+@keyframes bl-search-flash {
+    0%, 100% { filter: none; }
+    50% { filter: drop-shadow(0 0 6px #ffd600) brightness(1.25); }
+}
+
+/* ==========================================================================
+   10. 设置面板
+   这里曾经写过一条把 [class*="settings-modal_style-picker"] 隐藏的规则，
+   本意是藏掉主题 / 积木颜色卡片，结果把「标签样式 / 标签外观 / 窗口样式」
+   这些真正的样式选择器一起隐藏了 —— 设置里那一整排样式都消失了。
+   主题区块已经在 JSX 里删除，这条规则既多余又有害，已去掉。
+   ========================================================================== */
+
+/* 积木输入槽（数字框、下拉菜单）跟随主题：底色与文字用变量驱动，
+   取值由脚本在切换主题时写到 :root 上。
+   只覆盖"可编辑文本"；下拉菜单的文字由脚本按积木逐个处理 ——
+   因为下拉菜单也可能挂在普通积木上（例如"当空格键被按下"），
+   那种情况的颜色必须跟着积木本身走，不能统一改。 */
+.blocklyEditableText > text,
+.blocklyNonEditableText > text {
+    fill: var(--bl-field-text, #575e75) !important;
+}
+
+.blocklyHtmlInput {
+    background-color: var(--bl-field-bg, #ffffff) !important;
+    color: var(--bl-field-text, #575e75) !important;
+}
+
+/* ==========================================================================
+   11. 拖动积木时抽屉（flyout）保持可见
+   早期版本会在拖动期间把抽屉 display:none 掉，理由是它会盖住工作区右侧。
+   副作用很明显：一拖动积木，左侧积木栏就整块消失，看着像界面出错了；
+   而且"拖着积木去抽屉里找下一个"也没法做。
+   现在完全还原原生行为：拖动期间抽屉照常显示，不再做任何隐藏。
+   （不再写任何 .bl-dragging 规则 —— 规则留在文件里就有再次误伤的可能）
+   ========================================================================== */
+
+
+/* ==========================================================================
+   底部"书包"面板：保持原样
+
+   书包曾一度改成 DOCK 按钮开关的弹窗，现已改回编辑器原生行为 ——
+   常驻积木栏底部、由 scratch-gui 自己控制显隐。这里不再做任何隐藏 / 覆盖。
+   ========================================================================== */
+
+/* ==========================================================================
+   原生弹窗（设置 / 提示 / 确认）必须压过我们新增的弹窗
+
+   我们的浮层统一挂在顶层宿主（z-index 999998）里，
+   而原生弹窗的遮罩层是 z-index 8000 —— 于是只要我们的窗口开着，
+   原生弹窗就会被压在下面，表现为"原版弹窗显示不出来"。
+   这里把原生遮罩抬到极高（仅低于加载界面 2147483647），
+   保证任何时候原生弹窗都在最上层。
+   ========================================================================== */
+
+[class*="modal-overlay"],
+[class*="ReactModal__Overlay"],
+[class*="ReactModalPortal"] {
+    /* ⚠ 不要再写死 2147483000 这类极高值。
+       之前这么写是为了"原生弹窗压过新增弹窗"，但副作用是
+       原生弹窗永远在最上层 —— 点哪个都没法把新增窗口调到前面。
+       现在由 inject.js 的 unifyFront() 动态决定：点谁谁在最前。
+       这里只给个初始值（高于顶层宿主 999998），保证新开的原版弹窗
+       一开始就在最上面。 */
+    z-index: 999999;
+}
+
+/* ==========================================================================
+   外观类设置（方角舞台 / 隐藏删除按钮 / 隐藏扩展按钮 / 不裁剪积木面板）
+   启动时补一遍
+
+   原生实现是"写 localStorage + 注入一条 <style id="mw-appearance-xxx">"，
+   但那个"启动时把全部设置应用一遍"的导出函数从未被调用过，
+   于是只有手动拨开关的一瞬间生效，刷新之后全部丢失。
+   inject.js 里的 applyAppearance() 会按同一套规则在启动时跑一遍。
+   ========================================================================== */
+
+/* ==========================================================================
+   渐变主题背景层
+   --bl-grad-page 是真正的 CSS 渐变，铺在 <html> 上做整页背景。
+   为什么不能直接塞进 --ui-*：编辑器里 page-background / fullscreen-background
+   / menu-bar-background 用的是 background-color，渐变值会让整条声明失效。
+   所以改成两层：这里铺渐变，--ui-* 的大面积背景由 JS 调成半透明透出来。
+   ========================================================================== */
+
+html {
+    background-image: var(--bl-grad-page, none);
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    background-size: 100% 100%;
+    background-color: var(--bl-grad-base, transparent);
+}
+
+/* 关键：渐变必须画在【真正盖住视口】的那几层上。
+   编辑器自带两条规则：
+     body { background-color: var(--page-background); }
+     .interface_container_2nBns { position:absolute; top:0; left:0; width:100%;
+                                  background-color: var(--page-background); }
+   之前只给 html 铺渐变，上面两层各自再铺一层半透明 page-background，
+   三层叠乘后渐变只剩约 8% —— 肉眼就是纯色。
+   现在把这两层的背景色清空、并让它们也画同一张渐变图（fixed 对齐，
+   跨元素不会错位），渐变就成了真正的页面底色。 */
+html.bl-grad-on body,
+html.bl-grad-on [class*="interface_container"] {
+    background-image: var(--bl-grad-page, none);
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    background-size: 100% 100%;
+    background-color: transparent;
+}
+
+/* 渐变主题下：菜单条与大面积面板留一点通透，让底色渐变透出来。
+   文字色 / 边框色 / 强调色保持纯色不动，保证可读性。 */
+html.bl-grad-on [class*="menu-bar_menu-bar_"] {
+    background-image: var(--bl-grad-page, none);
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    background-size: 100% 100%;
+}
+
+/* 主题面板：删除按钮 */
+.tw-slot {
+    position: relative;
+    display: inline-block;
+}
+
+.tw-swatch-del {
+    position: absolute;
+    top: -4px;
+    right: -4px;
+    width: 20px;
+    height: 20px;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    border-radius: 50%;
+    border: 1px solid var(--ui-black-transparent, rgba(0, 0, 0, 0.16));
+    background: var(--ui-modal-background, #ffffff);
+    color: var(--text-primary, #575e75);
+    cursor: pointer;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.18);
+    transition: background-color 0.15s ease, color 0.15s ease, transform 0.15s ease;
+    z-index: 2;
+}
+
+.tw-slot:hover .tw-swatch-del,
+.tw-swatch-del:focus-visible {
+    display: inline-flex;
+}
+
+.tw-swatch-del:hover {
+    background: var(--red-primary, #ff6b6b);
+    color: var(--bl-on-accent, #ffffff);
+    border-color: transparent;
+    transform: scale(1.12);
+}
+
+/* ==========================================================================
+   宣传页覆盖层：点击顶部 LOGO 全屏打开，右上角「返回编辑器」
+   挂在顶层宿主里（宿主位于 <html> 下且层级极高），所以不会被积木栏、
+   舞台或其它弹窗压住。宿主 pointer-events 为 none，这里必须声明 auto。
+   ========================================================================== */
+
+.bl-site-overlay {
+    position: fixed;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 999997;
+    background: var(--ui-modal-background, #ffffff);
+    pointer-events: auto;
+    display: flex;
+    flex-direction: column;
+    animation: bl-site-in 0.22s ease both;
+}
+
+.bl-site-frame {
+    flex: 1;
+    display: block;
+    width: 100%;
+    border: 0;
+    background: #ffffff;
+}
+
+.bl-site-back {
+    position: absolute;
+    right: 18px;
+    top: 18px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 14px;
+    border-radius: 10px;
+    border: 1px solid var(--ui-black-transparent, rgba(0, 0, 0, 0.14));
+    background: var(--ui-modal-background, #ffffff);
+    color: var(--text-primary, #575e75);
+    font-family: inherit;
+    font-size: 13px;
+    line-height: 1;
+    cursor: pointer;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.16);
+    transition: background-color 0.15s ease, transform 0.15s ease;
+}
+
+.bl-site-back:hover {
+    transform: translateY(-1px);
+    border-color: var(--looks-secondary, #4c97ff);
+}
+
+.bl-site-back:active {
+    transform: translateY(0);
+}
+
+@keyframes bl-site-in {
+    from { opacity: 0; transform: scale(0.995); }
+    to   { opacity: 1; transform: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .bl-site-overlay { animation: none; }
+}
+
+/* 拖动中的窗口必须完全关掉位置过渡。
+   只清 inline style 不够：窗口可能从 CSS 类继承 transition
+   （例如渐变编辑器 .grad-win 的 0.22s），拖动会变成"带过渡跟随"，
+   手感滞后、松手位置与指针对不上。用 !important 压过类规则。 */
+.addon-window.bl-win-dragging {
+    transition: none !important;
+}
+
+/* ================================================================== *
+ * 油猴插件窗口/* ================================================================== *
+ * 油猴插件窗口
+ * 外壳结构与尺寸全部对齐编辑器原生窗口（.addon-window 系列），
+ * 数值取自窗口系统自身的样式定义，因此外观与其它弹窗一致，
+ * 拖动 / 贴靠 / 主题过渡也直接复用已有逻辑。
+ * ================================================================== */
+
+/* 外壳：位置尺寸写在元素的 style 上（与原生一致），这里只管视觉 */
+.bl-us-window {
+    pointer-events: auto;
+    background: var(--ui-modal-background, #ffffff);
+    border: 1px solid var(--ui-black-transparent, rgba(0, 0, 0, 0.08));
+    border-radius: 12px;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
+    color: var(--text-primary, #575e75);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei",
+                 "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+
+.bl-us-window .addon-window-header {
+    flex: 0 0 auto;
+    background: var(--ui-primary, #f8f9fa);
+    border-bottom: 1px solid var(--ui-black-transparent, rgba(0, 0, 0, 0.08));
+    padding: 8px 16px;
+    min-height: 44px;
+    max-height: 44px;
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: move;
+    user-select: none;
+}
+
+.bl-us-window .addon-window-title {
+    flex: 1;
+    text-align: left;
+    font-weight: 600;
+    font-size: 14px;
+    color: var(--text-primary, #2d3748);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.bl-us-window .addon-window-controls {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex: 0 0 auto;
+}
+
+/* 控制按钮：尺寸、圆角、hover 全部照抄原生 */
+.bl-us-window .addon-window-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    padding: 0;
+    background: transparent;
+    border: none;
+    color: var(--text-primary, #666);
+    cursor: pointer;
+    transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.bl-us-window .addon-window-btn svg {
+    width: 12px;
+    height: 12px;
+    stroke: currentColor;
+    fill: none;
+}
+
+.bl-us-window .addon-window-btn:hover {
+    background: var(--ui-black-transparent, rgba(0, 0, 0, 0.08));
+}
+
+.bl-us-window .addon-window-btn-close:hover {
+    background: var(--red-primary, #e64a4a);
+    color: #fff;
+}
+
+/* 最小化：只留标题栏，内容区收起 */
+.bl-us-window.bl-us-minimized .addon-window-content {
+    display: none;
+}
+
+.bl-us-window.bl-us-minimized {
+    height: auto !important;
+    overflow: hidden;
+}
+
+/* 内容区 */
+.bl-us-window .addon-window-content {
+    flex: 1 1 auto;
+    min-height: 0;
+    padding: 10px 16px;
+    color: var(--text-primary, #575e75);
+    font-size: 13px;
+    background: transparent;
+    overflow: hidden;
+}
+
+.bl-us-body {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.bl-us-toolbar {
+    display: flex;
+    gap: 6px;
+    flex: 0 0 auto;
+    flex-wrap: wrap;
+}
+
+/* 工具按钮：跟随主题的中性按钮 */
+.bl-us-btn {
+    border: 1px solid var(--ui-black-transparent, rgba(0, 0, 0, 0.15));
+    background: var(--ui-tertiary, #e6e9f0);
+    color: var(--text-primary, #575e75);
+    border-radius: 6px;
+    padding: 4px 12px;
+    cursor: pointer;
+    font-size: 12px;
+    font-family: inherit;
+    transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.bl-us-btn:hover {
+    background: var(--ui-secondary, #dfe3ec);
+}
+
+.bl-us-main {
+    flex: 1 1 auto;
+    display: flex;
+    gap: 10px;
+    min-height: 0;
+}
+
+.bl-us-side {
+    width: 210px;
+    flex: 0 0 auto;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    border: 1px solid var(--ui-black-transparent, rgba(0, 0, 0, 0.08));
+    border-radius: 8px;
+    background: var(--ui-primary, #f8f9fa);
+}
+
+.bl-us-side-title,
+.bl-us-log-title {
+    padding: 5px 8px;
+    font-weight: 600;
+    opacity: .75;
+    font-size: 12px;
+}
+
+.bl-us-list {
+    flex: 1 1 auto;
+    overflow: auto;
+    padding: 0 4px 4px;
+}
+
+.bl-us-empty {
+    padding: 10px;
+    opacity: .55;
+    font-size: 12px;
+}
+
+.bl-us-item {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    padding: 3px 2px;
+    border-radius: 6px;
+}
+
+.bl-us-item:hover {
+    background: var(--ui-black-transparent, rgba(0, 0, 0, 0.05));
+}
+
+.bl-us-item.is-off {
+    opacity: .45;
+}
+
+.bl-us-name {
+    flex: 1 1 auto;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 12px;
+}
+
+.bl-us-item button {
+    border: none;
+    background: transparent;
+    color: inherit;
+    cursor: pointer;
+    padding: 2px 4px;
+    font-size: 12px;
+    line-height: 1;
+    border-radius: 4px;
+}
+
+.bl-us-item button:hover {
+    background: var(--ui-black-transparent, rgba(0, 0, 0, 0.1));
+}
+
+.bl-us-right {
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    gap: 6px;
+}
+
+.bl-us-code {
+    flex: 1 1 auto;
+    min-height: 120px;
+    resize: none;
+    border: 1px solid var(--ui-black-transparent, rgba(0, 0, 0, 0.15));
+    border-radius: 8px;
+    padding: 8px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 12px;
+    line-height: 1.5;
+    background: var(--ui-white, #ffffff);
+    color: var(--text-primary, #575e75);
+}
+
+.bl-us-log {
+    flex: 0 0 130px;
+    overflow: auto;
+    border: 1px solid var(--ui-black-transparent, rgba(0, 0, 0, 0.08));
+    border-radius: 8px;
+    background: var(--ui-primary, #f8f9fa);
+    padding: 4px 6px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 11px;
+    line-height: 1.5;
+}
+
+.bl-us-log-line {
+    display: flex;
+    gap: 6px;
+    padding: 1px 0;
+}
+
+.bl-us-log-time {
+    opacity: .45;
+    flex: 0 0 auto;
+}
+
+.bl-us-log-text {
+    word-break: break-all;
+    white-space: pre-wrap;
+}
+
+.bl-us-log-error .bl-us-log-text {
+    color: var(--red-primary, #d32f2f);
+}
+
+.bl-us-log-warn .bl-us-log-text {
+    color: #e08b00;
+}
+
+/* ================================================================== *
+ * 舞台大小切换的过渡动画
+ *
+ * 编辑器在 .stage_stage_* 上刻意不写 width/height 过渡，源码注释写明原因：
+ *   拖拽调尺寸时会多出 0.3s 延迟，手感发黏。
+ * 所以不能全局加过渡，否则拖动调尺寸会变卡。
+ * 做法：只在「点大小切换按钮」时临时挂 bl-stage-anim，动画结束就摘掉，
+ * 拖动调尺寸的通路完全不受影响。
+ * ================================================================== */
+
+html.bl-stage-anim [class*="stage_stage_"],
+html.bl-stage-anim [class*="stage-wrapper_stage-canvas-wrapper_"],
+html.bl-stage-anim [class*="stage-wrapper_stage-wrapper_"] canvas,
+html.bl-stage-anim [class*="stage_stage-overlays_"],
+html.bl-stage-anim [class*="stage-header_stage-menu-wrapper_"],
+html.bl-stage-anim [class*="stage-header_stage-header-wrapper_"],
+html.bl-stage-anim [class*="stage_green-flag-overlay-wrapper_"] {
+    transition: width .28s cubic-bezier(.4, 0, .2, 1),
+                height .28s cubic-bezier(.4, 0, .2, 1),
+                min-width .28s cubic-bezier(.4, 0, .2, 1) !important;
+}
+
+/* 舞台容器的背景色过渡是编辑器自带的，这里补回来避免被上面覆盖 */
+html.bl-stage-anim [class*="stage-wrapper_stage-wrapper_"] {
+    transition: background-color .3s ease,
+                width .28s cubic-bezier(.4, 0, .2, 1),
+                height .28s cubic-bezier(.4, 0, .2, 1) !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    html.bl-stage-anim [class*="stage_stage_"],
+    html.bl-stage-anim [class*="stage-wrapper_stage-canvas-wrapper_"],
+    html.bl-stage-anim [class*="stage-wrapper_stage-wrapper_"] canvas,
+    html.bl-stage-anim [class*="stage-header_stage-header-wrapper_"] {
+        transition: none !important;
+    }
+}
+
+/* ================================================================== *
+ * 打包器窗口的加载遮罩：避免打开后先白屏一大段
+ * ================================================================== */
+
+.bl-pkg-loading {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    z-index: 5;
+    background: var(--ui-primary, #e5f0ff);
+    color: var(--text-primary, #575e75);
+    font-size: 13px;
+}
+
+.bl-pkg-spinner {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: 3px solid rgba(0, 0, 0, .12);
+    border-top-color: var(--looks-secondary, #4c97ff);
+    animation: bl-pkg-spin .8s linear infinite;
+}
+
+@keyframes bl-pkg-spin {
+    to { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .bl-pkg-spinner { animation: none; }
+}
+/* ==========================================================================
+   1.5 主题面板（固定在「主题」按钮下方的下拉弹窗）
+   取代原来的圆形转盘：转盘只有 4 格，放不下分类预设。
+   ========================================================================== */
+
+.tw-panel {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 10;
+    width: 360px;
+    /* 兜底阈值；JS 的 sizePanel() 会按内容自然高度再夹一次并写入内联值，
+       色球少时面板跟着变矮，色球多时固定为阈值、由 body 内部滚动 */
+    max-height: min(72vh, 620px);
+    display: flex;
+    flex-direction: column;
+    border-radius: 12px;
+    background: var(--ui-modal-background, #ffffff);
+    color: var(--text-primary, #575e75);
+    border: 1px solid var(--ui-black-transparent, rgba(0, 0, 0, 0.15));
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12), 0 2px 6px rgba(0, 0, 0, 0.08);
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: 12px;
+    opacity: 0;
+    transform: translateY(-6px) scale(0.985);
+    transform-origin: center;
+    transition: opacity 0.16s ease, transform 0.2s cubic-bezier(0.2, 0.9, 0.3, 1.1);
+    visibility: hidden;
+    pointer-events: none;
+}
+
+.tw-panel.is-open {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    pointer-events: auto;
+    visibility: visible;
+}
+
+.tw-panel-head {
+    padding: 10px 12px 8px;
+    font-size: 12px;
+    font-weight: 600;
+    border-bottom: 1px solid var(--ui-black-transparent, rgba(0, 0, 0, 0.1));
+    flex-shrink: 0;
+}
+
+.tw-panel-body {
+    overflow-y: auto;
+    padding: 6px 8px;
+    flex: 1;
+    min-height: 0;
+}
+
+.tw-group {
+    margin-bottom: 8px;
+}
+
+.tw-group-title {
+    font-size: 11px;
+    font-weight: 600;
+    opacity: 0.65;
+    padding: 4px 4px 6px;
+}
+
+/* 色球变小后一行能放更多。实测（视口 812px 高、阈值 585px）：
+     4 列 → 17 个色球自然高 631px，超出阈值被迫滚动；
+     5 列 → 452px，默认主题全部一眼看到，不用滚。
+   所以取 5 列：常规数量下"一次性全部显示"，自定义主题多了才转为内部滚动。 */
+.tw-swatches {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 4px;
+}
+
+.tw-swatch {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 6px 2px 5px;
+    border-radius: 10px;
+    border: 1.5px solid transparent;
+    background: transparent;
+    color: var(--text-primary, #575e75);
+    cursor: pointer;
+    font: inherit;
+    transition: border-color 0.14s ease, background-color 0.14s ease, transform 0.14s ease;
+}
+
+.tw-swatch:hover {
+    transform: translateY(-2px);
+    border-color: var(--ui-black-transparent, rgba(0, 0, 0, 0.16));
+    background: var(--ui-secondary, #f2f5f9);
+}
+
+/* 颜色球：圆形，选中时右上角显示对勾 */
+.tw-swatch-ball {
+    position: relative;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    border: 2px solid var(--ui-black-transparent, rgba(0, 0, 0, 0.14));
+    display: block;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+    flex-shrink: 0;
+}
+
+.tw-swatch-name {
+    font-size: 10.5px;
+    line-height: 1.2;
+    text-align: center;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.tw-swatch-check {
+    position: absolute;
+    top: -3px;
+    right: -3px;
+    width: 17px;
+    height: 17px;
+    border-radius: 50%;
+    background: var(--looks-secondary, #4c97ff);
+    color: #fff;
+    border: 2px solid var(--ui-modal-background, #ffffff);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    box-sizing: content-box;
+}
+
+.tw-swatch.is-active {
+    border-color: var(--looks-secondary, #4c97ff);
+    background: var(--ui-tertiary, #dee2e6);
+}
+
+.tw-swatch.is-active .tw-swatch-ball {
+    border-color: var(--looks-secondary, #4c97ff);
+}
+
+.tw-swatch.is-active .tw-swatch-name {
+    font-weight: 600;
+}
+
+.tw-swatch.is-active .tw-swatch-check {
+    display: flex;
+}
+
+.tw-panel-foot {
+    padding: 8px;
+    border-top: 1px solid var(--ui-black-transparent, rgba(0, 0, 0, 0.1));
+    flex-shrink: 0;
+}
+
+.tw-custom-btn {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 7px 10px;
+    border-radius: 8px;
+    border: 1px solid var(--looks-secondary, #4c97ff);
+    background: var(--looks-transparent, rgba(76, 151, 255, 0.14));
+    color: var(--text-primary, #575e75);
+    font: inherit;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.14s ease, transform 0.14s ease;
+}
+
+.tw-custom-btn:hover {
+    background: var(--looks-secondary, #4c97ff);
+    color: #fff;
+    transform: translateY(-1px);
+}
+
+/* ==========================================================================
+   1.6 渐变主题编辑器
+   ========================================================================== */
+
+/* 渐变主题编辑器：复用原生窗口外观（title 44px、圆角 12、阴影 0 6px 18px）。
+   位置尺寸由 JS 写在 style 上，与原生一致，这样拖动 / 贴靠 / 置顶都能正常工作。 */
+.grad-win {
+    /* 兜底：原生 .addon-window 不含 position，若 JS 未设则 left/top 全部失效 */
+    position: fixed;
+    pointer-events: auto;
+    max-width: 94vw;
+    max-height: 92vh;
+    /* 出现动画与尺寸过渡由统一的 .addon-window.bl-pop-anim 提供 */
+}
+
+/* 字号只作用在内容区，不要写在窗口根上 ——
+   那样会盖掉 window-theme 皮肤给 .addon-window 设的 font-family，
+   切到 macOS / Windows 10 皮肤后字体和原版窗口就不一样了。 */
+.grad-win .addon-window-content {
+    font-size: 12px;
+}
+
+.grad-win.grad-window-maximized {
+    border-radius: 0;
+}
+
+/* 最小化：只剩标题栏 */
+.grad-win.grad-window-minimized .grad-body,
+.grad-win.grad-window-minimized .grad-foot {
+    display: none;
+}
+
+.grad-body {
+    display: flex;
+    gap: 14px;
+    padding: 12px;
+    overflow-y: auto;
+    min-height: 0;
+    flex: 1;
+}
+
+.grad-col {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-width: 0;
+}
+
+.grad-col-left {
+    width: 200px;
+    flex-shrink: 0;
+}
+
+.grad-col-right {
+    flex: 1;
+}
+
+.grad-sec-title {
+    font-size: 11px;
+    font-weight: 600;
+    opacity: 0.65;
+}
+
+.grad-field {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.grad-field > span {
+    font-size: 11px;
+    opacity: 0.75;
+}
+
+.grad-input {
+    padding: 6px 8px;
+    border-radius: 7px;
+    border: 1px solid var(--ui-black-transparent, rgba(0, 0, 0, 0.18));
+    background: var(--input-background, #fff);
+    color: var(--text-primary, #575e75);
+    font: inherit;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.grad-presets {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.grad-preset {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 5px 7px;
+    border-radius: 7px;
+    border: 1px solid var(--ui-black-transparent, rgba(0, 0, 0, 0.14));
+    background: var(--ui-secondary, #f2f5f9);
+    color: inherit;
+    font: inherit;
+    cursor: pointer;
+    text-align: left;
+}
+
+.grad-preset:hover {
+    border-color: var(--looks-secondary, #4c97ff);
+}
+
+.grad-preset-chip {
+    width: 40px;
+    height: 16px;
+    border-radius: 4px;
+    flex-shrink: 0;
+    border: 1px solid var(--ui-black-transparent, rgba(0, 0, 0, 0.12));
+}
+
+.grad-bar {
+    position: relative;
+    height: 40px;
+    border-radius: 8px;
+    border: 1px solid var(--ui-black-transparent, rgba(0, 0, 0, 0.18));
+    overflow: visible;
+    cursor: copy;
+    touch-action: none;
+}
+
+.grad-bar-fill {
+    position: absolute;
+    inset: 0;
+    border-radius: 7px;
+}
+
+.grad-handles {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -7px;
+    height: 0;
+}
+
+.grad-handle {
+    position: absolute;
+    width: 14px;
+    height: 14px;
+    margin-left: -7px;
+    border-radius: 50%;
+    border: 2px solid #fff;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+    cursor: grab;
+    transform: translateY(-21px);
+}
+
+.grad-handle.is-sel {
+    outline: 2px solid var(--looks-secondary, #4c97ff);
+    outline-offset: 1px;
+}
+
+.grad-tools {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-top: 12px;
+}
+
+.grad-btn {
+    padding: 5px 10px;
+    border-radius: 7px;
+    border: 1px solid var(--ui-black-transparent, rgba(0, 0, 0, 0.18));
+    background: var(--ui-secondary, #f2f5f9);
+    color: inherit;
+    font: inherit;
+    cursor: pointer;
+}
+
+.grad-btn:hover {
+    border-color: var(--looks-secondary, #4c97ff);
+}
+
+.grad-btn-primary {
+    background: var(--looks-secondary, #4c97ff);
+    border-color: var(--looks-secondary, #4c97ff);
+    color: #fff;
+    font-weight: 600;
+}
+
+.grad-btn-main {
+    font-weight: 600;
+}
+
+.grad-picker {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 11px;
+    opacity: 0.85;
+}
+
+.grad-color {
+    width: 32px;
+    height: 24px;
+    padding: 0;
+    border: 1px solid var(--ui-black-transparent, rgba(0, 0, 0, 0.2));
+    border-radius: 5px;
+    background: none;
+    cursor: pointer;
+}
+
+.grad-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.grad-label {
+    font-size: 11px;
+    opacity: 0.75;
+    width: 40px;
+    flex-shrink: 0;
+}
+
+.grad-range {
+    flex: 1;
+    min-width: 0;
+}
+
+.grad-value {
+    font-size: 11px;
+    font-variant-numeric: tabular-nums;
+    min-width: 42px;
+    text-align: right;
+}
+
+.grad-accent {
+    font-weight: 600;
+}
+
+.grad-seg {
+    display: flex;
+    gap: 4px;
+}
+
+.grad-seg-btn {
+    padding: 4px 10px;
+    border-radius: 6px;
+    border: 1px solid var(--ui-black-transparent, rgba(0, 0, 0, 0.18));
+    background: var(--ui-secondary, #f2f5f9);
+    color: inherit;
+    font: inherit;
+    cursor: pointer;
+}
+
+.grad-seg-btn.is-on {
+    background: var(--looks-secondary, #4c97ff);
+    border-color: var(--looks-secondary, #4c97ff);
+    color: #fff;
+}
+
+.grad-preview {
+    margin-top: 4px;
+    border-radius: 8px;
+    padding: 8px 10px;
+    border: 1px solid var(--ui-black-transparent, rgba(0, 0, 0, 0.14));
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.grad-prev-bar {
+    height: 18px;
+    border-radius: 5px;
+}
+
+.grad-prev-text {
+    font-size: 12px;
+    font-weight: 600;
+    display: flex;
+    flex-direction: column;
+}
+
+.grad-prev-text > span {
+    font-size: 11px;
+    font-weight: 400;
+    opacity: 0.7;
+}
+
+.grad-foot {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 12px;
+    border-top: 1px solid var(--ui-black-transparent, rgba(0, 0, 0, 0.1));
+    flex-shrink: 0;
+}
+
+.grad-spacer {
+    flex: 1;
+}
+
+
+/* ==========================================================================
+   液态玻璃：设置页里注入的开关与滑杆
+   样式跟随设置页自己的变量，不写死颜色，换主题时一起变。
+   ========================================================================== */
+.bl-lg-sec {
+    margin-top: 14px;
+    padding-top: 12px;
+    border-top: 1px solid var(--ui-black-transparent, rgba(0, 0, 0, 0.08));
+}
+
+.bl-lg-title {
+    font-weight: 600;
+    font-size: 13px;
+    margin-bottom: 8px;
+    color: var(--text-primary, #575e75);
+}
+
+.bl-lg-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+    font-size: 12px;
+    color: var(--text-primary, #575e75);
+    cursor: pointer;
+}
+
+.bl-lg-row > span {
+    flex: 0 0 auto;
+    min-width: 48px;
+}
+
+.bl-lg-row input[type="range"] {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.bl-lg-row b {
+    flex: 0 0 auto;
+    min-width: 44px;
+    text-align: right;
+    font-weight: 400;
+    opacity: 0.75;
+    font-variant-numeric: tabular-nums;
+}
+
+.bl-lg-note {
+    font-size: 11px;
+    line-height: 1.5;
+    opacity: 0.65;
+    color: var(--text-primary, #575e75);
+    margin-top: 6px;
+}
+
+/* ==========================================================================
+   顶层宿主里的窗口：补齐原生窗口的基础外观
+   --------------------------------------------------------------------------
+   编辑器给 .addon-window 写的那条基础样式（圆角 12px、阴影、标题栏内距等）
+   是带作用域的，只命中挂在 #app 里的窗口。我们的窗口在 <html> 下的顶层宿主
+   里，不在那个作用域内 —— 于是圆角变 0、阴影消失、标题栏内距被吃掉，
+   看起来和原版窗口不一样。
+
+   这里把原生那几个值原样补上，作用域限定在顶层宿主内。
+   刻意【不加 !important】：窗口皮肤（macOS / Windows 10）的规则带 !important，
+   不加才能在切换皮肤时照样盖过这里，和原生窗口走同一套覆盖关系。
+   ========================================================================== */
+#bl-top-layer .addon-window {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    background: var(--ui-modal-background, #ffffff);
+    border: 1px solid var(--ui-black-transparent, rgba(0, 0, 0, 0.08));
+    border-radius: 12px;
+    /* 阴影取实测到的原生计算值（编辑器里另有规则把它抬到这一档），
+       写成基础值会让我们的窗口阴影明显比原生淡一圈。 */
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.16);
+}
+
+#bl-top-layer .addon-window-header {
+    flex: 0 0 auto;
+    background: var(--ui-primary, #f8f9fa);
+    border-bottom: 1px solid var(--ui-black-transparent, rgba(0, 0, 0, 0.08));
+    padding: 8px 16px;
+    min-height: 44px;
+    max-height: 44px;
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: move;
+    user-select: none;
+}
+
+#bl-top-layer .addon-window-title {
+    flex: 1;
+    text-align: left;
+    font-weight: 600;
+    font-size: 14px;
+    color: var(--text-primary, #2d3748);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+#bl-top-layer .addon-window-controls {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex: 0 0 auto;
+}
+
+#bl-top-layer .addon-window-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    padding: 0;
+    background: transparent;
+    border: none;
+    color: var(--text-primary, #666);
+    cursor: pointer;
+}
+
+#bl-top-layer .addon-window-btn svg {
+    width: 12px;
+    height: 12px;
+    stroke: currentColor;
+    fill: none;
+}
+
+#bl-top-layer .addon-window-btn:hover {
+    background: var(--ui-black-transparent, rgba(0, 0, 0, 0.08));
+}
+
+#bl-top-layer .addon-window-btn-close:hover {
+    background: var(--red-primary, #e64a4a);
+    color: #fff;
+}
+
+#bl-top-layer .addon-window-content {
+    flex: 1 1 auto;
+    min-height: 0;
+    padding: 10px 16px;
+    color: var(--text-primary, #575e75);
+    font-size: 13px;
+    background: transparent;
+    overflow: hidden;
+}
+
+/* ==========================================================================
+   "浏览器不受支持"提示
+   编辑器启动时会弹一个 602×502 的 browser-modal，居中盖在编辑区上，
+   挡掉它覆盖范围内的滚轮与点击 —— 表现就是"某一片区域滚不动 / 点不到"。
+   这是 TurboWarp 自带的浏览器能力检测，在独立离线版里没有意义
+   （编辑器本身能跑），而且它挡住的正是积木栏和工作区，所以直接屏蔽。
+   类名带 CSS Modules 哈希，用前缀匹配。
+   ========================================================================== */
+[class*="browser-modal"] { display: none !important; }
+
+/* ==========================================================================
+   iOS 风格拖动条
+   4px 细轨道，已过的一段填色，20px 白色圆形滑块带投影。
+   只改外观：input 本身保留，值 / 事件 / React 受控都不受影响。
+   --p 是已过部分的百分比，由 inject.js 的 syncRangeFill() 同步。
+   ========================================================================== */
+
+input[type="range"] {
+    -webkit-appearance: none;
+    appearance: none;
+    height: 28px;
+    background: transparent;
+    cursor: pointer;
+    --p: 50%;
+    --bl-range-fill: #007aff;
+}
+
+input[type="range"]::-webkit-slider-runnable-track {
+    height: 4px;
+    border-radius: 2px;
+    background: linear-gradient(to right,
+        var(--bl-range-fill) 0 var(--p),
+        rgba(120, 120, 128, 0.28) var(--p) 100%);
+}
+
+input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #ffffff;
+    border: 0.5px solid rgba(0, 0, 0, 0.04);
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15), 0 1px 1px rgba(0, 0, 0, 0.16);
+    margin-top: -8px;
+}
+
+input[type="range"]::-moz-range-track {
+    height: 4px;
+    border-radius: 2px;
+    background: rgba(120, 120, 128, 0.28);
+}
+
+input[type="range"]::-moz-range-progress {
+    height: 4px;
+    border-radius: 2px;
+    background: var(--bl-range-fill);
+}
+
+input[type="range"]::-moz-range-thumb {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #ffffff;
+    border: 0.5px solid rgba(0, 0, 0, 0.04);
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15), 0 1px 1px rgba(0, 0, 0, 0.16);
+}
+
+input[type="range"]:focus-visible::-webkit-slider-thumb {
+    box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.35),
+                0 3px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* ==========================================================================
+   全局底部音谱
+   唱片机弹窗里的"音谱"开关管的就是它：整个编辑器底部常驻一条音谱。
+   挂在顶层宿主里（pointer-events: none），不挡任何操作。
+   ========================================================================== */
+
+.bl-global-viz {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    height: 48px;
+    display: none;
+    pointer-events: none;
+    z-index: 10;
+    background: linear-gradient(to top,
+        rgba(0, 0, 0, 0.30) 0%, rgba(0, 0, 0, 0.12) 60%, rgba(0, 0, 0, 0) 100%);
+}
+
+.bl-global-viz.is-on {
+    display: block;
+}
+
+/* ------------------------------------------------------------------ *
+ * 设置 → 常规 → 版本号
+ * 条目是克隆原生按钮得来的（类名一致），这里只补展开卡片的样式。
+ * ------------------------------------------------------------------ */
+
+.bl-ver-card {
+    display: none;
+    margin: 2px 8px 6px 8px;
+    padding: 10px 12px;
+    border-radius: 10px;
+    background: rgba(127, 127, 127, 0.10);
+    border: 1px solid rgba(127, 127, 127, 0.16);
+}
+
+.bl-ver-card.is-on {
+    display: block;
+    animation: bl-ver-in 0.2s cubic-bezier(0.2, 0.9, 0.3, 1.1) both;
+}
+
+@keyframes bl-ver-in {
+    from { opacity: 0; transform: translateY(-4px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.bl-ver-row {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.bl-ver-k {
+    font-size: 12px;
+    opacity: 0.75;
+}
+
+.bl-ver-v {
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    color: var(--ui-menu-bar-background, #75c1c4);
+    font-variant-numeric: tabular-nums;
+}
+
+.bl-ver-note {
+    margin-top: 6px;
+    font-size: 11px;
+    line-height: 1.5;
+    opacity: 0.62;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .bl-ver-card.is-on { animation: none; }
+}
+
+/* ==========================================================================
+   左侧自定义工作区标签（项目 / 评测 / 音乐 / 工程文件 共用骨架）
+   --------------------------------------------------------------------------
+   li.bl-py-tab、.bl-py-active、.bl-py-panel 是 B52 互斥体系认得的三个名字，
+   不能改：左侧四个自定义工作区、DOCK 收起后的导航入口都挂在它们上面。
+   ========================================================================== */
+
+/* 左侧导航条上的自定义标签：沿用原生标签的视觉 */
+li.bl-py-tab {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 2px !important;
+    cursor: pointer !important;
+    user-select: none !important;
+}
+li.bl-py-tab > span {
+    font-size: 10px !important;
+    line-height: 1.1 !important;
+    white-space: nowrap !important;
+}
+li.bl-py-tab > svg { width: 20px; height: 20px; flex: 0 0 auto; }
+li.bl-py-tab.is-on > svg { fill: currentColor; }
+
+/* 选中自定义工作区时把原生标签的高亮压回去 —— 但 React 控制着它的 class，
+   直接删会被重渲染加回，所以用 CSS 覆盖成未选中态。 */
+.bl-py-active ul[class*="gui_tab-list_"] > li[class*="gui_tab_"][class*="selected"] {
+    color: var(--text-primary-transparent, var(--text-primary)) !important;
+    background-color: transparent !important;
+}
+.bl-py-active ul[class*="gui_tab-list_"] > li[class*="gui_tab_"][class*="selected"]::after {
+    opacity: 0 !important;
+}
+
+/* 选中自定义工作区时：隐藏原生面板，显示我们的面板 */
+.bl-py-active > [class*="gui_tab-panel_"] {
+    display: none !important;
+}
+
+.bl-py-panel {
+    display: none;
+    flex-direction: column;
+    flex: 1 1 auto;
+    min-width: 0;
+    min-height: 0;
+    overflow: hidden;
+    background: var(--ui-secondary);
+    color: var(--text-primary);
+    font-size: 12px;
+}
+.bl-py-active > .bl-py-panel { display: flex !important; }
+/* ── [B82] 工程文件工作区 ────────────────────────────────────────────────
+   列出「当前作品打包成 .sb3 后」zip 里的每一个文件：
+   文件名 / 归属角色与造型 / 原始大小 / 压缩后大小 / 压缩率 / 压缩方式。
+   配色全部走主题变量，跟随深浅色与主题强调色。
+   ─────────────────────────────────────────────────────────────────────── */
+.bl-pf-panel { position: relative; }
+
+.bl-pf-bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 10px;
+    flex: 0 0 auto;
+    border-bottom: 1px solid var(--ui-black-transparent, rgba(0, 0, 0, .1));
+    background: var(--ui-primary);
+}
+.bl-pf-bar button {
+    font: inherit;
+    padding: 5px 10px;
+    border-radius: 6px;
+    border: 1px solid var(--ui-black-transparent, rgba(0, 0, 0, .14));
+    background: var(--ui-secondary);
+    color: var(--text-primary);
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background-color .15s ease, transform .15s ease;
+}
+.bl-pf-bar button:hover { background: var(--ui-tertiary, rgba(0, 0, 0, .06)); }
+.bl-pf-bar button:active { transform: translateY(1px); }
+.bl-pf-bar button.bl-pf-primary {
+    background: var(--looks-secondary, #4c97ff);
+    color: var(--bl-on-accent, #fff);
+    border-color: transparent;
+    font-weight: 600;
+}
+.bl-pf-bar button.bl-pf-primary:hover { filter: brightness(1.08); }
+.bl-pf-search {
+    flex: 1 1 130px;
+    min-width: 90px;
+    max-width: 260px;
+    box-sizing: border-box;
+    padding: 5px 9px;
+    font: inherit;
+    border-radius: 6px;
+    border: 1px solid var(--ui-black-transparent, rgba(0, 0, 0, .14));
+    background: var(--ui-secondary);
+    color: var(--text-primary);
+    outline: none;
+}
+.bl-pf-search:focus { border-color: var(--looks-secondary, #4c97ff); }
+
+.bl-pf-stat {
+    flex: 0 0 auto;
+    padding: 6px 12px;
+    font-size: 11px;
+    line-height: 1.5;
+    opacity: .8;
+    border-bottom: 1px solid var(--ui-black-transparent, rgba(0, 0, 0, .08));
+    background: var(--ui-primary);
+}
+.bl-pf-stat.is-err { color: #d9534f; opacity: 1; }
+.bl-pf-stat b { font-variant-numeric: tabular-nums; }
+
+.bl-pf-list {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    padding: 8px 10px 16px;
+    scrollbar-width: thin;
+}
+.bl-pf-group {
+    margin: 12px 0 6px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .02em;
+    opacity: .72;
+}
+.bl-pf-group::after {
+    content: '';
+    flex: 1 1 auto;
+    height: 1px;
+    background: var(--ui-black-transparent, rgba(0, 0, 0, .1));
+}
+.bl-pf-group:first-child { margin-top: 2px; }
+
+.bl-pf-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 9px;
+    margin-bottom: 5px;
+    border-radius: 9px;
+    border: 1px solid var(--ui-black-transparent, rgba(0, 0, 0, .08));
+    background: var(--ui-primary);
+    cursor: pointer;
+    transition: background-color .15s ease, box-shadow .15s ease;
+}
+.bl-pf-row:hover {
+    background: var(--ui-tertiary, rgba(0, 0, 0, .04));
+    box-shadow: 0 2px 8px rgba(0, 0, 0, .06);
+}
+.bl-pf-row.is-open { border-color: var(--looks-secondary, #4c97ff); }
+.bl-pf-caret {
+    flex: 0 0 14px;
+    text-align: center;
+    font-size: 10px;
+    opacity: .6;
+    transition: transform .16s ease;
+}
+.bl-pf-row.is-open .bl-pf-caret { transform: rotate(90deg); }
+.bl-pf-ico {
+    flex: 0 0 26px;
+    height: 26px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    background: var(--ui-black-transparent, rgba(0, 0, 0, .07));
+    font: 700 10px/1 ui-monospace, Menlo, Consolas, monospace;
+    letter-spacing: -.02em;
+}
+.bl-pf-name {
+    flex: 1 1 200px;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font: 500 11.5px/1.4 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    direction: ltr;
+}
+.bl-pf-owner {
+    flex: 0 1 150px;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 10.5px;
+    opacity: .78;
+}
+.bl-pf-num {
+    flex: 0 0 auto;
+    min-width: 62px;
+    text-align: right;
+    font-size: 10.5px;
+    font-variant-numeric: tabular-nums;
+    opacity: .82;
+}
+.bl-pf-tag {
+    flex: 0 0 auto;
+    padding: 1px 6px;
+    border-radius: 999px;
+    font-size: 9.5px;
+    line-height: 1.6;
+    background: var(--ui-black-transparent, rgba(0, 0, 0, .08));
+    white-space: nowrap;
+}
+.bl-pf-tag.is-deflate { background: var(--looks-secondary, #4c97ff); color: var(--bl-on-accent, #fff); }
+.bl-pf-dl {
+    flex: 0 0 auto;
+    padding: 3px 8px;
+    font: inherit;
+    font-size: 10.5px;
+    border-radius: 6px;
+    border: 1px solid var(--ui-black-transparent, rgba(0, 0, 0, .14));
+    background: var(--ui-secondary);
+    color: var(--text-primary);
+    cursor: pointer;
+}
+.bl-pf-dl:hover { background: var(--looks-secondary, #4c97ff); color: var(--bl-on-accent, #fff); }
+
+.bl-pf-detail {
+    margin: -2px 0 8px 26px;
+    padding: 10px 12px;
+    border-radius: 9px;
+    border: 1px solid var(--ui-black-transparent, rgba(0, 0, 0, .1));
+    background: var(--ui-secondary);
+    animation: blPfIn .18s cubic-bezier(.2, .8, .25, 1) both;
+    overflow: hidden;
+}
+@keyframes blPfIn { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: none; } }
+.bl-pf-detail pre {
+    margin: 0;
+    max-height: 320px;
+    overflow: auto;
+    font: 11px/1.55 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+.bl-pf-detail img { max-width: 100%; max-height: 280px; border-radius: 6px; background: rgba(127,127,127,.08); }
+.bl-pf-detail audio { width: 100%; max-width: 360px; }
+.bl-pf-note { font-size: 11px; line-height: 1.6; opacity: .72; }
+.bl-pf-empty {
+    padding: 32px 12px;
+    text-align: center;
+    font-size: 12px;
+    line-height: 1.7;
+    opacity: .62;
+}
+
+@media (max-width: 900px) {
+    .bl-pf-owner, .bl-pf-num.bl-pf-ratio { display: none; }
+    .bl-pf-num { min-width: 54px; }
+    .bl-pf-bar { gap: 4px; padding: 6px; }
+    .bl-pf-bar button { padding: 4px 7px; font-size: 11px; }
+    .bl-pf-detail { margin-left: 8px; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .bl-pf-detail { animation: none; }
+    .bl-pf-caret { transition: none; }
+}
+
+/* ── [B83] 除「代码」外全部工作区：舞台 + 角色栏整体让位 ────────────────
+   只负责布局让位，不碰造型编辑器内部的画布放宽规则（那是 bl-paint-wide
+   的职责）。两者在造型界面叠加，规则一致，不会互相覆盖。
+   ─────────────────────────────────────────────────────────────────────── */
+html.bl-no-stage [class*="gui_flex-wrapper_"],
+html.bl-no-stage [class*="gui_body-wrapper_"] {
+    width: 100% !important;
+    min-width: 0 !important;
+}
+html.bl-no-stage [class*="gui_stage-and-target-wrapper_"] {
+    display: none !important;
+}
+/* editor-wrapper 原生 flex-basis 约 598px 且 flex-shrink:0；
+   右侧让位后必须归零，否则它不会按 flex-grow 吃下整行宽度。 */
+html.bl-no-stage [class*="gui_editor-wrapper_"] {
+    flex-basis: 0 !important;
+    flex-shrink: 1 !important;
+    width: 100% !important;
+    min-width: 0 !important;
+}
+html.bl-no-stage [class*="gui_tabs_"],
+html.bl-no-stage [class*="gui_tab-panel_"] {
+    width: 100% !important;
+    min-width: 0 !important;
+}
+
+/* ==========================================================================
+   DOCK 栏（积木区右下角）
+   --------------------------------------------------------------------------
+   两件事：
+     1) 毛玻璃 DOCK + 鱼眼放大：指针越近的图标放得越大，向两侧平滑衰减，
+        放大后邻居被"挤开"而不是被盖住，整体以底部为基准向上生长。
+     2) 最小化托盘：窗口点最小化后收进 DOCK（节点保留、只是不显示），
+        点 DOCK 上的图标就从最小化前的位置原样弹回来。
+
+   素材海洋与素材背包已从编辑器移除，DOCK 只保留唱片机入口与最小化托盘。
+   ========================================================================== */
+
+/* ==========================================================================
+   积木栏毛玻璃 DOCK（鱼眼放大）
+
+   · 位置：挂在 .gui_blocks-wrapper（自带 position: relative）右下角
+   · 毛玻璃：backdrop-filter 模糊 + 提饱和，半透明白底 + 顶部高光边
+   · 鱼眼：缩放由 JS 按指针距离实时算，这里只负责"以底部为基准向上生长"
+     （transform-origin: bottom center）与毛玻璃质感
+   · 命中区：.bl-dock-zone 比图标高，指针进入感应区即开始放大，
+     配合动态放大后的图标面积，符合费茨定律
+   ========================================================================== */
+
+/* ==========================================================================
+   DOCK 最高层宿主
+   · DOCK 原来挂在 .gui_blocks-wrapper 里，被夹在积木区的祖先链中；
+     弹窗是 8001..8990 / 999999 / 2147483646，DOCK 的 z-index 再大也
+     出不了祖先的 stacking context，所以经常被设置/工具箱窗口盖住。
+   · 这里把 DOCK 移进 body 直属的 fixed 宿主，宿主本身就是根 stacking
+     context 里的最高层，DOCK 自然始终高于所有弹窗。
+   · 宿主的 left/top/width/height 由 JS 同步成原 blocks-wrapper 的 rect，
+     所以 DOCK 的 absolute right:130px / bottom:16px 视觉位置完全不变。
+   · 刻意不加 transform / filter / opacity / isolation / contain：
+     它们会把 fixed 子元素改成相对本宿主定位，或成为新的 backdrop root，
+     破坏鱼眼定位与 .bl-dock-inner::before 的毛玻璃采样。
+   ========================================================================== */
+.bl-dock-host {
+    position: fixed !important;
+    left: 0;
+    top: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 2147483646 !important;
+    pointer-events: none;
+    background: transparent;
+    border: 0;
+    margin: 0;
+    padding: 0;
+    overflow: visible;
+}
+
+.bl-dock {
+    position: absolute;
+    /* 积木区右下角是 Blockly 自带的缩放控件（缩小 / 放大 / 复位，约 112px 宽），
+       DOCK 原来停在 right:20px，正好压在它们上面。
+       这里左移到缩放控件左侧：120px 让开控件，再加 10px 间隙。
+       另外图标放大到 1.9 倍会向左溢出约 35px，靠 DOCK 自身的左内边距吸收。 */
+    right: 130px;
+    bottom: 16px;
+    z-index: 2147483646 !important;
+    pointer-events: none;
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+.bl-dock-zone {
+    position: relative;
+    display: flex;
+    align-items: flex-end;
+    height: 78px;              /* 比图标高，留出放大后向上生长的空间 */
+    padding: 0 20px;           /* 感应区比图标宽，指针从外侧靠近就开始放大 */
+    pointer-events: auto;
+}
+
+.bl-dock-inner {
+    position: relative;
+    display: flex;
+    align-items: flex-end;
+    gap: 4px;
+    padding: 7px 9px;
+    border-radius: 16px;
+    /* 玻璃层独立到 ::before：图标 hover 放大时 transform 会创建合成层，
+       若 backdrop-filter 留在父容器上，模糊采样区会跟着图标一起偏移。 */
+    border: 0;
+    background: transparent;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    box-shadow: none;
+    isolation: isolate;
+}
+
+.bl-dock-inner::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    border-radius: inherit;
+    border: 1px solid rgba(255, 255, 255, 0.30);
+    background: rgba(255, 255, 255, 0.16);
+    -webkit-backdrop-filter: blur(18px) saturate(170%);
+    backdrop-filter: blur(18px) saturate(170%);
+    box-shadow: 0 6px 22px rgba(0, 0, 0, 0.20),
+                inset 0 1px 0 rgba(255, 255, 255, 0.35);
+    transition: box-shadow 0.18s ease, background 0.18s ease;
+}
+
+.bl-dock:hover .bl-dock-inner::before {
+    background: rgba(255, 255, 255, 0.22);
+    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.26),
+                inset 0 1px 0 rgba(255, 255, 255, 0.45);
+}
+
+/* 关键：以底部为基准向上生长，图标不会往下"沉" */
+.bl-dock-item {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    border: 0;
+    border-radius: 13px;
+    background: transparent;
+    color: var(--text-primary, #333333);
+    cursor: pointer;
+    transform-origin: bottom center;
+    will-change: transform;
+    -webkit-tap-highlight-color: transparent;
+}
+
+/* ── 立体图标底座 ────────────────────────────────────────────────────
+   参考样式：浅色圆角卡片 + 左上青绿高光圆点 + 中间内凹白圆 + 顶部内高光 /
+   底部内暗边 / 外投影，像一枚有厚度的凝胶按钮。
+   全是静态渐变与阴影，不进关键帧：鱼眼每帧只改 button 的 transform，
+   底座跟着一起缩放，不额外增加绘制开销。青绿高光走 --looks-secondary，
+   换主题时跟着变。半透明白叠在任何主题底上都偏浅，所以图标与托盘横杠
+   统一用固定灰蓝深色，深浅主题下都读得清（--text-primary 在暗色主题下
+   是白描边，压在浅色圆片上会直接消失）。
+   ::after 已被「收进 DOCK」的横杠占用，故底座用 ::before。 */
+.bl-dock-item::before {
+    content: '';
+    position: absolute;
+    inset: 2px;
+    z-index: 0;
+    border-radius: 11px;
+    pointer-events: none;
+    background:
+        radial-gradient(circle at 27% 15%,
+            var(--looks-secondary, #4fd1c5) 0 18%,
+            rgba(255, 255, 255, 0.34) 21%, rgba(255, 255, 255, 0) 33%),
+        radial-gradient(circle at 50% 36%,
+            rgba(255, 255, 255, 0.96) 0 36%, rgba(255, 255, 255, 0) 72%),
+        linear-gradient(166deg,
+            rgba(255, 255, 255, 0.97) 0%, rgba(238, 243, 249, 0.92) 46%,
+            rgba(176, 189, 206, 0.90) 100%);
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.95),
+        inset 0 -2px 4px rgba(0, 0, 0, 0.15),
+        inset 0 0 0 1px rgba(255, 255, 255, 0.58),
+        0 2px 5px rgba(0, 0, 0, 0.20),
+        0 6px 13px rgba(0, 0, 0, 0.12);
+    transition: box-shadow 0.18s ease;
+}
+
+/* hover 把按钮"抬"起来，active 再压回去：两段都是阴影变化，不改尺寸 */
+.bl-dock-item:hover::before {
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 1),
+        inset 0 -2px 4px rgba(0, 0, 0, 0.13),
+        inset 0 0 0 1px rgba(255, 255, 255, 0.72),
+        0 4px 9px rgba(0, 0, 0, 0.24),
+        0 10px 20px rgba(0, 0, 0, 0.14);
+}
+
+.bl-dock-item:active::before {
+    box-shadow:
+        inset 0 2px 5px rgba(0, 0, 0, 0.20),
+        inset 0 0 0 1px rgba(255, 255, 255, 0.42),
+        0 1px 2px rgba(0, 0, 0, 0.18);
+}
+
+.bl-dock-item > svg {
+    position: relative;
+    z-index: 1;
+    pointer-events: none;
+    color: #4a566b;
+    filter: drop-shadow(0 1px 0 rgba(255, 255, 255, 0.75));
+}
+
+html.tb-eco .bl-dock-item::before { transition: none; }
+
+/* DOCK 右键菜单 —— 直接复用原版 scratch-gui / react-contextmenu 的 DOM 与样式。
+   容器 nav.react-contextmenu.context-menu_context-menu_2SJM-.react-contextmenu--visible，
+   菜单项 div.react-contextmenu-item.context-menu_menu-item_3cioN，
+   分隔用 .context-menu_menu-item-bordered_29CJG（下一项顶部 border-top），
+   危险项 .context-menu_menu-item-danger_1tJg0。
+   白底 / 1px 边框 / 4px 圆角 / 5px 0 内边距 / 0.85rem / 130px 最小宽 /
+   z-index 10000 / opacity .2s 淡入，以及 hover 蓝底白字，全部由编辑器自带的
+   .context-menu_* 规则提供，主题变量自动跟随，与角色栏右键菜单逐像素一致。
+
+   单文件里没有打包 react-contextmenu 库自身的 CSS，这里只补它缺失的两条
+   默认规则：禁用态与键盘光标态（用同一套主题变量，不引入新配色）。
+   另外原生菜单由 React 渲染在 .gui 内、继承了 --text-primary 文字色，
+   我们挂在 body 下会退回默认黑色，显式补回来即可逐像素一致。 */
+.bl-dock-menu.react-contextmenu {
+    color: var(--text-primary, rgb(87, 94, 117));
+}
+.bl-dock-menu .react-contextmenu-item.react-contextmenu-item--disabled,
+.bl-sp-menu .react-contextmenu-item.react-contextmenu-item--disabled {
+    color: var(--text-primary-transparent, rgba(87, 94, 117, 0.45));
+    cursor: default;
+}
+.bl-dock-menu .react-contextmenu-item.react-contextmenu-item--disabled:hover,
+.bl-sp-menu .react-contextmenu-item.react-contextmenu-item--disabled:hover {
+    background: transparent;
+    color: var(--text-primary-transparent, rgba(87, 94, 117, 0.45));
+}
+.bl-dock-menu .react-contextmenu-item.react-contextmenu-item--active {
+    background: var(--looks-secondary, #4c97ff);
+    color: #fff;
+}
+
+/* 固定项图标：带底色圆片，图片铺满可视区域，空白跟随主题 */
+.bl-dock-item .bl-dock-custom-icon {
+    width: 22px;
+    height: 22px;
+    border-radius: 6px;
+    position: relative;
+    z-index: 1;
+    background: var(--ui-black-transparent, rgba(0,0,0,0.08));
+    object-fit: cover;
+    pointer-events: none;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.18),
+                0 1px 0 rgba(255, 255, 255, 0.6);
+}
+
+/* 最小化托盘：与固定按钮之间隔一道竖线，一眼能分清哪边是功能、哪边是窗口 */
+.bl-dock-sep {
+    flex: 0 0 auto;
+    align-self: center;
+    width: 1px;
+    height: 22px;
+    margin: 0 3px;
+    background: rgba(127, 127, 127, 0.35);
+}
+
+/* 收进 DOCK 的窗口图标：底部一道小横杠，表示"这个窗口正在下面" */
+.bl-dock-item.bl-dock-tray::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    bottom: 6px;
+    width: 14px;
+    height: 2px;
+    margin-left: -7px;
+    z-index: 2;
+    border-radius: 2px;
+    background: #4a566b;
+    opacity: 0.72;
+}
+
+/* 固定按钮自己被收进 DOCK（例如 STAR 窗口最小化）：
+   复用同一个图标，底部一道小横杠表示"窗口在下面"，不再多出一个图标 */
+.bl-dock-item.is-docked::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    bottom: 6px;
+    width: 14px;
+    height: 2px;
+    margin-left: -7px;
+    z-index: 2;
+    border-radius: 2px;
+    background: #4a566b;
+    opacity: 0.72;
+}
+
+/* 窗口被收进 DOCK：节点保留，只是不显示 —— 再点图标就原样放回来 */
+.bl-win-docked {
+    display: none !important;
+}
+
+.bl-dock-badge {
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    min-width: 16px;
+    height: 16px;
+    padding: 0 4px;
+    border-radius: 999px;
+    z-index: 2;
+    background: var(--looks-secondary, #4c97ff);
+    color: var(--bl-on-accent, #ffffff);
+    font-size: 10px;
+    line-height: 16px;
+    text-align: center;
+    pointer-events: none;
+}
+
+/* 悬浮名称：绝对定位在 DOCK 上方。
+   位置与 transform 由 JS 逐帧写入（要跟着图标的鱼眼一起弹），
+   所以这里只过渡透明度 —— transform 若也在过渡里，每帧的值都会被
+   0.14s 的补间拖住，名字会比图标慢半拍。 */
+/* ⚠ 悬浮名称必须自带不透明深色底 + 白字，且用高特异性 + !important 钉死。
+   液态玻璃的 [data-bl-lg]{background-color:var(--bl-glass-body)!important}
+   曾把它改成半透明浅底，可读性守卫又把白字判成看不清改成近黑 ——
+   表现就是「变全黑、看不到字、没背景」。html:root .bl-dock .bl-dock-tip
+   特异性 0,3,1，压过 [data-bl-lg] 的 0,1,0。
+   opacity 不加 !important，交给下面更高特异性的 .is-on 覆盖。 */
+html:root .bl-dock .bl-dock-tip {
+    position: absolute;
+    bottom: 100%;
+    transform: translate(-50%, -6px);
+    transform-origin: bottom center;
+    padding: 3px 9px;
+    border-radius: 8px;
+    background-color: rgba(28, 32, 40, 0.92) !important;
+    background-image: none !important;
+    color: #ffffff !important;
+    text-shadow: none !important;
+    font-size: 11.5px;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.14s ease;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.28);
+    will-change: transform, left;
+}
+
+html:root .bl-dock .bl-dock-tip.is-on {
+    opacity: 1 !important;
+}
+
+/* 尊重系统的"减弱动效"设置 */
+@media (prefers-reduced-motion: reduce) {
+    .bl-dock-inner, .bl-dock-tip { transition: none; }
+}
+
+/* ==========================================================================
+   唱片机（Vinyl Player）
+
+   弹窗固定停在右下角，不可拖动（窗口带 bl-win-nodrag，
+   inject.js 的 initWindows 见到它就跳过拖动逻辑）。
+   配色全部走主题变量，换主题时跟着变。
+   ========================================================================== */
+
+.vy-win {
+    /* 顶层宿主是 pointer-events: none（否则整层会挡住编辑器），
+       而 none 会继承 —— 不在这里显式打开，窗口画得出来但点不动，
+       和之前素材背包"只是贴图"是同一个坑。 */
+    pointer-events: auto;
+    /* 右下角固定：用 right/bottom 而不是 left/top，
+       这样窗口尺寸变了也不用重算位置 */
+    position: fixed !important;
+    right: 24px;
+    bottom: 24px;
+    /* ⚠ 不能加 !important：弹窗（可拖动）模式靠 inline left/top 定位，
+       initWindows 拖动时也是写 inline。这里一旦 !important，inline 全被压掉，
+       窗口永远钉在 x=0 拖不动（实测 computed left=0px）。 */
+    left: auto;
+    top: auto;
+    /* 编辑器自带响应式规则会在窄视口把 .addon-window 拉成 100vw，
+       而且它的优先级压过这里的普通声明 —— 只写 width 会被盖掉，
+       窗口就顶出屏幕左边了。这里用 !important 定死，
+       再用 max-width 兜住比视口还窄的极端情况。 */
+    width: 720px !important;
+    max-width: calc(100vw - 48px) !important;
+    height: 560px;
+    z-index: 30;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+/* 不可拖动的窗口，标题栏光标仍是默认箭头，不给"可以拖"的错误暗示 */
+.vy-win.bl-win-nodrag {
+    /* 只有「固定弹窗」模式才强制忽略 inline 位置，钉在右下角 */
+    left: auto !important;
+    top: auto !important;
+    right: 24px !important;
+    bottom: 24px !important;
+}
+.vy-win.bl-win-nodrag .addon-window-header {
+    cursor: default;
+}
+/* 固定模式不显示最小化 / 最大化（这两个键只在可拖动弹窗模式出现） */
+.vy-win.bl-win-nodrag .vy-min,
+.vy-win.bl-win-nodrag .vy-max { display: none !important; }
+.vy-win.is-max {
+    border-radius: 0 !important;
+    max-width: none !important;
+    width: 100vw !important;
+    height: 100vh !important;
+}
+
+/* 弹窗模式（可拖动）：改回 left/top 定位，允许 initWindows 拖动接管 */
+.vy-win.vy-win-popup {
+    right: auto !important;
+    bottom: auto !important;
+    left: 200px;
+    top: 100px;
+}
+.vy-win.vy-win-popup .addon-window-header {
+    cursor: move;
+}
+
+.vy-content {
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    padding: 12px 14px 10px;
+    gap: 10px;
+}
+
+.vy-body {
+    flex: 1 1 auto;
+    display: flex;
+    gap: 14px;
+    min-height: 0;
+}
+
+/* ---------------- 左：唱片 ---------------- */
+
+.vy-left {
+    flex: 0 0 152px;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding-top: 6px;
+}
+
+.vy-disc {
+    position: relative;
+    width: 148px;
+    height: 148px;
+    border-radius: 50%;
+    /* 唱片外圈的立体感 */
+    box-shadow:
+        0 6px 18px rgba(0, 0, 0, 0.35),
+        0 0 0 1px rgba(255, 255, 255, 0.08) inset;
+    /* 默认不转，播放时才转 */
+    animation: vySpin 3.6s linear infinite;
+    animation-play-state: paused;
+    will-change: transform;
+}
+
+.vy-win.is-playing .vy-disc {
+    animation-play-state: running;
+}
+
+.vy-disc-svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+}
+
+/* 转起来时叠一层缓慢扫过的高光，像唱针反光 */
+.vy-disc::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    background: linear-gradient(115deg,
+        rgba(255, 255, 255, 0) 30%,
+        rgba(255, 255, 255, 0.10) 46%,
+        rgba(255, 255, 255, 0) 62%);
+    pointer-events: none;
+}
+
+.vy-win.is-playing .vy-disc::after {
+    animation: vySheen 2.8s linear infinite;
+}
+
+@keyframes vySpin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+@keyframes vySheen {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+/* ---------------- 右：控制区 ---------------- */
+
+.vy-right {
+    flex: 1 1 auto;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.vy-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-primary, #575e75);
+    line-height: 1.3;
+    /* 曲名可能很长，两行截断 */
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    word-break: break-all;
+}
+
+.vy-title.is-empty {
+    opacity: 0.55;
+    font-weight: 400;
+}
+
+.vy-list {
+    flex: 1 1 auto;
+    min-height: 60px;
+    overflow-y: auto;
+    border-radius: 8px;
+    background: var(--ui-black-transparent, rgba(0, 0, 0, 0.05));
+    padding: 4px;
+}
+
+.vy-empty {
+    padding: 14px 8px;
+    text-align: center;
+    font-size: 12px;
+    opacity: 0.6;
+    line-height: 1.5;
+}
+
+.vy-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 5px 7px;
+    border-radius: 6px;
+    font-size: 12px;
+    color: var(--text-primary, #575e75);
+    cursor: pointer;
+    transition: background-color 0.16s ease;
+}
+
+.vy-item:hover {
+    background: var(--ui-black-transparent, rgba(0, 0, 0, 0.07));
+}
+
+.vy-item.is-on {
+    background: var(--looks-secondary, #9966ff);
+    color: #fff;
+}
+
+.vy-item-n {
+    flex: 0 0 16px;
+    text-align: right;
+    opacity: 0.6;
+    font-variant-numeric: tabular-nums;
+}
+
+.vy-item.is-on .vy-item-n {
+    opacity: 0.85;
+}
+
+.vy-item-t {
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* 每首曲目右侧的删除按钮：常驻但低对比，hover 才变明显，避免误触 */
+.vy-del {
+    flex: 0 0 auto;
+    width: 18px;
+    height: 18px;
+    padding: 0;
+    border: none;
+    border-radius: 5px;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    font-size: 14px;
+    line-height: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    opacity: 0.72;
+    transition: opacity 0.16s ease, background-color 0.16s ease;
+}
+
+.vy-item:hover .vy-del { opacity: 1; }
+
+.vy-del:hover {
+    opacity: 1 !important;
+    background: var(--ui-black-transparent, rgba(0, 0, 0, 0.12));
+}
+
+.vy-del:focus-visible {
+    opacity: 1;
+    outline: 2px solid var(--looks-secondary, #9966ff);
+    outline-offset: 1px;
+}
+
+.vy-item.is-on .vy-del { color: #fff; }
+
+/* 正在播放的小均衡器动画 */
+.vy-eq {
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: flex-end;
+    gap: 2px;
+    height: 11px;
+}
+
+.vy-eq i {
+    display: block;
+    width: 2px;
+    height: 3px;
+    background: currentColor;
+    border-radius: 1px;
+    animation: vyEq 0.72s ease-in-out infinite;
+}
+
+.vy-eq i:nth-child(2) { animation-delay: 0.16s; }
+.vy-eq i:nth-child(3) { animation-delay: 0.32s; }
+
+@keyframes vyEq {
+    0%, 100% { height: 3px; }
+    50% { height: 11px; }
+}
+
+/* 进度条 */
+.vy-bar {
+    position: relative;
+    height: 5px;
+    border-radius: 3px;
+    background: var(--ui-black-transparent, rgba(0, 0, 0, 0.12));
+    cursor: pointer;
+    overflow: hidden;
+}
+
+.vy-bar-fill {
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 0%;
+    border-radius: 3px;
+    background: var(--looks-secondary, #9966ff);
+    transition: width 0.08s linear;
+}
+
+.vy-time {
+    font-size: 11px;
+    opacity: 0.6;
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+    margin-top: -4px;
+}
+
+/* 播放控制 */
+.vy-ctrl {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+.vy-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    border-radius: 50%;
+    background: var(--ui-black-transparent, rgba(0, 0, 0, 0.07));
+    color: var(--text-primary, #575e75);
+    cursor: pointer;
+    padding: 0;
+    transition: background-color 0.16s ease, transform 0.12s ease;
+}
+
+.vy-btn:hover { background: var(--ui-black-transparent, rgba(0, 0, 0, 0.14)); }
+.vy-btn:active { transform: scale(0.94); }
+
+.vy-btn > svg,
+.vy-btn .vy-play-i > svg {
+    display: block;
+    pointer-events: none;
+}
+
+.vy-prev, .vy-next {
+    width: 32px;
+    height: 32px;
+}
+
+.vy-prev > svg, .vy-next > svg {
+    width: 17px;
+    height: 17px;
+}
+
+.vy-play {
+    width: 42px;
+    height: 42px;
+    background: var(--looks-secondary, #9966ff);
+    color: #fff;
+}
+
+.vy-play:hover {
+    background: var(--looks-secondary, #9966ff);
+    filter: brightness(1.08);
+}
+
+.vy-play-i {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.vy-play-i > svg {
+    width: 20px;
+    height: 20px;
+}
+
+/* 播放模式 */
+.vy-modes {
+    display: flex;
+    gap: 6px;
+}
+
+.vy-mode {
+    flex: 1 1 0;
+    border: none;
+    border-radius: 6px;
+    padding: 5px 0;
+    font-size: 12px;
+    background: var(--ui-black-transparent, rgba(0, 0, 0, 0.06));
+    color: var(--text-primary, #575e75);
+    cursor: pointer;
+    transition: background-color 0.18s ease, color 0.18s ease;
+}
+
+.vy-mode:hover {
+    background: var(--ui-black-transparent, rgba(0, 0, 0, 0.12));
+}
+
+.vy-mode.is-on {
+    background: var(--looks-secondary, #9966ff);
+    color: #fff;
+}
+
+/* 滑杆行 */
+.vy-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    color: var(--text-primary, #575e75);
+}
+
+.vy-row-l {
+    flex: 0 0 58px;
+    opacity: 0.85;
+}
+
+.vy-range {
+    flex: 1 1 auto;
+    min-width: 0;
+    height: 22px;
+    margin: 0;
+}
+
+.vy-row-v {
+    flex: 0 0 26px;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+    opacity: 0.7;
+}
+
+/* 音谱开关：input 本身已经是 iOS 开关（见 inject.css 的全局规则），
+   这里只管排布 */
+.vy-spec-row {
+    justify-content: flex-start;
+}
+
+.vy-spec-row .vy-row-l {
+    flex: 1 1 auto;
+}
+
+.vy-actions {
+    display: flex;
+    gap: 8px;
+}
+
+/* 导入状态：落盘成功 / 正在保存 / 仅本次有效，一眼看得出 */
+.vy-save-state {
+    margin-top: 0;
+    min-height: 14px;
+    font-size: 11px;
+    line-height: 1.35;
+    color: var(--text-primary, #575e75);
+    opacity: 0.6;
+    word-break: break-all;
+}
+.vy-save-state.is-retry {
+    cursor: pointer;
+    color: var(--looks-secondary, #9966ff);
+    text-decoration: underline dotted;
+}
+
+.vy-import {
+    flex: 1 1 auto;
+    border: none;
+    border-radius: 8px;
+    padding: 7px 10px;
+    font-size: 12px;
+    font-weight: 600;
+    background: var(--looks-secondary, #9966ff);
+    color: #fff;
+    cursor: pointer;
+    transition: filter 0.16s ease;
+}
+
+.vy-import:hover { filter: brightness(1.08); }
+
+/* ---------------- 底部光感 ---------------- */
+
+.vy-viz {
+    /* ⚠ 这是 flex 子项，主轴尺寸由 flex-basis 决定，光写 height 不管用
+       —— 关音谱时只改 height 会被 flex-basis 顶回去，高度纹丝不动。
+       所以开/关两种状态都要连 flex-basis 一起改。 */
+    flex: 0 0 76px;
+    width: 100%;
+    height: 76px;
+    display: block;
+    border-radius: 8px;
+    transition: flex-basis 0.22s ease, height 0.22s ease, opacity 0.22s ease;
+}
+
+.vy-win.vy-no-spec .vy-viz {
+    flex: 0 0 26px;
+    height: 26px;
+    opacity: 0.55;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .vy-disc,
+    .vy-disc::after,
+    .vy-eq i {
+        animation: none !important;
+    }
+    .vy-viz,
+    .vy-bar-fill,
+    .vy-mode,
+    .vy-import {
+        transition: none !important;
+    }
+}
+
+@media (max-width: 820px) {
+    .vy-win {
+        width: 460px !important;
+    }
+
+    /* 万一真的最大化了，还是让它铺满 */
+    .vy-win.is-max {
+        width: 100vw !important;
+        max-width: none !important;
+    }
+
+}
+
+/* ==========================================================================
+   音乐工坊 Music Studio —— 多轨 DAW
+   ========================================================================== */
+
+/* 左侧导航条上的「音乐」标签：沿用原生标签的视觉 */
+li.ms-tab, li.bl-eval-tab {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    cursor: pointer;
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+li.ms-tab > svg, li.bl-eval-tab > svg {
+    margin-right: 0 !important;
+    margin-bottom: 2px !important;
+}
+
+li.ms-tab.is-on, li.bl-eval-tab.is-on {
+    color: var(--looks-secondary) !important;
+    background-color: var(--ui-white) !important;
+    border-color: var(--ui-black-transparent) !important;
+    z-index: 6 !important;
+}
+
+li.ms-tab.is-on > svg {
+    fill: currentColor;
+}
+
+/* 选中「音乐」时把原生标签的高亮压回去 */
+.ms-active ul[class*="gui_tab-list_"] > li[class*="react-tabs__tab--selected"] {
+    color: var(--text-primary-transparent, rgba(87, 94, 117, 0.7)) !important;
+    background: var(--ui-tertiary) !important;
+    z-index: 1 !important;
+}
+
+.ms-active ul[class*="gui_tab-list_"] > li[class*="react-tabs__tab--selected"]:hover {
+    color: var(--looks-secondary) !important;
+    background-color: var(--ui-white) !important;
+}
+
+/* 选中「音乐」时：隐藏原生面板，显示我们的面板 */
+.ms-active > [class*="gui_tab-panel_"] {
+    display: none !important;
+}
+
+.ms-panel {
+    display: none;
+    flex-direction: column;
+    flex: 1 1 auto;
+    min-width: 0;
+    min-height: 0;
+    overflow: hidden;
+    background: var(--ui-secondary);
+    color: var(--text-primary);
+}
+
+.ms-active > .ms-panel {
+    display: flex !important;
+}
+
+/* ---------- 顶部工具条 ---------- */
+
+.ms-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 10px;
+    border-bottom: 1px solid var(--ui-black-transparent);
+    flex-shrink: 0;
+    flex-wrap: wrap;
+}
+
+.ms-btn {
+    font: inherit;
+    font-size: 12px;
+    line-height: 1;
+    padding: 6px 10px;
+    border-radius: 6px;
+    border: 1px solid var(--ui-black-transparent);
+    background: var(--ui-primary);
+    color: var(--text-primary);
+    cursor: pointer;
+    transition: background-color 0.15s ease, filter 0.15s ease;
+}
+
+.ms-btn:hover { filter: brightness(1.08); }
+.ms-btn:active { filter: brightness(0.94); }
+.ms-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.ms-btn.ms-primary {
+    background: var(--looks-secondary, #75c0c3);
+    color: var(--bl-on-accent, #fff);
+    border-color: transparent;
+}
+
+.ms-btn.ms-danger {
+    background: #e2604f;
+    color: #fff;
+    border-color: transparent;
+}
+
+.ms-btn.is-on {
+    background: var(--looks-secondary, #75c0c3);
+    color: var(--bl-on-accent, #fff);
+    border-color: transparent;
+}
+
+.ms-sep {
+    width: 1px;
+    height: 18px;
+    background: var(--ui-black-transparent);
+    flex-shrink: 0;
+}
+
+.ms-name {
+    font: inherit;
+    font-size: 12px;
+    padding: 5px 8px;
+    border-radius: 6px;
+    border: 1px solid var(--ui-black-transparent);
+    background: var(--ui-primary);
+    color: var(--text-primary);
+    width: 130px;
+}
+
+.ms-bpm {
+    font: inherit;
+    font-size: 12px;
+    padding: 5px 6px;
+    border-radius: 6px;
+    border: 1px solid var(--ui-black-transparent);
+    background: var(--ui-primary);
+    color: var(--text-primary);
+    width: 62px;
+}
+
+.ms-bar .ms-k {
+    font-size: 12px;
+    opacity: 0.8;
+    flex-shrink: 0;
+}
+
+.ms-clock {
+    font-size: 12px;
+    font-variant-numeric: tabular-nums;
+    opacity: 0.85;
+    flex-shrink: 0;
+    min-width: 96px;
+    text-align: center;
+}
+
+.ms-info {
+    font-size: 12px;
+    opacity: 0.75;
+    margin-left: auto;
+    max-width: 32%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.ms-info.is-bad {
+    color: #e2604f;
+    opacity: 1;
+}
+
+/* ---------- 主体：轨道头 + 时间轴 ---------- */
+
+.ms-body {
+    flex: 1 1 auto;
+    min-height: 0;
+    min-width: 0;
+    display: flex;
+    overflow: hidden;
+}
+
+.ms-heads {
+    width: 196px;
+    flex: 0 0 196px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    border-right: 1px solid var(--ui-black-transparent);
+    background: var(--ui-primary);
+}
+
+.ms-headpad {
+    height: 30px;
+    flex: 0 0 30px;
+    border-bottom: 1px solid var(--ui-black-transparent);
+    box-sizing: border-box;
+}
+
+.ms-headlist {
+    flex: 1 1 auto;
+    overflow: hidden;
+    will-change: transform;
+}
+
+.ms-head {
+    height: 74px;
+    box-sizing: border-box;
+    border-bottom: 1px solid var(--ui-black-transparent);
+    padding: 6px 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.ms-head-top {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    min-width: 0;
+}
+
+.ms-dot {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    flex: 0 0 9px;
+}
+
+.ms-hname {
+    font-size: 12px;
+    font-weight: 600;
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    cursor: text;
+}
+
+.ms-mini {
+    font: inherit;
+    font-size: 10px;
+    line-height: 1;
+    width: 20px;
+    height: 20px;
+    flex: 0 0 20px;
+    border-radius: 5px;
+    border: 1px solid var(--ui-black-transparent);
+    background: var(--ui-secondary);
+    color: var(--text-primary);
+    cursor: pointer;
+    opacity: 0.7;
+    padding: 0;
+}
+
+.ms-mini:hover { opacity: 1; }
+
+.ms-mini.is-on {
+    background: var(--looks-secondary, #75c0c3);
+    color: var(--bl-on-accent, #fff);
+    border-color: transparent;
+    opacity: 1;
+}
+
+.ms-mini.ms-del.is-on {
+    background: #e2604f;
+    color: #fff;
+}
+
+.ms-head-bot {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.ms-head-bot .ms-vol {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.ms-volnum {
+    font-size: 10px;
+    width: 34px;
+    text-align: right;
+    flex: 0 0 34px;
+    opacity: 0.75;
+    font-variant-numeric: tabular-nums;
+}
+
+.ms-master {
+    flex: 0 0 auto;
+    height: 46px;
+    box-sizing: border-box;
+    border-top: 1px solid var(--ui-black-transparent);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 0 8px;
+    background: var(--ui-secondary);
+}
+
+.ms-mname {
+    font-size: 12px;
+    font-weight: 600;
+    flex: 0 0 auto;
+}
+
+.ms-master .ms-vol {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+/* ---------- 时间轴 ---------- */
+
+.ms-tl {
+    position: relative;
+    /* ⚠ flex-basis 必须是 0，不能是 auto。
+       auto 时基准尺寸按内容算，泳道一宽（比如 16 秒的工程铺到 1536px），
+       .ms-tl 自己就被撑到 1536 —— 和 scrollWidth 相等，overflow:auto
+       永远没有可滚动的距离，往右划不动，整块还被面板 overflow:hidden 裁掉。
+       基准给 0 之后它只吃剩余空间，多出来的宽度才真正变成可滚动区域。 */
+    flex: 1 1 0;
+    min-width: 0;
+    overflow: auto;
+    background: var(--ui-secondary);
+}
+
+.ms-tl.is-over {
+    outline: 2px dashed var(--looks-secondary, #75c0c3);
+    outline-offset: -4px;
+}
+
+.ms-ruler {
+    position: sticky;
+    top: 0;
+    left: 0;
+    z-index: 3;
+    display: block;
+    height: 30px;
+    background: var(--ui-primary);
+    border-bottom: 1px solid var(--ui-black-transparent);
+    box-sizing: border-box;
+    cursor: text;
+}
+
+.ms-lanes {
+    position: relative;
+    min-height: 100%;
+}
+
+.ms-lane {
+    position: relative;
+    box-sizing: border-box;
+    border-bottom: 1px solid var(--ui-black-transparent);
+    /* 网格与标尺对齐：小节线实一点，拍线虚一点 */
+    background-image:
+        linear-gradient(90deg, rgba(0, 0, 0, 0.13) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0, 0, 0, 0.05) 1px, transparent 1px);
+    background-size: var(--barpx, 128px) 100%, var(--beatpx, 32px) 100%;
+    background-color: rgba(0, 0, 0, 0.05);
+}
+
+.ms-empty {
+    padding: 24px 16px;
+    font-size: 13px;
+    opacity: 0.55;
+}
+
+/* ---------- 音频片段 ---------- */
+
+.ms-clip {
+    position: absolute;
+    top: 5px;
+    bottom: 5px;
+    min-width: 12px;
+    border-radius: 7px;
+    background: hsl(var(--ch, 174), 58%, 46%);
+    color: #fff;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.28);
+    overflow: hidden;
+    cursor: grab;
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+    border: 1px solid rgba(255, 255, 255, 0.28);
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: none;
+}
+
+.ms-clip.is-sel {
+    outline: 2px solid #fff;
+    outline-offset: -2px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4);
+}
+
+.ms-cliphd {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    height: 16px;
+    flex: 0 0 16px;
+    padding: 0 4px 0 6px;
+    background: rgba(0, 0, 0, 0.22);
+    font-size: 10px;
+    line-height: 16px;
+}
+
+.ms-clipname {
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.ms-clipx {
+    font: inherit;
+    font-size: 11px;
+    line-height: 1;
+    width: 14px;
+    height: 14px;
+    flex: 0 0 14px;
+    padding: 0;
+    border: 0;
+    border-radius: 3px;
+    background: rgba(255, 255, 255, 0.25);
+    color: #fff;
+    cursor: pointer;
+}
+
+.ms-clipx:hover { background: rgba(255, 255, 255, 0.5); color: #c0392b; }
+
+.ms-clipwv {
+    display: block;
+    width: 100%;
+    flex: 1 1 auto;
+    min-height: 0;
+    opacity: 0.95;
+}
+
+.ms-grip {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 7px;
+    cursor: ew-resize;
+}
+
+.ms-grip.ms-gl { left: 0; }
+.ms-grip.ms-gr { right: 0; }
+
+.ms-clip:hover .ms-grip {
+    background: rgba(255, 255, 255, 0.35);
+}
+
+/* ---------- 播放指针 ---------- */
+
+.ms-playhead {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 2px;
+    background: #fff;
+    box-shadow: 0 0 4px rgba(0, 0, 0, 0.5);
+    pointer-events: none;
+    z-index: 2;
+}
+
+.ms-playhead::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -5px;
+    width: 12px;
+    height: 12px;
+    background: #fff;
+    border-radius: 2px;
+}
+
+/* ---------- 空态提示 ---------- */
+
+.ms-drop {
+    position: absolute;
+    left: 0;
+    top: 30px;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    opacity: 0.5;
+    pointer-events: none;
+}
+
+.ms-tl.has-clips .ms-drop { display: none; }
+
+/* ---------- 片段属性条 ---------- */
+
+.ms-clipbar {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 10px;
+    min-height: 30px;
+    border-top: 1px solid var(--ui-black-transparent);
+    background: var(--ui-primary);
+    flex-wrap: wrap;
+}
+
+.ms-cbtip, .ms-cbtip2 {
+    font-size: 12px;
+    opacity: 0.6;
+}
+
+.ms-cbtip2 { opacity: 0.85; font-weight: 600; }
+
+.ms-cbname {
+    font-size: 12px;
+    max-width: 150px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.ms-clipbar .ms-vol {
+    width: 110px;
+    flex: 0 0 110px;
+}
+
+/* ---------- 底部导出区 ---------- */
+
+.ms-bot {
+    flex-shrink: 0;
+    display: flex;
+    gap: 8px;
+    padding: 8px 10px 12px;
+    border-top: 1px solid var(--ui-black-transparent);
+}
+
+/* ---------- iOS 风格滑块（与其它处一致） ---------- */
+
+input[type="range"].ms-vol {
+    -webkit-appearance: none;
+    appearance: none;
+    height: 28px;
+    background: transparent;
+    cursor: pointer;
+    margin: 0;
+}
+
+input[type="range"].ms-vol::-webkit-slider-runnable-track {
+    height: 4px;
+    border-radius: 2px;
+    background: linear-gradient(90deg,
+        var(--looks-secondary, #75c0c3) 0%,
+        var(--looks-secondary, #75c0c3) var(--p, 60%),
+        rgba(120, 120, 128, 0.32) var(--p, 60%),
+        rgba(120, 120, 128, 0.32) 100%);
+}
+
+input[type="range"].ms-vol::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 20px;
+    height: 20px;
+    margin-top: -8px;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+    border: 0;
+}
+
+input[type="range"].ms-vol::-moz-range-track {
+    height: 4px;
+    border-radius: 2px;
+    background: rgba(120, 120, 128, 0.32);
+}
+
+input[type="range"].ms-vol::-moz-range-progress {
+    height: 4px;
+    border-radius: 2px;
+    background: var(--looks-secondary, #75c0c3);
+}
+
+input[type="range"].ms-vol::-moz-range-thumb {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #fff;
+    border: 0;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+/* ==========================================================================
+   乐器轨 + 混响 + 钢琴卷帘
+   ========================================================================== */
+
+/* 轨道头高度必须和泳道行高一致，否则两边错位 */
+.ms-head {
+    height: 82px;
+    padding: 5px 8px;
+    gap: 3px;
+}
+
+.ms-badge {
+    font-size: 9px;
+    line-height: 1;
+    padding: 2px 4px;
+    border-radius: 4px;
+    flex: 0 0 auto;
+    background: var(--ui-black-transparent);
+    color: var(--text-primary);
+    opacity: 0.7;
+}
+
+.ms-badge.is-inst {
+    background: var(--looks-secondary, #75c0c3);
+    color: var(--bl-on-accent, #fff);
+    opacity: 1;
+}
+
+.ms-head-mid {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    min-width: 0;
+}
+
+.ms-inst {
+    font: inherit;
+    font-size: 11px;
+    height: 21px;
+    flex: 0 0 auto;
+    min-width: 74px;
+    border-radius: 5px;
+    border: 1px solid var(--ui-black-transparent);
+    background: var(--ui-secondary);
+    color: var(--text-primary);
+    padding: 0 4px;
+    cursor: pointer;
+}
+
+.ms-hint {
+    font-size: 9.5px;
+    opacity: 0.55;
+    flex: 1 1 auto;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.ms-k2 {
+    font-size: 10px;
+    flex: 0 0 auto;
+    opacity: 0.7;
+    width: 14px;
+    text-align: center;
+}
+
+/* 乐器轨里音量/混响并排，各占一半 */
+.ms-vol2 {
+    flex: 1 1 0;
+    min-width: 0;
+    max-width: 76px;
+}
+
+.ms-tl, .ms-lane, .ms-clip {
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+.ms-lane.is-inst {
+    background-image: repeating-linear-gradient(135deg,
+        var(--ui-black-transparent) 0 6px, transparent 6px 12px);
+    background-size: auto;
+    opacity: 1;
+}
+
+.ms-lane.is-inst::after {
+    content: '双击这里建乐轨';
+    position: absolute;
+    left: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 11px;
+    opacity: 0.35;
+    pointer-events: none;
+}
+
+/* ---------------- 钢琴卷帘窗口 ---------------- */
+
+/* 顶层宿主是 pointer-events:none（否则整层挡住编辑器），会继承下来。
+   窗口自身必须显式设回 auto，否则画得出来却一个按钮都点不动。 */
+.ms-prwin {
+    pointer-events: auto;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.ms-prwin.is-max { border-radius: 0; }
+
+.ms-prwin > .addon-window-header { flex: 0 0 auto; }
+
+.ms-prwin > .addon-window-content {
+    flex: 1 1 auto;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    padding: 0;
+    overflow: hidden;
+}
+
+.pr-bar {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 10px;
+    border-bottom: 1px solid var(--ui-black-transparent);
+    flex-wrap: wrap;
+}
+
+.pr-k {
+    font-size: 11px;
+    opacity: 0.75;
+}
+
+.pr-sep {
+    width: 1px;
+    height: 16px;
+    background: var(--ui-black-transparent);
+    margin: 0 2px;
+}
+
+.pr-sel {
+    font: inherit;
+    font-size: 11px;
+    height: 24px;
+    border-radius: 6px;
+    border: 1px solid var(--ui-black-transparent);
+    background: var(--ui-secondary);
+    color: var(--text-primary);
+    padding: 0 4px;
+    cursor: pointer;
+}
+
+.pr-vel {
+    width: 96px;
+    height: 24px;
+    accent-color: var(--looks-secondary, #75c0c3);
+}
+
+.pr-vnum {
+    font-size: 11px;
+    width: 26px;
+    text-align: right;
+    opacity: 0.75;
+    font-variant-numeric: tabular-nums;
+}
+
+.pr-len {
+    font: inherit;
+    font-size: 11px;
+    width: 52px;
+    height: 24px;
+    border-radius: 6px;
+    border: 1px solid var(--ui-black-transparent);
+    background: var(--ui-secondary);
+    color: var(--text-primary);
+    padding: 0 4px;
+}
+
+.pr-main {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: auto;
+    display: flex;
+    align-items: flex-start;
+    background: #14171d;
+}
+
+/* 键盘：横向滚动时钉在左边，纵向跟着一起滚 */
+/* sticky 本身就是定位上下文，别再写一遍 position:relative —— 会覆盖掉 sticky */
+.pr-keys {
+    position: sticky;
+    left: 0;
+    z-index: 3;
+    flex: 0 0 80px;
+    width: 80px;
+    background: linear-gradient(180deg, #cfd5dd 0%, #b6bcc6 100%);
+    border-right: 1px solid rgba(0, 0, 0, 0.45);
+    box-shadow: inset -4px 0 7px rgba(0, 0, 0, 0.22);
+}
+
+/* 琴键本体：白键铺满整行，带上下渐变和底部圆角，像真键被按下前的样子 */
+.pr-key {
+    position: absolute;
+    left: 0;
+    right: 0;
+    box-sizing: border-box;
+    background: linear-gradient(180deg, #f7f8fa 0%, #ffffff 52%, #e8ecf1 84%, #d3d9e0 100%);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.18);
+    user-select: none;
+    cursor: pointer;
+}
+
+.pr-key.is-wt:hover {
+    background: linear-gradient(180deg, #eef2f6 0%, #f6f8fb 52%, #dee3ea 84%, #c8cfd7 100%);
+}
+
+/* 黑键用 ::after 叠在白键行上部：白键在下方连续，黑键压在上面 */
+.pr-key.is-bk::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 36%;
+    top: 0;
+    height: 72%;
+    background: linear-gradient(180deg, #4c525b 0%, #22262d 42%, #0f1216 80%, #343a42 100%);
+    border-radius: 0 0 3px 3px;
+    box-shadow: 0 2px 3px rgba(0, 0, 0, 0.5),
+                inset 0 -2px 2px rgba(255, 255, 255, 0.14);
+    pointer-events: none;
+}
+
+.pr-key.is-bk:hover::after {
+    background: linear-gradient(180deg, #5f6671 0%, #2e333b 42%, #191d23 80%, #3d444d 100%);
+}
+
+.pr-key.is-on {
+    background: linear-gradient(180deg, #dfe5ec 0%, #eef1f5 52%, #d6dce4 84%, #c2c9d2 100%);
+}
+
+.pr-key.is-bk.is-on::after {
+    background: linear-gradient(180deg, #2b3038 0%, #14181e 42%, #05070a 80%, #22262d 100%);
+}
+
+.pr-klab {
+    position: absolute;
+    left: 5px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 8.5px;
+    font-weight: 700;
+    line-height: 1;
+    color: #8b919c;
+    pointer-events: none;
+    z-index: 4;
+}
+
+.pr-grid {
+    flex: 0 0 auto;
+    position: relative;
+}
+
+.pr-notes {
+    position: relative;
+    background-color: #14171d;
+    background-image:
+        repeating-linear-gradient(to right, rgba(255, 255, 255, 0.09) 0 1px, transparent 1px var(--beatpx, 60px)),
+        repeating-linear-gradient(to right, rgba(255, 255, 255, 0.22) 0 1px, transparent 1px var(--barpx, 240px)),
+        repeating-linear-gradient(to bottom, rgba(255, 255, 255, 0.06) 0 1px, transparent 1px var(--rowh, 13px));
+    cursor: crosshair;
+}
+
+.pr-note {
+    position: absolute;
+    box-sizing: border-box;
+    border-radius: 3px;
+    background: linear-gradient(180deg, #86f2df 0%, #35c0ad 100%);
+    border: 1px solid rgba(190, 255, 244, 0.9);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+    cursor: pointer;
+}
+
+.pr-note:hover { filter: brightness(1.12); }
+
+.pr-note.is-sel {
+    background: linear-gradient(180deg, #ffe89a 0%, #f0b93f 100%);
+    border-color: rgba(255, 246, 214, 0.95);
+}
+
+.pr-bot {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 10px;
+    border-top: 1px solid var(--ui-black-transparent);
+}
+
+.pr-tip {
+    font-size: 10.5px;
+    opacity: 0.6;
+    flex: 1 1 auto;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.pr-cnt {
+    font-size: 11px;
+    opacity: 0.8;
+    font-variant-numeric: tabular-nums;
+}
+
+/* ---------------- 音量圆点 ---------------- */
+
+.ms-knob {
+    flex: 0 0 auto;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    cursor: ns-resize;
+    position: relative;
+    background:
+        radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.9) 0 2px, transparent 2px),
+        conic-gradient(var(--looks-secondary, #75c1c4) calc(var(--kp, .66) * 360deg),
+                       var(--ui-black-transparent) 0);
+    border: 1px solid var(--ui-black-transparent);
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.25);
+}
+
+.ms-knob::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 2px;
+    width: 1.5px;
+    height: 7px;
+    margin-left: -0.75px;
+    border-radius: 1px;
+    background: var(--text-primary);
+    opacity: 0.75;
+    transform-origin: 50% 8px;
+    transform: rotate(calc(var(--kp, .66) * 270deg - 135deg));
+}
+
+.ms-knob:hover { filter: brightness(1.12); }
+
+/* ---------------- 播放位置（小节:拍.毫秒） ---------------- */
+
+.ms-pos {
+    font-size: 12px;
+    font-variant-numeric: tabular-nums;
+    flex-shrink: 0;
+    min-width: 74px;
+    text-align: center;
+    padding: 1px 6px;
+    border-radius: 5px;
+    background: var(--ui-black-transparent);
+    opacity: 0.9;
+}
+
+.ms-bot .ms-sep {
+    width: 1px;
+    height: 16px;
+    background: var(--ui-black-transparent);
+    margin: 0 2px;
+}
+
+/* ==========================================================================
+   打开音乐编辑器时让出舞台那一栏
+   --------------------------------------------------------------------------
+   舞台在另一棵子树里，.ms-active 够不到，所以挂在 html 上。
+   整列让出来后音乐面板能吃到这部分宽度，时间轴才有地方往右铺。
+   ========================================================================== */
+
+html.ms-music-on [class*="gui_stage-and-target-wrapper"] {
+    display: none !important;
+}
+
+/* 面板限高的兜底：JS 会按视口算准确值写进 inline style，
+   这条只在脚本没跑起来时顶一下，避免底部导出区被顶出屏幕。 */
+.ms-panel {
+    max-height: calc(100vh - 81px);
+}
+
+/* ==========================================================================
+   轨道右键菜单
+   ========================================================================== */
+
+.ms-ctx {
+    position: fixed;
+    z-index: 2147483000;
+    min-width: 132px;
+    padding: 4px;
+    border-radius: 8px;
+    background: var(--ui-primary, #ffffff);
+    border: 1px solid var(--ui-black-transparent, rgba(0, 0, 0, 0.15));
+    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.28);
+    pointer-events: auto;
+    overflow: hidden;
+}
+
+.ms-ctx-name {
+    font-size: 11px;
+    opacity: .55;
+    padding: 3px 8px 5px;
+    max-width: 180px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.ms-ctx-item {
+    display: block;
+    width: 100%;
+    height: 28px;
+    padding: 0 10px;
+    border: 0;
+    border-radius: 6px;
+    background: transparent;
+    color: var(--text-primary, #575e75);
+    font-size: 13px;
+    text-align: left;
+    cursor: pointer;
+}
+
+.ms-ctx-item:hover { background: var(--looks-secondary, #75c1c4); color: #fff; }
+
+/* ==========================================================================
+   STAR —— 编辑器内 AI 助手
+   --------------------------------------------------------------------------
+   三块界面：
+     1) .sw-win    聊天主窗口（左侧会话栏 + 右侧对话区）
+     2) .sw-prog   后台工作窗：显示当前在做什么、正在想什么
+     3) .sw-mon    数据监视窗：实时变量 / 列表 / 角色状态
+
+   外壳一律用 .addon-window 系列，与编辑器原生窗口同一套结构与样式，
+   拖动 / 最小化收进 DOCK / 最大化 / 置顶全部直接复用。
+
+   ⚠ 顶层宿主 #bl-top-layer 是 pointer-events:none（否则整层会挡住编辑器），
+     该属性会继承 —— 这里的每个窗口都必须显式声明 auto，
+     否则窗口画得出来却点不动，表现就是"只是一张贴图"。
+   ========================================================================== */
+
+#bl-top-layer .sw-win,
+#bl-top-layer .sw-prog,
+#bl-top-layer .sw-mon {
+    pointer-events: auto;
+}
+
+/* ---------------- 聊天主窗口 ---------------- */
+
+#bl-top-layer .sw-win .sw-content {
+    display: flex;
+    min-height: 0;
+    padding: 0;
+    overflow: hidden;
+}
+
+#bl-top-layer .sw-side {
+    flex: 0 0 196px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 12px 10px;
+    box-sizing: border-box;
+    border-right: 1px solid var(--ui-black-transparent, rgba(0, 0, 0, 0.08));
+    background: var(--ui-secondary, #f6f7f9);
+    overflow: hidden;
+}
+
+#bl-top-layer .sw-brand {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 2px 4px 8px;
+    font-weight: 700;
+    font-size: 15px;
+    letter-spacing: 0.4px;
+    color: var(--text-primary, #2d3748);
+}
+
+#bl-top-layer .sw-brand svg {
+    width: 22px;
+    height: 22px;
+    flex: 0 0 auto;
+}
+
+#bl-top-layer .sw-new {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    width: 100%;
+    padding: 8px 10px;
+    border: none;
+    border-radius: 9px;
+    background: var(--looks-secondary, #75c1c4);
+    color: var(--bl-on-accent, #ffffff);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+#bl-top-layer .sw-new:hover {
+    filter: brightness(1.06);
+}
+
+#bl-top-layer .sw-sessions {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+#bl-top-layer .sw-sess {
+    padding: 8px 10px;
+    border: none;
+    border-radius: 8px;
+    background: transparent;
+    color: var(--text-primary, #2d3748);
+    text-align: left;
+    font-size: 12.5px;
+    cursor: pointer;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+#bl-top-layer .sw-sess:hover {
+    background: var(--ui-black-transparent, rgba(0, 0, 0, 0.06));
+}
+
+#bl-top-layer .sw-sess.is-on {
+    background: var(--ui-white, #ffffff);
+    font-weight: 600;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+#bl-top-layer .sw-sess-empty {
+    padding: 10px 4px;
+    font-size: 12px;
+    opacity: 0.55;
+    color: var(--text-primary, #2d3748);
+}
+
+#bl-top-layer .sw-main {
+    flex: 1 1 auto;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+#bl-top-layer .sw-top {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--ui-black-transparent, rgba(0, 0, 0, 0.08));
+    font-size: 12px;
+    color: var(--text-primary, #2d3748);
+}
+
+#bl-top-layer .sw-model {
+    height: 26px;
+    padding: 0 6px;
+    border-radius: 7px;
+    border: 1px solid var(--ui-black-transparent, rgba(0, 0, 0, 0.14));
+    background: var(--ui-white, #ffffff);
+    color: var(--text-primary, #2d3748);
+    font-size: 12px;
+}
+
+#bl-top-layer .sw-watch {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    margin-left: auto;
+    cursor: pointer;
+    user-select: none;
+}
+
+#bl-top-layer .sw-cfg {
+    width: 26px;
+    height: 26px;
+    border: none;
+    border-radius: 7px;
+    background: transparent;
+    color: var(--text-primary, #2d3748);
+    cursor: pointer;
+    font-size: 14px;
+    line-height: 1;
+}
+
+#bl-top-layer .sw-cfg:hover {
+    background: var(--ui-black-transparent, rgba(0, 0, 0, 0.07));
+}
+
+/* 接口设置：默认收起，点齿轮展开 */
+#bl-top-layer .sw-cfgbox {
+    flex: 0 0 auto;
+    display: none;
+    flex-direction: column;
+    gap: 6px;
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--ui-black-transparent, rgba(0, 0, 0, 0.08));
+    background: var(--ui-secondary, #f6f7f9);
+    font-size: 12px;
+    color: var(--text-primary, #2d3748);
+}
+
+#bl-top-layer .sw-cfgbox.is-on {
+    display: flex;
+}
+
+#bl-top-layer .sw-cfgbox input {
+    height: 28px;
+    padding: 0 8px;
+    border-radius: 7px;
+    border: 1px solid var(--ui-black-transparent, rgba(0, 0, 0, 0.14));
+    background: var(--ui-white, #ffffff);
+    color: var(--text-primary, #2d3748);
+    font-size: 12px;
+    box-sizing: border-box;
+    width: 100%;
+}
+
+#bl-top-layer .sw-cfgbox .sw-hint {
+    opacity: 0.62;
+    line-height: 1.5;
+}
+
+#bl-top-layer .sw-chat {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: auto;
+    padding: 16px 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+#bl-top-layer .sw-welcome {
+    margin: auto;
+    text-align: center;
+    color: var(--text-primary, #2d3748);
+}
+
+#bl-top-layer .sw-welcome b {
+    display: block;
+    font-size: 15px;
+    margin-bottom: 6px;
+}
+
+#bl-top-layer .sw-welcome span {
+    font-size: 12px;
+    opacity: 0.6;
+}
+
+#bl-top-layer .sw-msg {
+    max-width: 86%;
+    padding: 9px 12px;
+    border-radius: 12px;
+    font-size: 13px;
+    line-height: 1.6;
+    word-break: break-word;
+    white-space: pre-wrap;
+    color: var(--text-primary, #2d3748);
+}
+
+#bl-top-layer .sw-msg.ai {
+    align-self: flex-start;
+    background: var(--ui-secondary, #f1f3f5);
+    border-bottom-left-radius: 4px;
+}
+
+#bl-top-layer .sw-msg.me {
+    align-self: flex-end;
+    background: var(--looks-secondary, #75c1c4);
+    color: var(--bl-on-accent, #ffffff);
+    border-bottom-right-radius: 4px;
+}
+
+#bl-top-layer .sw-msg.sys {
+    align-self: center;
+    max-width: 92%;
+    background: transparent;
+    opacity: 0.62;
+    font-size: 12px;
+    text-align: center;
+}
+
+/* 执行结果：每一步一行，带状态点 */
+#bl-top-layer .sw-log {
+    align-self: stretch;
+    max-width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 8px 10px;
+    border-radius: 10px;
+    background: var(--ui-secondary, #f1f3f5);
+    font-size: 12px;
+    color: var(--text-primary, #2d3748);
+}
+
+#bl-top-layer .sw-log i {
+    display: inline-block;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    margin-right: 6px;
+    background: var(--ui-black-transparent, rgba(0, 0, 0, 0.2));
+    vertical-align: 1px;
+}
+
+#bl-top-layer .sw-log .ok i { background: #34c759; }
+#bl-top-layer .sw-log .run i { background: #ffb300; }
+#bl-top-layer .sw-log .no i { background: #e64a4a; }
+
+/* 回复里的 SVG 矢量图：一行小工具条，可直接变成造型 */
+#bl-top-layer .sw-svg {
+    align-self: flex-start;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    margin: 2px 0 8px;
+    padding: 5px 8px;
+    border-radius: 9px;
+    background: var(--ui-secondary, #f1f3f5);
+    font-size: 12px;
+}
+
+#bl-top-layer .sw-svg-n {
+    opacity: 0.62;
+    color: var(--text-primary, #2d3748);
+}
+
+#bl-top-layer .sw-svg-btn,
+#bl-top-layer .sw-svg-dl {
+    border: 0;
+    border-radius: 7px;
+    padding: 4px 10px;
+    font-size: 12px;
+    cursor: pointer;
+    color: var(--bl-on-accent, #ffffff);
+    background: var(--looks-secondary, #75c1c4);
+}
+
+#bl-top-layer .sw-svg-dl {
+    color: var(--text-primary, #2d3748);
+    background: var(--ui-black-transparent, rgba(0, 0, 0, 0.08));
+}
+
+#bl-top-layer .sw-svg-btn:disabled,
+#bl-top-layer .sw-svg-dl:disabled {
+    opacity: 0.5;
+    cursor: default;
+}
+
+#bl-top-layer .sw-composer {
+    flex: 0 0 auto;
+    padding: 10px 12px 12px;
+    border-top: 1px solid var(--ui-black-transparent, rgba(0, 0, 0, 0.08));
+}
+
+#bl-top-layer .sw-input {
+    width: 100%;
+    min-height: 58px;
+    max-height: 148px;
+    padding: 9px 11px;
+    border-radius: 10px;
+    border: 1px solid var(--ui-black-transparent, rgba(0, 0, 0, 0.14));
+    background: var(--ui-white, #ffffff);
+    color: var(--text-primary, #2d3748);
+    font-size: 13px;
+    line-height: 1.5;
+    resize: none;
+    box-sizing: border-box;
+    font-family: inherit;
+}
+
+#bl-top-layer .sw-input:focus {
+    outline: 2px solid var(--looks-secondary, #75c1c4);
+    outline-offset: -1px;
+}
+
+#bl-top-layer .sw-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 8px;
+}
+
+#bl-top-layer .sw-chip {
+    padding: 5px 10px;
+    border-radius: 999px;
+    border: 1px solid var(--ui-black-transparent, rgba(0, 0, 0, 0.14));
+    background: transparent;
+    color: var(--text-primary, #2d3748);
+    font-size: 12px;
+    cursor: pointer;
+}
+
+#bl-top-layer .sw-chip:hover {
+    background: var(--ui-black-transparent, rgba(0, 0, 0, 0.06));
+}
+
+#bl-top-layer .sw-chip.is-on {
+    background: var(--looks-secondary, #75c1c4);
+    border-color: transparent;
+    color: var(--bl-on-accent, #ffffff);
+}
+
+#bl-top-layer .sw-send {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 7px 14px;
+    border: none;
+    border-radius: 999px;
+    background: #2eb872;
+    color: #ffffff;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+#bl-top-layer .sw-send:hover { filter: brightness(1.06); }
+#bl-top-layer .sw-send:disabled { opacity: 0.5; cursor: default; }
+
+/* ---------------- 后台工作窗 ---------------- */
+
+#bl-top-layer .sw-prog .sw-prog-body {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 12px 14px;
+    overflow: auto;
+    font-size: 12.5px;
+    color: var(--text-primary, #2d3748);
+}
+
+#bl-top-layer .sw-prog-think {
+    padding: 8px 10px;
+    border-radius: 9px;
+    background: var(--ui-secondary, #f1f3f5);
+    line-height: 1.6;
+    min-height: 34px;
+    word-break: break-word;
+}
+
+#bl-top-layer .sw-prog-think b {
+    display: block;
+    font-size: 11px;
+    opacity: 0.6;
+    margin-bottom: 3px;
+    font-weight: 600;
+}
+
+#bl-top-layer .sw-prog-steps {
+    flex: 1 1 auto;
+    min-height: 0;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+#bl-top-layer .sw-prog-steps li {
+    display: flex;
+    align-items: flex-start;
+    gap: 7px;
+    line-height: 1.5;
+    opacity: 0.5;
+}
+
+#bl-top-layer .sw-prog-steps li.is-run { opacity: 1; font-weight: 600; }
+#bl-top-layer .sw-prog-steps li.is-ok { opacity: 0.85; }
+
+#bl-top-layer .sw-prog-steps li em {
+    flex: 0 0 auto;
+    width: 14px;
+    font-style: normal;
+    text-align: center;
+}
+
+#bl-top-layer .sw-prog-bar {
+    height: 4px;
+    border-radius: 999px;
+    background: var(--ui-black-transparent, rgba(0, 0, 0, 0.1));
+    overflow: hidden;
+}
+
+#bl-top-layer .sw-prog-bar i {
+    display: block;
+    height: 100%;
+    width: 0%;
+    border-radius: 999px;
+    background: var(--looks-secondary, #75c1c4);
+    transition: width 0.25s ease;
+}
+
+/* ---------------- 数据监视窗 ---------------- */
+
+#bl-top-layer .sw-mon .sw-mon-body {
+    padding: 10px 12px;
+    overflow: auto;
+    font-size: 12.5px;
+    color: var(--text-primary, #2d3748);
+}
+
+#bl-top-layer .sw-mon h4 {
+    margin: 10px 0 5px;
+    font-size: 11px;
+    opacity: 0.6;
+    font-weight: 600;
+}
+
+#bl-top-layer .sw-mon h4:first-child { margin-top: 0; }
+
+#bl-top-layer .sw-mon table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+#bl-top-layer .sw-mon td {
+    padding: 4px 6px;
+    border-bottom: 1px solid var(--ui-black-transparent, rgba(0, 0, 0, 0.06));
+    vertical-align: top;
+}
+
+#bl-top-layer .sw-mon td:last-child {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+    word-break: break-all;
+}
+
+#bl-top-layer .sw-mon-empty {
+    padding: 8px 0;
+    opacity: 0.55;
+}
+
+/* ==========================================================================
+   接口设置弹窗(.sc-win)
+   --------------------------------------------------------------------------
+   三块来源：免费模型 / 通用接口（OpenAI 兼容）/ 本地指令引擎。
+   免费模型的密钥是内置的，界面上只展示示例地址与参数表，不回显密钥。
+   ========================================================================== */
+
+#bl-top-layer .sc-win {
+    pointer-events: auto;
+}
+
+#bl-top-layer .sc-win .sc-body {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    padding: 0;
+    overflow: hidden;
+}
+
+#bl-top-layer .sc-wrap {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: auto;
+    padding: 14px 16px 4px;
+    box-sizing: border-box;
+}
+
+#bl-top-layer .sc-use-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+    font-size: 12px;
+    color: var(--text-primary, #2d3748);
+}
+
+#bl-top-layer .sc-use {
+    flex: 1 1 auto;
+    height: 30px;
+    padding: 0 8px;
+    border-radius: 8px;
+    border: 1px solid var(--ui-black-transparent, rgba(0, 0, 0, 0.14));
+    background: var(--ui-white, #ffffff);
+    color: var(--text-primary, #2d3748);
+    font-size: 12px;
+}
+
+#bl-top-layer .sc-sec {
+    margin-bottom: 16px;
+}
+
+#bl-top-layer .sc-sec > h3 {
+    margin: 0 0 8px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    color: var(--text-primary, #2d3748);
+    opacity: 0.75;
+}
+
+#bl-top-layer .sc-cards {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+}
+
+#bl-top-layer .sc-card,
+#bl-top-layer .sc-local {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 9px 10px;
+    border: 1px solid var(--ui-black-transparent, rgba(0, 0, 0, 0.14));
+    border-radius: 10px;
+    background: var(--ui-white, #ffffff);
+    color: var(--text-primary, #2d3748);
+    font-size: 12px;
+    text-align: left;
+    cursor: pointer;
+}
+
+#bl-top-layer .sc-local {
+    width: 100%;
+}
+
+#bl-top-layer .sc-card b,
+#bl-top-layer .sc-local b {
+    font-size: 13px;
+    font-weight: 700;
+}
+
+#bl-top-layer .sc-card span,
+#bl-top-layer .sc-local span {
+    opacity: 0.6;
+    font-size: 11px;
+}
+
+#bl-top-layer .sc-card:hover,
+#bl-top-layer .sc-local:hover {
+    background: var(--ui-secondary, #f6f7f9);
+}
+
+#bl-top-layer .sc-card.is-on,
+#bl-top-layer .sc-local.is-on {
+    border-color: var(--looks-secondary, #75c1c4);
+    background: var(--looks-secondary, #75c1c4);
+    color: var(--bl-on-accent, #ffffff);
+}
+
+#bl-top-layer .sc-card.is-on span,
+#bl-top-layer .sc-local.is-on span {
+    opacity: 0.8;
+}
+
+#bl-top-layer .sc-detail {
+    margin-top: 8px;
+    padding: 10px;
+    border-radius: 10px;
+    background: var(--ui-secondary, #f6f7f9);
+    box-sizing: border-box;
+}
+
+#bl-top-layer .sc-demo {
+    display: flex;
+    gap: 8px;
+    align-items: flex-start;
+    margin-bottom: 8px;
+    font-size: 11px;
+}
+
+#bl-top-layer .sc-demo label {
+    flex: 0 0 auto;
+    opacity: 0.6;
+    line-height: 1.6;
+}
+
+#bl-top-layer .sc-demo code {
+    flex: 1 1 auto;
+    word-break: break-all;
+    line-height: 1.6;
+    font-size: 11px;
+    opacity: 0.9;
+}
+
+#bl-top-layer .sc-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 11px;
+}
+
+#bl-top-layer .sc-table th,
+#bl-top-layer .sc-table td {
+    padding: 4px 6px;
+    text-align: left;
+    border-bottom: 1px solid var(--ui-black-transparent, rgba(0, 0, 0, 0.07));
+}
+
+#bl-top-layer .sc-table th {
+    font-weight: 700;
+    opacity: 0.6;
+}
+
+#bl-top-layer .sc-table td:first-child {
+    font-weight: 700;
+}
+
+#bl-top-layer .sc-opts {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+    margin-top: 8px;
+}
+
+#bl-top-layer .sc-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 6px;
+    font-size: 12px;
+}
+
+#bl-top-layer .sc-row > label {
+    flex: 0 0 74px;
+    opacity: 0.7;
+}
+
+#bl-top-layer .sc-row input,
+#bl-top-layer .sc-row select {
+    flex: 1 1 auto;
+    height: 28px;
+    padding: 0 8px;
+    border-radius: 8px;
+    border: 1px solid var(--ui-black-transparent, rgba(0, 0, 0, 0.14));
+    background: var(--ui-white, #ffffff);
+    color: var(--text-primary, #2d3748);
+    font-size: 12px;
+    box-sizing: border-box;
+}
+
+#bl-top-layer .sc-note {
+    margin-top: 6px;
+    font-size: 11px;
+    line-height: 1.6;
+    opacity: 0.6;
+}
+
+#bl-top-layer .sc-foot {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px;
+    border-top: 1px solid var(--ui-black-transparent, rgba(0, 0, 0, 0.08));
+    background: var(--ui-secondary, #f6f7f9);
+}
+
+#bl-top-layer .sc-stat {
+    flex: 1 1 auto;
+    font-size: 11px;
+    opacity: 0.75;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+#bl-top-layer .sc-stat.is-ok { color: #1a9c5b; opacity: 1; }
+#bl-top-layer .sc-stat.is-bad { color: #d14343; opacity: 1; }
+#bl-top-layer .sc-stat.is-busy { opacity: 0.6; }
+
+#bl-top-layer .sc-foot button {
+    height: 30px;
+    padding: 0 14px;
+    border-radius: 8px;
+    border: 1px solid var(--ui-black-transparent, rgba(0, 0, 0, 0.14));
+    background: var(--ui-white, #ffffff);
+    color: var(--text-primary, #2d3748);
+    font-size: 12px;
+    cursor: pointer;
+}
+
+#bl-top-layer .sc-foot button:hover {
+    background: var(--ui-secondary, #f1f3f5);
+}
+
+#bl-top-layer .sc-foot .sc-save {
+    border-color: var(--looks-secondary, #75c1c4);
+    background: var(--looks-secondary, #75c1c4);
+    color: var(--bl-on-accent, #ffffff);
+    font-weight: 700;
+}
+
+#bl-top-layer .sc-detail.is-off {
+    opacity: 0.7;
+}
+
+#bl-top-layer .sc-off {
+    margin-bottom: 8px;
+    font-size: 11px;
+    line-height: 1.6;
+    opacity: 0.75;
+}
+
+/* ---- 会话条目：悬停出现删除 ---- */
+#bl-top-layer .sw-sess {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+#bl-top-layer .sw-sess-t {
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+#bl-top-layer .sw-sess-del {
+    flex: 0 0 auto;
+    width: 18px;
+    height: 18px;
+    padding: 0;
+    border: none;
+    border-radius: 5px;
+    background: transparent;
+    color: inherit;
+    font-size: 11px;
+    line-height: 1;
+    /* 常驻一点淡淡的存在感，不然没人知道这里能删 */
+    opacity: 0.32;
+    cursor: pointer;
+}
+
+#bl-top-layer .sw-sess:hover .sw-sess-del,
+#bl-top-layer .sw-sess.is-on .sw-sess-del {
+    opacity: 0.7;
+}
+
+#bl-top-layer .sw-sess-del:hover {
+    opacity: 1 !important;
+    background: rgba(220, 38, 38, 0.14);
+    color: #dc2626;
+}
+
+/* ---- 顶栏：虚拟指针开关 ---- */
+#bl-top-layer .sw-ptrlab {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    margin-left: auto;
+    cursor: pointer;
+    user-select: none;
+}
+
+#bl-top-layer .sw-watch {
+    margin-left: 0;
+}
+
+/* ---- 虚拟鼠标指针：挂 body，浮在所有层之上，自身不吃点击 ---- */
+.sw-ptr {
+    position: fixed;
+    left: 0;
+    top: 0;
+    z-index: 2147483600;
+    pointer-events: none;
+    opacity: 0;
+    transition: transform 0.42s cubic-bezier(0.34, 1.22, 0.46, 1), opacity 0.2s ease;
+    will-change: transform;
+}
+
+.sw-ptr.is-on {
+    opacity: 1;
+}
+
+.sw-ptr-arrow {
+    display: block;
+    filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.5));
+}
+
+.sw-ptr-ring {
+    position: absolute;
+    left: -16px;
+    top: -16px;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    border: 2px solid rgba(255, 255, 255, 0.92);
+    background: rgba(117, 193, 196, 0.32);
+    opacity: 0;
+    transform: scale(0.35);
+}
+
+.sw-ptr.is-hit .sw-ptr-ring {
+    animation: swPtrHit 0.5s ease-out;
+}
+
+@keyframes swPtrHit {
+    0% { opacity: 0.95; transform: scale(0.35); }
+    100% { opacity: 0; transform: scale(1.7); }
+}
+
+.sw-ptr-tip {
+    position: absolute;
+    left: 20px;
+    top: 20px;
+    padding: 3px 9px;
+    border-radius: 9px;
+    background: rgba(20, 24, 31, 0.9);
+    color: #ffffff;
+    font-size: 11.5px;
+    line-height: 1.5;
+    white-space: nowrap;
+    display: none;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);
+}
+
+.sw-ptr.has-tip .sw-ptr-tip {
+    display: block;
+}
+
+/* ==========================================================================
+   studio.css —— 置顶 / 积木右键菜单 / 教程
+   ========================================================================== */
+
+/* 本模块建的窗口（教程）挂在顶层宿主里。
+   原生 .addon-window 不含 position，宿主又是 fixed 铺满视口的容器：
+   窗口一旦停在默认 static，JS 写在 style 上的 left/top 就不起作用，
+   元素从宿主左上角开始排 —— 看着就是"窗口跑到屏幕左上角"。
+   JS 端已在创建时钉死，这里再补一条样式兜底（作用域限定在宿主内）。
+   pointer-events 同理：宿主整层 none 且会继承，不声明就画得出来却点不动。 */
+#bl-top-layer .bl-tut {
+    position: fixed;
+    pointer-events: auto;
+}
+
+/* ---------------- 通用提示条 ---------------- */
+.bl-studio-toast {
+    position: fixed;
+    left: 50%;
+    bottom: 74px;
+    transform: translateX(-50%) translateY(10px);
+    max-width: 74vw;
+    padding: 8px 16px;
+    border-radius: 10px;
+    background: rgba(28, 32, 40, 0.92);
+    color: #fff;
+    font-size: 13px;
+    line-height: 1.5;
+    z-index: 2147483000;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .2s ease, transform .2s ease;
+    box-shadow: 0 6px 22px rgba(0, 0, 0, .28);
+}
+.bl-studio-toast.is-on {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+}
+
+/* ---------------- 教程窗口 ---------------- */
+.bl-tut-body {
+    padding: 22px 24px 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+.bl-tut-ico {
+    width: 52px;
+    height: 52px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 14px;
+    color: #fff;
+    background: var(--looks-secondary, #75c1c4);
+    margin-bottom: 12px;
+}
+.bl-tut-title {
+    font-size: 17px;
+    font-weight: 700;
+    color: #2f3542;
+    margin-bottom: 8px;
+}
+.bl-tut-text {
+    font-size: 13px;
+    line-height: 1.75;
+    color: #5c6478;
+    min-height: 66px;
+}
+.bl-tut-dots { display: flex; gap: 6px; margin: 10px 0 14px; }
+.bl-tut-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: rgba(127, 133, 150, .35);
+    transition: background .18s ease, transform .18s ease;
+}
+.bl-tut-dot.is-on {
+    background: var(--looks-secondary, #75c1c4);
+    transform: scale(1.25);
+}
+.bl-tut-foot {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+}
+.bl-tut-gap { flex: 1 1 auto; }
+.bl-tut-step { font-size: 12px; color: #8b93a6; }
+.bl-tut-btn {
+    height: 30px;
+    padding: 0 14px;
+    border: 1px solid rgba(127, 133, 150, .3);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, .6);
+    color: #4d5566;
+    font-size: 13px;
+    cursor: pointer;
+    transition: background .16s ease;
+}
+.bl-tut-btn:hover { background: #fff; }
+.bl-tut-btn.is-primary {
+    background: var(--looks-secondary, #75c1c4);
+    border-color: transparent;
+    color: var(--bl-on-accent, #fff);
+    font-weight: 600;
+}
+

@@ -1,0 +1,42 @@
+
+/* ① 宿主没有有效 rect 时，一律整屏。JS 只设/清 data-bl-rect-ok，
+      不再写死整屏像素，错误尺寸无法残留。 */
+.bl-dock-host:not([data-bl-rect-ok]) {
+    left: 0 !important;
+    top: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+}
+
+/* ② 立体底座永远在图标之下。
+      ::before 是「定位 + z-index:0」的伪元素，按 CSS 绘制顺序会盖在
+      未定位的普通流内容之上；上一轮只给直接子 svg 抬了层级，托盘项、
+      自定义 <img>、后续塞进来的文本一旦没带 z-index 就整块消失。
+      这里把按钮本身设成独立 stacking context，并把所有内容抬到 2。 */
+html:root .bl-dock .bl-dock-item {
+    isolation: isolate;
+    overflow: visible;
+}
+html:root .bl-dock .bl-dock-item::before { z-index: 0 !important; }
+html:root .bl-dock .bl-dock-item > svg,
+html:root .bl-dock .bl-dock-item > img,
+html:root .bl-dock .bl-dock-item > .bl-dock-custom-icon,
+html:root .bl-dock .bl-dock-item > span:not(.bl-dock-badge),
+html:root .bl-dock .bl-dock-item > i,
+html:root .bl-dock .bl-dock-item > b,
+html:root .bl-dock .bl-dock-item > em {
+    position: relative;
+    z-index: 2;
+}
+html:root .bl-dock .bl-dock-item > .bl-dock-badge { z-index: 3; }
+html:root .bl-dock .bl-dock-item::after { z-index: 3; }
+
+/* ③ 玻璃层与内层：独立伪元素、明确层级，避免被液态玻璃写成不透明块；
+      图标 hover 放大时 backdrop-filter 采样区仍不跟着 transform 偏移。 */
+html:root .bl-dock .bl-dock-inner { isolation: isolate; }
+html:root .bl-dock .bl-dock-inner::before { z-index: 0 !important; }
+html:root .bl-dock .bl-dock-tip { z-index: 4; }
+
+/* ④ 鱼眼放大时底座不越界、相邻图标不互相糊成一片 */
+html:root .bl-dock .bl-dock-item { transform-origin: bottom center; }
+html:root .bl-dock .bl-dock-sep { position: relative; z-index: 1; }

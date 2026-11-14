@@ -1,0 +1,250 @@
+/* ── [B72] 工具箱窗口样式 ───────────────────────────────────────────────
+   依赖：B73 / B42
+   维护：复用 .addon-window 类名，图层交给原版统一管理
+   ───────────────────────────────────────────────────────────── */
+
+/* ==========================================================================
+   DOCK「工具箱」——独立命名空间 tb-，不复用 addon-window / vy-win，
+   避免与编辑器自带窗口系统、八音盒窗口互相抢拖动与最小化逻辑。
+   配色全部走主题变量，深浅主题都可读。
+   ========================================================================== */
+
+.tb-layer {
+    position: fixed;
+    inset: 0;
+    z-index: 199900;
+    pointer-events: none;              /* 滤镜层只改画面，绝不拦截点击 */
+    background: transparent;
+    transition: background-color .18s ease;
+}
+
+.tb-win {
+    position: fixed;
+    /* 第 32 轮：不再自成 200000+ 的图层体系。基础值落在原生
+       窗口区间（WIN_Z_BASE=8000 起），之后完全由 __blUnifyFront
+       统一置顶管理，才能和原版弹窗互相压过对方。 */
+    z-index: 8001;
+    display: flex;
+    flex-direction: column;
+    min-width: 300px;
+    min-height: 180px;
+    max-width: calc(100vw - 24px);
+    max-height: calc(100vh - 24px);
+    overflow: hidden;
+    border-radius: 14px;
+    border: 1px solid var(--ui-black-transparent, rgba(0,0,0,.12));
+    background: var(--ui-primary, #ffffff);
+    color: var(--text-primary, #575e75);
+    box-shadow: 0 18px 52px rgba(0,0,0,.28), 0 2px 8px rgba(0,0,0,.14),
+                inset 0 1px 0 rgba(255,255,255,.35);
+    pointer-events: auto;
+    font: 13px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", "WenQuanYi Micro Hei", sans-serif;
+    /* 入场 / 出场动画由统一弹窗运行时（__blPop.in / out）按设置播放，
+       这里不再自带 tbPop，避免两套关键帧互相覆盖。 */
+}
+.tb-win.tb-closing { pointer-events: none; }
+.tb-win.tb-hidden { display: none !important; }
+.tb-win.is-max { border-radius: 0 !important;
+                  max-width: none !important; max-height: none !important;
+                  min-width: 0 !important; min-height: 0 !important; }
+/* 只在最大化 / 还原的 220ms 内启用尺寸过渡；平时不挂，
+   否则标题栏拖动和 8 方向缩放会明显跟手延迟。 */
+/* 最大化 / 还原由 JS 逐帧插值（见 toolbox.js 的 tbAnimateRect），
+   不依赖 CSS transition —— 入场动画与皮肤样式表会抢占 transition 规则。 */
+.tb-win.tb-anim { will-change: left, top, width, height; }
+
+/* 缩放手柄：与原版 addon-window 的 8 方向 resize 一致 */
+.tb-win .resize-handle { position: absolute !important; z-index: 12 !important; }
+.tb-win .resize-n  { top: 0; left: 8px; right: 8px; height: 5px; cursor: n-resize; }
+.tb-win .resize-s  { bottom: 0; left: 8px; right: 8px; height: 5px; cursor: s-resize; }
+.tb-win .resize-e  { right: 0; top: 8px; bottom: 8px; width: 5px; cursor: e-resize; }
+.tb-win .resize-w  { left: 0; top: 8px; bottom: 8px; width: 5px; cursor: w-resize; }
+.tb-win .resize-ne { top: 0; right: 0; width: 10px; height: 10px; cursor: ne-resize; }
+.tb-win .resize-nw { top: 0; left: 0; width: 10px; height: 10px; cursor: nw-resize; }
+.tb-win .resize-se { bottom: 0; right: 0; width: 10px; height: 10px; cursor: se-resize; }
+.tb-win .resize-sw { bottom: 0; left: 0; width: 10px; height: 10px; cursor: sw-resize; }
+.tb-win.is-max .resize-handle { display: none !important; }
+
+/* 小屏 / 移动端：与原版 addon-window 一样退化成全屏，避免 fixed 窗口
+   在窄视口里被裁切、标题栏溢出、按钮挤成一团。 */
+@media only screen and (max-width: 900px) {
+    .tb-win {
+        left: 0 !important; top: 0 !important;
+        width: 100% !important; height: 100% !important;
+        max-width: none !important; max-height: none !important;
+        min-width: 0 !important; min-height: 0 !important;
+        border: none !important; border-radius: 0 !important;
+        box-shadow: none !important;
+    }
+    .tb-win .resize-handle,
+    .tb-win .addon-window-btn-maximize,
+    .tb-win .addon-window-btn-minimize { display: none !important; }
+    .tb-win .tb-head { cursor: default !important; }
+}
+
+.tb-head {
+    flex: 0 0 42px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0 8px 0 13px;
+    cursor: move;
+    user-select: none;
+    -webkit-user-select: none;
+    background: linear-gradient(180deg, rgba(127,127,127,.09), rgba(127,127,127,.03));
+    border-bottom: 1px solid var(--ui-black-transparent, rgba(0,0,0,.09));
+}
+.tb-head-ico { flex: 0 0 auto; width: 18px; height: 18px; opacity: .8; display: block; }
+.tb-head-t { flex: 1 1 auto; min-width: 0; font-weight: 600; font-size: 13px;
+             overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tb-head-btns { flex: 0 0 auto; display: flex; gap: 3px; }
+.tb-hbtn {
+    width: 28px; height: 26px; padding: 0; border: 0; border-radius: 7px;
+    background: transparent; color: inherit; cursor: pointer;
+    display: inline-flex; align-items: center; justify-content: center;
+    opacity: .72; transition: background-color .14s ease, opacity .14s ease;
+}
+.tb-hbtn:hover { background: rgba(127,127,127,.16); opacity: 1; }
+.tb-hbtn.tb-close:hover { background: #ff5f57; color: #fff; }
+.tb-hbtn svg { display: block; pointer-events: none; }
+
+.tb-body {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: auto;
+    padding: 14px 16px 16px;
+    scrollbar-width: thin;
+}
+.tb-body::-webkit-scrollbar { width: 8px; height: 8px; }
+.tb-body::-webkit-scrollbar-thumb { background: rgba(127,127,127,.35); border-radius: 8px; }
+
+/* ---------- 通用控件 ---------- */
+.tb-h { margin: 0 0 10px; font-size: 14px; font-weight: 700; }
+.tb-sub { margin: -4px 0 12px; font-size: 11.5px; opacity: .62; line-height: 1.6; }
+.tb-note { margin-top: 10px; padding: 8px 10px; border-radius: 8px; font-size: 11.5px;
+           background: var(--ui-black-transparent, rgba(0,0,0,.05)); opacity: .85; line-height: 1.6; }
+.tb-sec { margin: 14px 0 8px; font-size: 12px; font-weight: 700; opacity: .8;
+          border-left: 3px solid var(--looks-secondary, #4c97ff); padding-left: 8px; }
+.tb-row { display: flex; align-items: center; gap: 9px; flex-wrap: wrap; margin: 8px 0; }
+.tb-label { flex: 0 0 auto; font-size: 12px; opacity: .82; }
+.tb-select, .tb-input {
+    border: 1px solid var(--ui-black-transparent, rgba(0,0,0,.16));
+    border-radius: 8px; padding: 5px 8px; font-size: 12px; font-family: inherit;
+    background: var(--ui-primary, #fff); color: inherit; outline: none; min-width: 0;
+}
+.tb-select:focus, .tb-input:focus { border-color: var(--looks-secondary, #4c97ff); }
+.tb-input[type="number"] { width: 76px; }
+.tb-input[type="range"] { flex: 1 1 140px; padding: 0; accent-color: var(--looks-secondary, #4c97ff); }
+.tb-check { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; cursor: pointer; }
+.tb-check input { accent-color: var(--looks-secondary, #4c97ff); }
+.tb-btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+    padding: 6px 13px; border-radius: 9px; border: 1px solid var(--ui-black-transparent, rgba(0,0,0,.14));
+    background: var(--ui-black-transparent, rgba(0,0,0,.05)); color: inherit;
+    font-size: 12px; font-family: inherit; cursor: pointer; white-space: nowrap;
+    transition: transform .12s ease, filter .12s ease;
+}
+.tb-btn:hover { filter: brightness(1.06); }
+.tb-btn:active { transform: scale(.96); }
+.tb-btn.primary { background: var(--looks-secondary, #4c97ff); border-color: transparent; color: #fff; }
+.tb-btn.danger { color: #e34b3f; }
+.tb-btn:disabled { opacity: .45; cursor: not-allowed; }
+.tb-badge { display: inline-block; padding: 1px 8px; border-radius: 999px; font-size: 11px;
+            background: var(--ui-black-transparent, rgba(0,0,0,.08)); }
+.tb-badge.on { background: var(--looks-secondary, #4c97ff); color: #fff; }
+.tb-badge.warn { background: #ffb53e; color: #3a2a00; }
+.tb-grow { flex: 1 1 auto; }
+
+/* ---------- 工具箱主面板 ---------- */
+.tb-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(168px, 1fr)); gap: 10px; }
+.tb-tool {
+    display: flex; flex-direction: column; gap: 6px; text-align: left;
+    padding: 12px; border-radius: 12px; cursor: pointer;
+    border: 1px solid var(--ui-black-transparent, rgba(0,0,0,.11));
+    background: var(--ui-black-transparent, rgba(0,0,0,.035));
+    color: inherit; font-family: inherit;
+    transition: transform .14s ease, box-shadow .14s ease, background-color .14s ease;
+}
+.tb-tool:hover { transform: translateY(-2px); background: var(--ui-black-transparent, rgba(0,0,0,.07));
+                 box-shadow: 0 6px 16px rgba(0,0,0,.12); }
+.tb-tool-ico { width: 26px; height: 26px; opacity: .9; }
+.tb-tool-n { font-size: 13px; font-weight: 700; }
+.tb-tool-d { font-size: 11px; opacity: .64; line-height: 1.5; }
+
+/* ---------- 数据展示 ---------- */
+.tb-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(104px, 1fr)); gap: 9px; }
+.tb-stat { padding: 10px 8px; border-radius: 10px; text-align: center;
+           background: var(--ui-black-transparent, rgba(0,0,0,.05)); }
+.tb-stat-v { font-size: 20px; font-weight: 700; font-variant-numeric: tabular-nums; line-height: 1.25; }
+.tb-stat-k { font-size: 10.5px; opacity: .62; margin-top: 2px; }
+.tb-big { font-size: 40px; font-weight: 800; font-variant-numeric: tabular-nums; line-height: 1.1; }
+.tb-big small { font-size: 13px; font-weight: 500; opacity: .6; margin-left: 4px; }
+.tb-canvas { display: block; width: 100%; height: 86px; border-radius: 9px;
+             background: var(--ui-black-transparent, rgba(0,0,0,.05)); margin: 8px 0; }
+.tb-bar { height: 7px; border-radius: 6px; overflow: hidden;
+          background: var(--ui-black-transparent, rgba(0,0,0,.11)); }
+.tb-bar > i { display: block; height: 100%; width: 0%; border-radius: 6px;
+              background: var(--looks-secondary, #4c97ff); transition: width .3s ease; }
+.tb-bar.warn > i { background: #ffb53e; }
+.tb-table { width: 100%; border-collapse: collapse; font-size: 12px; margin: 6px 0; }
+.tb-table th, .tb-table td { padding: 6px 8px; text-align: left;
+           border-bottom: 1px solid var(--ui-black-transparent, rgba(0,0,0,.08)); }
+.tb-table th { font-weight: 700; opacity: .72; }
+.tb-table td.num { text-align: right; font-variant-numeric: tabular-nums; }
+.tb-diff-add { color: #18a058; }
+.tb-diff-del { color: #e34b3f; }
+.tb-diff-same { opacity: .55; }
+.tb-list { max-height: 210px; overflow: auto; font-size: 12px; line-height: 1.8;
+           padding: 8px 10px; border-radius: 9px;
+           background: var(--ui-black-transparent, rgba(0,0,0,.04)); }
+.tb-kv { display: flex; justify-content: space-between; gap: 10px; padding: 3px 0;
+         border-bottom: 1px dashed var(--ui-black-transparent, rgba(0,0,0,.08)); }
+.tb-kv:last-child { border-bottom: 0; }
+.tb-kv > span:last-child { font-variant-numeric: tabular-nums; font-weight: 600; }
+
+/* ---------- 性能模式卡片 ---------- */
+.tb-modes { display: grid; grid-template-columns: repeat(3, 1fr); gap: 9px; }
+.tb-mode { padding: 12px 10px; border-radius: 11px; cursor: pointer; text-align: center;
+           border: 2px solid transparent;
+           background: var(--ui-black-transparent, rgba(0,0,0,.05)); color: inherit;
+           font-family: inherit; transition: transform .12s ease, border-color .12s ease; }
+.tb-mode:hover { transform: translateY(-2px); }
+.tb-mode.is-on { border-color: var(--looks-secondary, #4c97ff); }
+.tb-mode-n { font-size: 14px; font-weight: 800; letter-spacing: .3px; }
+.tb-mode-d { font-size: 10.5px; opacity: .66; line-height: 1.5; margin-top: 4px; }
+
+/* ---------- 滤镜预设 ---------- */
+.tb-pills { display: flex; flex-wrap: wrap; gap: 7px; }
+.tb-pill { padding: 5px 12px; border-radius: 999px; cursor: pointer; font-size: 12px;
+           border: 1px solid var(--ui-black-transparent, rgba(0,0,0,.14));
+           background: transparent; color: inherit; font-family: inherit; }
+.tb-pill.is-on { background: var(--looks-secondary, #4c97ff); color: #fff; border-color: transparent; }
+.tb-preview { height: 62px; border-radius: 10px; margin: 10px 0 4px; display: flex;
+              align-items: center; justify-content: center; font-size: 12px; font-weight: 600;
+              background: linear-gradient(120deg,#4c97ff,#ff8c1a 45%,#29beb8 80%,#9966ff); color: #fff; }
+
+/* ---------- 文件选择行 ---------- */
+.tb-file { display: flex; align-items: center; gap: 8px; padding: 9px 10px; border-radius: 10px;
+           border: 1px dashed var(--ui-black-transparent, rgba(0,0,0,.2)); margin: 7px 0; }
+.tb-file-n { flex: 1 1 auto; min-width: 0; font-size: 12px; overflow: hidden;
+             text-overflow: ellipsis; white-space: nowrap; opacity: .8; }
+
+/* ---------- 省电模式：停掉装饰动画 ---------- */
+html.tb-eco .vy-disc,
+html.tb-eco .vy-disc::after,
+html.tb-eco .vy-eq i,
+html.tb-eco .bl-dock-inner,
+html.tb-eco .bl-dock-tip { animation: none !important; transition: none !important; }
+html.tb-eco .bl-dock-inner::before { -webkit-backdrop-filter: none !important; backdrop-filter: none !important;
+                             background: rgba(140,140,140,.28) !important; }
+
+@media (prefers-reduced-motion: reduce) {
+    .tb-win, .tb-win.tb-anim { animation: none; transition: none; }
+    .tb-tool:hover, .tb-mode:hover, .tb-btn:active { transform: none; }
+}
+
+/* DOCK 被隐藏时托盘不可用：退化成只留标题栏的「最小化条」 */
+.tb-win.tb-mini { height: 42px !important; min-height: 0 !important; width: 260px !important; }
+.tb-win.tb-mini .tb-body { display: none !important; }
+.tb-win.tb-mini .tb-head { cursor: default; }
+

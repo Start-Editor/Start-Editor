@@ -1,0 +1,19 @@
+# 大载荷与 chunk：逐字节保真，禁止行尾转换 / 合并统计
+src/assets/**   -text
+src/vendor/**   -text
+
+# 源码：统一 LF
+*.js    text eol=lf
+*.mjs   text eol=lf
+*.css   text eol=lf
+*.html  text eol=lf
+*.json  text eol=lf
+*.md    text eol=lf
+*.yml   text eol=lf
+*.toml  text eol=lf
+
+# 打包产出的第三方代码不计入语言统计
+src/vendor/** linguist-vendored
+src/assets/** linguist-generated
+docs/BLOCKS.md linguist-generated
+docs/blocks.json linguist-generated

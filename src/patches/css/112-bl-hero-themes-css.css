@@ -1,0 +1,538 @@
+
+/* ---------- 通用：把大卡文字区变成可重排 grid ---------- */
+html .bl-os-hero[data-hero-theme] {
+    background: var(--hh-bg) !important;
+    background-size: var(--hh-bg-size, 220% 220%) !important;
+    color: var(--hh-ink, #fff) !important;
+    border-color: var(--hh-line, rgba(255, 255, 255, .22)) !important;
+    box-shadow: var(--hh-shadow) !important;
+    min-height: var(--hh-min-h, 258px) !important;
+    padding: var(--hh-pad, 30px 28px 32px) !important;
+    border-radius: var(--hh-radius, 22px) !important;
+    animation: blSetHeroIn .34s cubic-bezier(.2, .8, .25, 1) both,
+               var(--hh-bg-anim) !important;
+}
+/* 背景图案层：每个主题一张不同的网底，用各自的动效运动 */
+html .bl-os-hero[data-hero-theme]::after {
+    content: '';
+    position: absolute; inset: -40%;
+    z-index: 0; pointer-events: none;
+    border-radius: inherit;
+    background-image: var(--hh-pattern);
+    background-size: var(--hh-pattern-size, auto);
+    mix-blend-mode: screen;
+    opacity: .5;
+    animation: var(--hh-pattern-anim) !important;
+}
+html .bl-os-hero[data-hero-theme] .bl-os-hero-fx::before {
+    background: var(--hh-fx) !important;
+    animation: var(--hh-fx-anim) !important;
+}
+html .bl-os-hero[data-hero-theme] .bl-os-hero-fx::after {
+    background: var(--hh-ribbon) !important;
+    animation: var(--hh-ribbon-anim) !important;
+}
+html .bl-os-hero[data-hero-theme] .bl-os-hero-liquid {
+    background: var(--hh-liquid) !important;
+    animation: var(--hh-liquid-anim) !important;
+}
+html .bl-os-hero[data-hero-theme] .bl-os-hero-glow {
+    background: var(--hh-glow) !important;
+    animation: var(--hh-glow-anim) !important;
+}
+html .bl-os-hero[data-hero-theme] .bl-os-hero-shine {
+    background: var(--hh-shine) !important;
+    animation: var(--hh-shine-anim) !important;
+}
+html .bl-os-hero[data-hero-theme] .bl-os-hero-in {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    min-height: calc(var(--hh-min-h, 258px) - 62px);
+}
+html .bl-os-hero[data-hero-theme] .bl-os-hero-txt {
+    display: grid !important;
+    grid-template-columns: var(--hh-cols) !important;
+    grid-template-areas: var(--hh-areas) !important;
+    align-items: center;
+    gap: 8px 18px;
+    width: 100% !important;
+    max-width: var(--hh-max, 760px) !important;
+    min-width: 0;
+    text-align: var(--hh-align, left);
+    justify-items: var(--hh-justify, start);
+}
+html .bl-os-hero[data-hero-theme] .bl-os-hero-kicker {
+    grid-area: kicker;
+    font-size: 10px; font-weight: 800; letter-spacing: .2em;
+    text-transform: uppercase; opacity: .82;
+}
+html .bl-os-hero[data-hero-theme] .bl-os-hero-num {
+    grid-area: num;
+    font-size: var(--hh-font, clamp(58px, 8.5vw, 94px)) !important;
+    font-weight: 800; line-height: 1;
+    letter-spacing: var(--hh-tracking, -.045em) !important;
+    background: var(--hh-num) !important;
+    background-size: 220% 100% !important;
+    -webkit-background-clip: text !important;
+    background-clip: text !important;
+    color: transparent !important;
+    filter: drop-shadow(var(--hh-num-shadow, 0 10px 26px rgba(255, 176, 218, .38)));
+    animation: var(--hh-num-anim) !important;
+}
+html .bl-os-hero[data-hero-theme] .bl-os-hero-product {
+    grid-area: product;
+    margin: 0 !important;
+    font-size: var(--hh-product-size, 19px) !important;
+    font-weight: 600;
+    letter-spacing: var(--hh-product-spacing, .22em) !important;
+    text-shadow: 0 2px 12px rgba(0, 0, 0, .30);
+}
+html .bl-os-hero[data-hero-theme] .bl-os-hero-slogan {
+    grid-area: slogan;
+    margin: 0 !important;
+    font-size: var(--hh-slogan-size, 12px) !important;
+    font-weight: 600;
+    letter-spacing: .10em;
+    opacity: .88;
+}
+html .bl-os-hero[data-hero-theme] .bl-os-hero-badge {
+    grid-area: badge;
+    justify-self: var(--hh-badge-justify, start);
+    margin: 0 !important;
+    padding: var(--hh-badge-pad, 7px 28px) !important;
+    border-radius: var(--hh-badge-radius, 999px) !important;
+    background: var(--hh-badge-bg) !important;
+    color: var(--hh-badge-fg) !important;
+    font-size: var(--hh-badge-size, 14px) !important;
+    font-weight: 700; letter-spacing: .10em;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, .26);
+    animation: var(--hh-badge-anim) !important;
+}
+html .bl-os-hero[data-hero-theme] .bl-os-hero-note {
+    grid-area: note;
+    font-size: 11.5px; line-height: 1.55; opacity: .82;
+}
+html .bl-os-hero[data-hero-theme] .bl-os-hero-items {
+    grid-area: items;
+    list-style: none; margin: 0; padding: 0;
+    display: flex; flex-direction: column; gap: 5px;
+    font-size: 11.5px; line-height: 1.45; opacity: .86;
+    max-width: 100%;
+}
+html .bl-os-hero[data-hero-theme] .bl-os-hero-items li {
+    position: relative; padding-left: 15px; overflow-wrap: anywhere;
+}
+html .bl-os-hero[data-hero-theme] .bl-os-hero-items li::before {
+    content: '';
+    position: absolute; left: 0; top: .55em;
+    width: 5px; height: 5px; border-radius: 50%;
+    background: currentColor; opacity: .72;
+}
+html .bl-os-hero[data-hero-theme="grid"] .bl-os-hero-items,
+html .bl-os-hero[data-hero-theme="mono"] .bl-os-hero-items { counter-reset: blHi; }
+html .bl-os-hero[data-hero-theme="grid"] .bl-os-hero-items li,
+html .bl-os-hero[data-hero-theme="mono"] .bl-os-hero-items li { padding-left: 24px; }
+html .bl-os-hero[data-hero-theme="grid"] .bl-os-hero-items li::before,
+html .bl-os-hero[data-hero-theme="mono"] .bl-os-hero-items li::before {
+    content: counter(blHi, decimal-leading-zero);
+    counter-increment: blHi;
+    top: 0; width: auto; height: auto;
+    background: none; border-radius: 0; opacity: 1;
+    font: 700 10px ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+}
+html .bl-os-hero[data-hero-theme] .bl-os-hero-meta {
+    grid-area: meta;
+    display: flex; flex-wrap: wrap; gap: 6px 16px;
+    justify-content: var(--hh-meta-justify, flex-start) !important;
+    margin: 0 !important;
+    font-size: 11px; opacity: .66;
+}
+
+/* 返回当前版本的胶囊，只在浏览历史版本时出现 */
+.bl-os-hero-back {
+    position: absolute; top: 12px; right: 14px; z-index: 3;
+    padding: 5px 12px;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 255, 255, .42);
+    background: rgba(255, 255, 255, .18);
+    color: #fff !important;
+    font: 700 11px/1.2 inherit;
+    letter-spacing: .04em;
+    cursor: pointer;
+    -webkit-backdrop-filter: blur(6px);
+    backdrop-filter: blur(6px);
+    transition: background-color .18s ease, transform .18s ease;
+}
+.bl-os-hero-back:hover { background: rgba(255, 255, 255, .32); transform: translateY(-1px); }
+html .bl-os-hero[data-hero-current="1"] .bl-os-hero-back { display: none !important; }
+html .bl-os-hero[data-hero-current="0"] { cursor: pointer; }
+/* 被选中的时间线卡 */
+.bl-ver-entry[data-ver-theme] { cursor: pointer; }
+.bl-ver-entry.bl-ver-picked > .bl-ver-card2 {
+    outline: 2px solid var(--vh-a, #4c97ff);
+    outline-offset: 2px;
+}
+
+/* ---------- 七种动效族：每版一种，互不复用的运动方式 ---------- */
+@keyframes blHiTide {
+    0%   { transform: translate(-5%, -2%) scale(1.02) rotate(-2deg); opacity: .86; }
+    50%  { transform: translate(4%, 3%)   scale(1.09) rotate(2deg);  opacity: 1; }
+    100% { transform: translate(-5%, -2%) scale(1.02) rotate(-2deg); opacity: .86; }
+}
+@keyframes blHiMorph {
+    0%   { transform: translate(-9%, 7%) scale(.92) rotate(0deg);
+           border-radius: 52% 48% 40% 60% / 55% 45% 60% 40%; opacity: .48; }
+    50%  { transform: translate(7%, -9%) scale(1.13) rotate(24deg);
+           border-radius: 38% 62% 58% 42% / 42% 62% 38% 58%; opacity: .80; }
+    100% { transform: translate(-9%, 7%) scale(.92) rotate(0deg);
+           border-radius: 52% 48% 40% 60% / 55% 45% 60% 40%; opacity: .48; }
+}
+@keyframes blHiSpin {
+    0%   { transform: rotate(0deg) scale(1); opacity: .72; }
+    50%  { transform: rotate(180deg) scale(1.06); opacity: 1; }
+    100% { transform: rotate(360deg) scale(1); opacity: .72; }
+}
+@keyframes blHiScan {
+    0%       { transform: translateY(-100%); opacity: 0; }
+    18%      { opacity: .8; }
+    82%      { opacity: .8; }
+    100%     { transform: translateY(100%); opacity: 0; }
+}
+@keyframes blHiStripe {
+    0%   { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+}
+@keyframes blHiBreathe {
+    0%, 100% { transform: scale(.90); opacity: .35; }
+    50%      { transform: scale(1.16); opacity: .86; }
+}
+@keyframes blHiTick {
+    0%   { transform: translate(0, 0); opacity: .55; }
+    25%  { transform: translate(2%, 0); opacity: .78; }
+    50%  { transform: translate(2%, 2%); opacity: .55; }
+    75%  { transform: translate(0, 2%); opacity: .78; }
+    100% { transform: translate(0, 0); opacity: .55; }
+}
+/* 底色流动：七条不同轨迹 */
+@keyframes blHiTideBg   { 0% { background-position: 0% 20%; } 50% { background-position: 100% 80%; } 100% { background-position: 0% 20%; } }
+@keyframes blHiMorphBg  { 0% { background-position: 0% 50%; } 50% { background-position: 72% 18%; } 100% { background-position: 0% 50%; } }
+@keyframes blHiSpinBg   { 0% { background-position: 0% 0%; } 50% { background-position: 100% 100%; } 100% { background-position: 0% 0%; } }
+@keyframes blHiScanBg   { 0% { background-position: 50% 0%; } 100% { background-position: 50% 100%; } }
+@keyframes blHiStripeBg { 0% { background-position: 0% 50%; } 100% { background-position: 200% 50%; } }
+@keyframes blHiBreatheBg{ 0%,100% { background-position: 50% 50%; } 50% { background-position: 78% 34%; } }
+@keyframes blHiTickBg   { 0% { background-position: 0% 50%; } 100% { background-position: 100% 50%; } }
+/* 巨大版本号里的流光：七种走法 */
+@keyframes blHiTideNum   { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+@keyframes blHiMorphNum  { 0% { background-position: 0% 50%; letter-spacing: -.045em; } 50% { background-position: 100% 50%; letter-spacing: -.02em; } 100% { background-position: 0% 50%; letter-spacing: -.045em; } }
+@keyframes blHiSpinNum   { 0% { background-position: 0% 0%; transform: skewX(0deg); } 50% { background-position: 100% 100%; transform: skewX(2deg); } 100% { background-position: 0% 0%; transform: skewX(0deg); } }
+@keyframes blHiScanNum   { 0% { background-position: 50% 0%; } 100% { background-position: 50% 100%; } }
+@keyframes blHiStripeNum { 0% { background-position: 0% 50%; } 100% { background-position: 200% 50%; } }
+@keyframes blHiBreatheNum{ 0%,100% { background-position: 0% 50%; opacity: .86; } 50% { background-position: 100% 50%; opacity: 1; } }
+@keyframes blHiTickNum   { 0% { background-position: 0% 50%; } 100% { background-position: 100% 50%; } }
+/* 胶囊反馈：七种细微不同的起伏 */
+@keyframes blHiTideBadge   { 0%,100% { transform: translateX(0); } 50% { transform: translateX(5px); } }
+@keyframes blHiMorphBadge  { 0%,100% { transform: translateY(0); border-radius: 999px; } 50% { transform: translateY(-4px); border-radius: 26px 34px 28px 32px; } }
+@keyframes blHiSpinBadge   { 0%,100% { transform: rotate(0deg) scale(1); } 50% { transform: rotate(3deg) scale(1.05); } }
+@keyframes blHiScanBadge   { 0%,100% { transform: translateY(0); opacity: 1; } 50% { transform: translateY(3px); opacity: .78; } }
+@keyframes blHiStripeBadge { 0%,100% { transform: translateX(0); } 50% { transform: translateX(7px); } }
+@keyframes blHiBreatheBadge{ 0%,100% { transform: scale(1); box-shadow: 0 6px 18px rgba(0,0,0,.26); } 50% { transform: scale(1.07); box-shadow: 0 12px 26px rgba(0,0,0,.38); } }
+@keyframes blHiTickBadge   { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-2px); } }
+/* ART 沿用原版那道宽幅折射扫光 */
+@keyframes blHiSweep {
+    0%       { transform: translateX(-160%) skewX(-18deg); opacity: 0; }
+    18%      { opacity: .85; }
+    62%      { opacity: .65; }
+    88%,100% { transform: translateX(420%) skewX(-18deg); opacity: 0; }
+}
+/* 切换皮肤时文字区轻扫入场 */
+@keyframes blHeroSwap {
+    from { opacity: .45; transform: translateY(7px) scale(.995); }
+    to   { opacity: 1; transform: none; }
+}
+html .bl-os-hero[data-hero-theme] .bl-os-hero-txt.bl-hero-swap {
+    animation: blHeroSwap .34s cubic-bezier(.2, .8, .25, 1) both !important;
+}
+
+/* ---------- ① SEA · 深海潮汐：左巨大版本号 / 右双列清单 ---------- */
+html .bl-os-hero[data-hero-theme="sea"] {
+    --hh-bg: linear-gradient(132deg, #042f4a 0%, #075985 28%, #0e7490 56%, #22d3ee 86%, #67e8f9 100%);
+    --hh-bg-size: 240% 240%; --hh-bg-anim: blHiTideBg 20s ease-in-out infinite;
+    --hh-fx: radial-gradient(ellipse 60% 82% at 10% 112%, rgba(34,211,238,.55), transparent 70%),
+             radial-gradient(ellipse 54% 72% at 94% -12%, rgba(99,102,241,.50), transparent 70%),
+             radial-gradient(ellipse 72% 42% at 62% 120%, rgba(8,145,178,.48), transparent 72%);
+    --hh-fx-anim: blHiTide 18s ease-in-out infinite;
+    --hh-ribbon: linear-gradient(160deg, rgba(165,243,252,.52), rgba(34,211,238,.12) 46%, transparent 76%);
+    --hh-ribbon-anim: blHiTide 22s ease-in-out infinite alternate;
+    --hh-liquid: radial-gradient(circle at 34% 34%, rgba(224,255,255,.62), rgba(34,211,238,.30) 46%, rgba(99,102,241,.14) 72%, transparent 82%);
+    --hh-liquid-anim: blHiTide 12s ease-in-out infinite;
+    --hh-glow: radial-gradient(circle, rgba(165,243,252,.42), transparent 68%);
+    --hh-glow-anim: blHiTide 7s ease-in-out infinite;
+    --hh-shine: linear-gradient(90deg, transparent, rgba(224,255,255,.22) 50%, transparent);
+    --hh-shine-anim: blHiStripe 8s ease-in-out infinite;
+    --hh-pattern: repeating-linear-gradient(115deg, rgba(255,255,255,.055) 0 1px, transparent 1px 26px);
+    --hh-pattern-anim: blHiStripe 26s linear infinite;
+    --hh-num: linear-gradient(100deg, #ffffff 0%, #cffafe 26%, #a5b4fc 50%, #cffafe 74%, #ffffff 100%);
+    --hh-num-anim: blHiTideNum 9s ease-in-out infinite;
+    --hh-num-shadow: 0 10px 26px rgba(34,211,238,.42);
+    --hh-badge-bg: #ecfeff; --hh-badge-fg: #083344; --hh-badge-radius: 999px;
+    --hh-badge-anim: blHiTideBadge 3.6s ease-in-out infinite;
+    --hh-line: rgba(165,243,252,.34); --hh-ink: #f0fdff;
+    --hh-shadow: 0 14px 38px rgba(3,45,66,.42), inset 0 1px 0 rgba(255,255,255,.30);
+    --hh-cols: minmax(0,1fr) minmax(0,1fr);
+    --hh-areas: "kicker kicker" "num note" "num items" "product items" "slogan items" "badge meta";
+    --hh-align: left; --hh-justify: start; --hh-meta-justify: flex-start; --hh-max: 820px;
+    --hh-min-h: 268px;
+}
+
+/* ---------- ② ART · 紫红液态玻璃：居中大字 + 胶囊（原 ColorOS 皮肤） ---------- */
+html .bl-os-hero[data-hero-theme="art"] {
+    --hh-bg: linear-gradient(136deg, #2a1a6e 0%, #5a2589 32%, #a52a70 62%, #e0567f 88%, #f37a8c 100%);
+    --hh-bg-size: 220% 220%; --hh-bg-anim: blHiMorphBg 20s ease-in-out infinite;
+    --hh-fx: radial-gradient(ellipse 58% 52% at 26% 76%, rgba(255,132,176,.85), rgba(255,132,176,0) 72%),
+             radial-gradient(ellipse 52% 62% at 88% 16%, rgba(126,116,255,.72), rgba(126,116,255,0) 70%),
+             radial-gradient(ellipse 72% 42% at 62% 118%, rgba(255,84,138,.62), transparent 72%),
+             radial-gradient(ellipse 44% 38% at 12% 22%, rgba(160,220,255,.42), transparent 70%);
+    --hh-fx-anim: blHiMorph 18s ease-in-out infinite;
+    --hh-ribbon: linear-gradient(158deg, rgba(196,178,255,.58) 0%, rgba(255,158,198,.22) 42%, rgba(255,255,255,0) 72%);
+    --hh-ribbon-anim: blHiMorph 22s ease-in-out infinite alternate;
+    --hh-liquid: radial-gradient(circle at 35% 35%, rgba(255,226,245,.60), rgba(255,150,200,.34) 46%, rgba(126,116,255,.16) 72%, transparent 82%);
+    --hh-liquid-anim: blHiMorph 12s ease-in-out infinite;
+    --hh-glow: radial-gradient(circle, rgba(255,206,232,.42), rgba(255,206,232,0) 68%);
+    --hh-glow-anim: blHiBreathe 7s ease-in-out infinite;
+    --hh-shine: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,.06) 22%, rgba(255,255,255,.24) 50%, rgba(255,255,255,.06) 78%, rgba(255,255,255,0) 100%);
+    --hh-shine-anim: blHiSweep 8s ease-in-out infinite;
+    --hh-pattern: radial-gradient(circle, rgba(255,255,255,.10) 1px, transparent 2px);
+    --hh-pattern-size: 14px 14px; --hh-pattern-anim: blHiMorph 18s ease-in-out infinite;
+    --hh-num: linear-gradient(100deg, #ffffff 0%, #ffe0ef 26%, #dcd0ff 50%, #ffe0ef 74%, #ffffff 100%);
+    --hh-num-anim: blHiMorphNum 9s ease-in-out infinite;
+    --hh-badge-bg: #ffffff; --hh-badge-fg: #25123f; --hh-badge-radius: 999px;
+    --hh-badge-anim: blHiMorphBadge 3.6s ease-in-out infinite;
+    --hh-line: rgba(255,255,255,.20); --hh-ink: #fff;
+    --hh-shadow: 0 14px 38px rgba(58,14,70,.32), inset 0 1px 0 rgba(255,255,255,.28);
+    --hh-cols: minmax(0,1fr);
+    --hh-areas: "kicker" "num" "product" "slogan" "badge" "note" "items" "meta";
+    --hh-align: center; --hh-justify: center; --hh-meta-justify: center;
+    --hh-badge-justify: center; --hh-max: 620px; --hh-min-h: 300px;
+}
+
+/* ---------- ③ STAR · 琥珀金：星芒旋转 + 右侧内容 ---------- */
+html .bl-os-hero[data-hero-theme="star"] {
+    --hh-bg: linear-gradient(135deg, #3b1d05 0%, #7c3a06 30%, #b45309 58%, #fbbf24 88%, #fde68a 100%);
+    --hh-bg-size: 230% 230%; --hh-bg-anim: blHiSpinBg 26s ease-in-out infinite;
+    --hh-fx: radial-gradient(circle at 50% 44%, rgba(255,236,170,.62), transparent 62%),
+             radial-gradient(ellipse 60% 80% at 8% 110%, rgba(239,106,61,.42), transparent 70%);
+    --hh-fx-anim: blHiSpin 26s linear infinite;
+    --hh-ribbon: linear-gradient(150deg, rgba(255,236,170,.46), rgba(251,191,36,.10) 48%, transparent 74%);
+    --hh-ribbon-anim: blHiSpin 30s linear infinite reverse;
+    --hh-liquid: radial-gradient(circle at 40% 40%, rgba(255,251,235,.62), rgba(251,191,36,.30) 48%, transparent 80%);
+    --hh-liquid-anim: blHiSpin 16s linear infinite;
+    --hh-glow: radial-gradient(circle, rgba(255,236,170,.48), transparent 68%);
+    --hh-glow-anim: blHiBreathe 6s ease-in-out infinite;
+    --hh-shine: linear-gradient(90deg, transparent, rgba(255,248,220,.28) 50%, transparent);
+    --hh-shine-anim: blHiSpin 9s ease-in-out infinite;
+    --hh-pattern: repeating-conic-gradient(from 0deg at 50% 44%, rgba(255,236,170,.16) 0deg 7deg, transparent 7deg 24deg);
+    --hh-pattern-anim: blHiSpin 26s linear infinite;
+    --hh-num: linear-gradient(100deg, #fffbeb 0%, #fde68a 28%, #fb923c 52%, #fde68a 76%, #fffbeb 100%);
+    --hh-num-anim: blHiSpinNum 9s ease-in-out infinite;
+    --hh-num-shadow: 0 10px 26px rgba(251,146,60,.45);
+    --hh-badge-bg: #3b1d05; --hh-badge-fg: #fde68a; --hh-badge-radius: 10px;
+    --hh-badge-anim: blHiSpinBadge 4.2s ease-in-out infinite;
+    --hh-line: rgba(253,230,138,.40); --hh-ink: #fffbeb;
+    --hh-shadow: 0 14px 38px rgba(90,40,4,.42), inset 0 1px 0 rgba(255,248,220,.32);
+    --hh-cols: minmax(0,1fr) minmax(0,1fr);
+    --hh-areas: "kicker badge" "num product" "num slogan" "note items" "meta meta";
+    --hh-align: left; --hh-justify: start; --hh-meta-justify: flex-start; --hh-max: 780px;
+    --hh-badge-justify: end; --hh-min-h: 272px;
+    --hh-product-spacing: .16em;
+}
+
+/* ---------- ④ GRID · 钢蓝工程网格：左右分栏 + 编号清单 ---------- */
+html .bl-os-hero[data-hero-theme="grid"] {
+    --hh-bg: linear-gradient(140deg, #0b1c3d 0%, #1d3a6b 32%, #1d4ed8 66%, #60a5fa 100%);
+    --hh-bg-size: 200% 200%; --hh-bg-anim: blHiScanBg 9s linear infinite;
+    --hh-fx: radial-gradient(ellipse 70% 60% at 82% 12%, rgba(96,165,250,.42), transparent 70%);
+    --hh-fx-anim: blHiScan 6s linear infinite;
+    --hh-ribbon: linear-gradient(180deg, rgba(191,219,254,.32), transparent 62%);
+    --hh-ribbon-anim: blHiScan 7s linear infinite;
+    --hh-liquid: radial-gradient(circle at 40% 40%, rgba(219,234,254,.52), rgba(96,165,250,.20) 52%, transparent 80%);
+    --hh-liquid-anim: blHiScan 11s linear infinite;
+    --hh-glow: radial-gradient(circle, rgba(147,197,253,.38), transparent 68%);
+    --hh-glow-anim: blHiScan 5s linear infinite;
+    --hh-shine: linear-gradient(180deg, transparent, rgba(219,234,254,.24) 50%, transparent);
+    --hh-shine-anim: blHiScan 6s linear infinite;
+    --hh-pattern: linear-gradient(rgba(255,255,255,.11) 1px, transparent 1px),
+                  linear-gradient(90deg, rgba(255,255,255,.11) 1px, transparent 1px);
+    --hh-pattern-size: 22px 22px; --hh-pattern-anim: blHiScan 6s linear infinite;
+    --hh-num: linear-gradient(100deg, #ffffff 0%, #bfdbfe 30%, #60a5fa 52%, #bfdbfe 76%, #ffffff 100%);
+    --hh-num-anim: blHiScanNum 7s linear infinite;
+    --hh-num-shadow: 0 10px 26px rgba(37,99,235,.45);
+    --hh-badge-bg: #eff6ff; --hh-badge-fg: #1e3a8a; --hh-badge-radius: 6px;
+    --hh-badge-anim: blHiScanBadge 4s ease-in-out infinite;
+    --hh-line: rgba(191,219,254,.36); --hh-ink: #f8fbff;
+    --hh-shadow: 0 14px 34px rgba(8,25,60,.44), inset 0 0 0 1px rgba(255,255,255,.10);
+    --hh-radius: 14px;
+    --hh-cols: minmax(0,1fr) minmax(0,1fr);
+    --hh-areas: "kicker kicker" "num slogan" "product note" "badge items" "meta items";
+    --hh-align: left; --hh-justify: start; --hh-meta-justify: flex-start; --hh-max: 800px;
+    --hh-min-h: 264px; --hh-font: clamp(52px, 7.5vw, 84px);
+    --hh-product-spacing: .12em;
+}
+
+/* ---------- ⑤ MINT · 薄荷条纹：单行紧凑 ---------- */
+html .bl-os-hero[data-hero-theme="mint"] {
+    --hh-bg: linear-gradient(120deg, #043b2f 0%, #065f46 30%, #047857 60%, #34d399 100%);
+    --hh-bg-size: 220% 220%; --hh-bg-anim: blHiStripeBg 9s linear infinite;
+    --hh-fx: radial-gradient(ellipse 60% 90% at 96% 8%, rgba(52,211,153,.52), transparent 70%);
+    --hh-fx-anim: blHiStripe 9s linear infinite;
+    --hh-ribbon: linear-gradient(115deg, rgba(209,250,229,.36), transparent 66%);
+    --hh-ribbon-anim: blHiStripe 10s linear infinite;
+    --hh-liquid: radial-gradient(circle at 40% 40%, rgba(236,253,245,.52), rgba(52,211,153,.24) 52%, transparent 80%);
+    --hh-liquid-anim: blHiStripe 8s linear infinite;
+    --hh-glow: radial-gradient(circle, rgba(167,243,208,.40), transparent 68%);
+    --hh-glow-anim: blHiStripe 6s linear infinite;
+    --hh-shine: linear-gradient(90deg, transparent, rgba(236,253,245,.26) 50%, transparent);
+    --hh-shine-anim: blHiStripe 5s linear infinite;
+    --hh-pattern: repeating-linear-gradient(115deg, rgba(255,255,255,.10) 0 8px, transparent 8px 20px);
+    --hh-pattern-anim: blHiStripe 9s linear infinite;
+    --hh-num: linear-gradient(100deg, #ffffff 0%, #d1fae5 30%, #6ee7b7 52%, #d1fae5 76%, #ffffff 100%);
+    --hh-num-anim: blHiStripeNum 6s linear infinite;
+    --hh-num-shadow: 0 8px 22px rgba(4,120,87,.42);
+    --hh-badge-bg: #ecfdf5; --hh-badge-fg: #064e3b; --hh-badge-radius: 999px;
+    --hh-badge-anim: blHiStripeBadge 3.2s ease-in-out infinite;
+    --hh-line: rgba(167,243,208,.34); --hh-ink: #f0fdf8;
+    --hh-shadow: 0 12px 30px rgba(3,60,45,.40), inset 0 1px 0 rgba(255,255,255,.28);
+    --hh-cols: repeat(5, auto);
+    --hh-areas: "kicker kicker kicker kicker kicker" "num product slogan badge meta";
+    --hh-align: center; --hh-justify: center; --hh-meta-justify: center;
+    --hh-badge-justify: center; --hh-max: 900px; --hh-min-h: 190px;
+    --hh-pad: 26px 24px 28px;
+    --hh-font: clamp(34px, 5vw, 54px);
+    --hh-product-size: 15px; --hh-product-spacing: .10em;
+    --hh-slogan-size: 11px; --hh-badge-size: 12px; --hh-badge-pad: 6px 18px;
+}
+html .bl-os-hero[data-hero-theme="mint"] .bl-os-hero-note,
+html .bl-os-hero[data-hero-theme="mint"] .bl-os-hero-items { display: none !important; }
+
+/* ---------- ⑥ INDIGO · 靛蓝竖轨：右对齐单列 ---------- */
+html .bl-os-hero[data-hero-theme="indigo"] {
+    --hh-bg: linear-gradient(150deg, #141033 0%, #312e81 34%, #4338ca 64%, #818cf8 100%);
+    --hh-bg-size: 220% 220%; --hh-bg-anim: blHiBreatheBg 12s ease-in-out infinite;
+    --hh-fx: radial-gradient(ellipse 62% 82% at 12% 50%, rgba(165,180,252,.58), transparent 70%);
+    --hh-fx-anim: blHiBreathe 7s ease-in-out infinite;
+    --hh-ribbon: linear-gradient(120deg, rgba(199,210,254,.34), transparent 68%);
+    --hh-ribbon-anim: blHiBreathe 10s ease-in-out infinite;
+    --hh-liquid: radial-gradient(circle at 38% 38%, rgba(224,231,255,.54), rgba(129,140,248,.24) 52%, transparent 80%);
+    --hh-liquid-anim: blHiBreathe 9s ease-in-out infinite;
+    --hh-glow: radial-gradient(circle, rgba(199,210,254,.44), transparent 68%);
+    --hh-glow-anim: blHiBreathe 7s ease-in-out infinite;
+    --hh-shine: linear-gradient(90deg, transparent, rgba(224,231,255,.22) 50%, transparent);
+    --hh-shine-anim: blHiBreathe 8s ease-in-out infinite;
+    --hh-pattern: radial-gradient(circle at 10% 50%, rgba(165,180,252,.38), transparent 58%);
+    --hh-pattern-anim: blHiBreathe 7s ease-in-out infinite;
+    --hh-num: linear-gradient(100deg, #ffffff 0%, #c7d2fe 28%, #a855f7 52%, #c7d2fe 76%, #ffffff 100%);
+    --hh-num-anim: blHiBreatheNum 8s ease-in-out infinite;
+    --hh-num-shadow: 0 10px 26px rgba(67,56,202,.48);
+    --hh-badge-bg: #e0e7ff; --hh-badge-fg: #312e81; --hh-badge-radius: 999px;
+    --hh-badge-anim: blHiBreatheBadge 4.4s ease-in-out infinite;
+    --hh-line: rgba(199,210,254,.34); --hh-ink: #f5f7ff;
+    --hh-shadow: 0 14px 36px rgba(20,16,60,.46), inset 0 1px 0 rgba(255,255,255,.24);
+    --hh-cols: minmax(0,1fr);
+    --hh-areas: "kicker" "num" "product" "slogan" "note" "items" "badge" "meta";
+    --hh-align: right; --hh-justify: end; --hh-meta-justify: flex-end;
+    --hh-badge-justify: end; --hh-max: 620px; --hh-min-h: 290px;
+}
+html .bl-os-hero[data-hero-theme="indigo"] .bl-os-hero-txt {
+    border-left: 4px solid rgba(165,180,252,.72) !important;
+    padding-left: 22px !important;
+}
+html .bl-os-hero[data-hero-theme="indigo"] .bl-os-hero-items {
+    align-items: flex-end; text-align: right;
+}
+
+/* ---------- ⑦ MONO · 石墨蓝图：等宽字体 + 虚线代码框 ---------- */
+html .bl-os-hero[data-hero-theme="mono"] {
+    --hh-bg: linear-gradient(140deg, #111827 0%, #334155 40%, #475569 72%, #94a3b8 100%);
+    --hh-bg-size: 200% 200%; --hh-bg-anim: blHiTickBg 10s steps(6, end) infinite;
+    --hh-fx: radial-gradient(ellipse 60% 80% at 88% 14%, rgba(203,213,225,.34), transparent 70%);
+    --hh-fx-anim: blHiTick 5s steps(4, end) infinite;
+    --hh-ribbon: linear-gradient(160deg, rgba(226,232,240,.28), transparent 68%);
+    --hh-ribbon-anim: blHiTick 7s steps(4, end) infinite;
+    --hh-liquid: radial-gradient(circle at 40% 40%, rgba(241,245,249,.46), rgba(148,163,184,.18) 54%, transparent 80%);
+    --hh-liquid-anim: blHiTick 9s steps(4, end) infinite;
+    --hh-glow: radial-gradient(circle, rgba(226,232,240,.34), transparent 68%);
+    --hh-glow-anim: blHiTick 6s steps(4, end) infinite;
+    --hh-shine: linear-gradient(90deg, transparent, rgba(241,245,249,.20) 50%, transparent);
+    --hh-shine-anim: blHiTick 8s steps(4, end) infinite;
+    --hh-pattern: linear-gradient(rgba(255,255,255,.09) 1px, transparent 1px),
+                  linear-gradient(90deg, rgba(255,255,255,.09) 1px, transparent 1px);
+    --hh-pattern-size: 18px 18px; --hh-pattern-anim: blHiTick 5s steps(4, end) infinite;
+    --hh-num: linear-gradient(100deg, #ffffff 0%, #e2e8f0 28%, #94a3b8 52%, #e2e8f0 76%, #ffffff 100%);
+    --hh-num-anim: blHiTickNum 9s steps(6, end) infinite;
+    --hh-num-shadow: 0 8px 22px rgba(15,23,42,.5);
+    --hh-badge-bg: transparent; --hh-badge-fg: #f1f5f9; --hh-badge-radius: 4px;
+    --hh-badge-anim: blHiTickBadge 5s steps(4, end) infinite;
+    --hh-line: rgba(226,232,240,.38); --hh-ink: #f8fafc;
+    --hh-shadow: inset 0 0 0 1px rgba(255,255,255,.12), 0 10px 28px rgba(15,23,42,.5);
+    --hh-radius: 8px;
+    --hh-cols: minmax(0,1fr) minmax(0,1fr);
+    --hh-areas: "kicker note" "num note" "product note" "slogan items" "badge meta";
+    --hh-align: left; --hh-justify: start; --hh-meta-justify: flex-start; --hh-max: 800px;
+    --hh-min-h: 262px; --hh-font: clamp(46px, 6.5vw, 72px);
+    --hh-tracking: -.02em; --hh-product-spacing: .12em;
+}
+html .bl-os-hero[data-hero-theme="mono"] .bl-os-hero-txt,
+html .bl-os-hero[data-hero-theme="mono"] .bl-os-hero-product,
+html .bl-os-hero[data-hero-theme="mono"] .bl-os-hero-kicker,
+html .bl-os-hero[data-hero-theme="mono"] .bl-os-hero-slogan {
+    font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace !important;
+}
+html .bl-os-hero[data-hero-theme="mono"] .bl-os-hero-note {
+    border: 1px dashed rgba(226,232,240,.46) !important;
+    border-radius: 6px !important;
+    padding: 10px 12px !important;
+    font: 11px/1.6 ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace !important;
+    letter-spacing: .04em;
+}
+html .bl-os-hero[data-hero-theme="mono"] .bl-os-hero-badge {
+    border: 1px dashed rgba(226,232,240,.60) !important;
+    box-shadow: none !important;
+}
+html .bl-os-hero[data-hero-theme="mono"] .bl-os-hero-items {
+    font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace !important;
+}
+
+/* ---------- 收敛：减少动态效果 / 窄屏 ---------- */
+@media (prefers-reduced-motion: reduce) {
+    html:root .bl-os-hero[data-hero-theme],
+    html:root .bl-os-hero[data-hero-theme]::after,
+    html:root .bl-os-hero[data-hero-theme] .bl-os-hero-fx::before,
+    html:root .bl-os-hero[data-hero-theme] .bl-os-hero-fx::after,
+    html:root .bl-os-hero[data-hero-theme] .bl-os-hero-liquid,
+    html:root .bl-os-hero[data-hero-theme] .bl-os-hero-glow,
+    html:root .bl-os-hero[data-hero-theme] .bl-os-hero-shine,
+    html:root .bl-os-hero[data-hero-theme] .bl-os-hero-num,
+    html:root .bl-os-hero[data-hero-theme] .bl-os-hero-badge,
+    html:root .bl-os-hero[data-hero-theme] .bl-os-hero-txt.bl-hero-swap {
+        animation: none !important;
+    }
+    html:root .bl-os-hero[data-hero-theme] { background-position: 50% 50% !important; }
+    html:root .bl-os-hero[data-hero-theme]::after,
+    html:root .bl-os-hero[data-hero-theme] .bl-os-hero-shine,
+    html:root .bl-os-hero[data-hero-theme] .bl-os-hero-liquid { display: none !important; }
+}
+@media (max-width: 720px) {
+    html .bl-os-hero[data-hero-theme] .bl-os-hero-txt {
+        grid-template-columns: minmax(0,1fr) !important;
+        grid-template-areas: "kicker" "num" "product" "slogan" "note" "items" "badge" "meta" !important;
+        text-align: center !important;
+        justify-items: center !important;
+    }
+    html .bl-os-hero[data-hero-theme] .bl-os-hero-meta { justify-content: center !important; }
+    html .bl-os-hero[data-hero-theme] .bl-os-hero-badge { justify-self: center !important; }
+    html .bl-os-hero[data-hero-theme="indigo"] .bl-os-hero-txt {
+        border-left: 0 !important; padding-left: 0 !important;
+    }
+    html .bl-os-hero[data-hero-theme="indigo"] .bl-os-hero-items { align-items: center; text-align: center; }
+    html .bl-os-hero[data-hero-theme] .bl-os-hero-items { max-width: 100%; }
+}

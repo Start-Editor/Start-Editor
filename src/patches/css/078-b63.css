@@ -1,0 +1,23 @@
+/* ── [B63] 视频壁纸层样式 ───────────────────────────────────────────────
+   依赖：B64
+   维护：MP4/WebM 壁纸的 video 元素定位
+   ───────────────────────────────────────────────────────────── */
+
+/* 视频壁纸层：由主题壁纸应用函数插入 blocks-wrapper，位于积木画布之下 */
+[class*='blocks-wrapper_'] > .bl-wallpaper-video {
+    display: block;
+}
+/* ⚠ 壁纸「闪烁 / 消失」的真正根因：
+   f() 会给 svg.blocklySvg 设半透明主色（壁纸透出），而主题 / 其它模块
+   又在运行时把它改回不透明的 rgb(255,255,255)，两方反复拉扯就是时隐时现。
+   这里由脚本动态把规则挂到 <head> 末尾并保持最后，用 !important 稳定住：
+   覆盖层不透明度直接取滑杆值，壁纸始终按设定透出，不再被盖掉。 */
+/* 壁纸历史缩略图里的视频 */
+[class*='wallpaper-thumb_'] video,
+[class*='wallpaperThumb_'] video {
+    display: block;
+    width: 100%; height: 100%;
+    object-fit: cover;
+}
+/* 失效置顶积木（Blockly 默认 #FF0000）不显示 */
+.bl-invalid-pin { display: none !important; }

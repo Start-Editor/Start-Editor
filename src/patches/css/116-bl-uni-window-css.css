@@ -1,0 +1,314 @@
+
+/* ============ 1. 菜单类浮层：干净单层玻璃，杜绝图层偏移 ============ */
+html:root [class*="menu_menu_"]:not([class*="menu_menu-item"]),
+html:root [class*="context-menu_menu"]:not([class*="context-menu_menu-item"]),
+html:root .blocklyContextMenu,
+html:root .goog-menu,
+html:root .sa-context-menu,
+html:root .sa-folder-context-menu {
+    background-image: none !important;
+    border: 1px solid var(--ui-black-transparent, rgba(0,0,0,.12)) !important;
+    outline: none !important;
+    box-shadow: 0 8px 24px rgba(0,0,0,.18) !important;
+    -webkit-backdrop-filter: var(--bl-glass-blur, blur(12px) saturate(150%)) !important;
+    backdrop-filter: var(--bl-glass-blur, blur(12px) saturate(150%)) !important;
+}
+/* 菜单项不叠第二层玻璃 / 渐变高光 */
+html:root [class*="menu_menu-item"],
+html:root [class*="context-menu_menu-item"],
+html:root .goog-menuitem {
+    background-image: none !important;
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+    box-shadow: none !important;
+}
+
+/* ============ 2. 原版窗口格式：统一外壳 ============ */
+html:root .bl-uni-win {
+    position: fixed !important;
+    right: auto !important;
+    bottom: auto !important;
+    display: none !important;
+    flex-direction: column !important;
+    box-sizing: border-box !important;
+    overflow: hidden !important;
+    border-radius: 10px !important;
+    border: 1px solid var(--ui-black-transparent, rgba(0,0,0,.12)) !important;
+    background: var(--ui-primary, #ffffff) !important;
+    color: var(--text-primary, #575e75) !important;
+    box-shadow: 0 12px 32px rgba(0,0,0,.18) !important;
+    font-family: "Helvetica Neue", Helvetica, Arial, "Microsoft YaHei", sans-serif !important;
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+    pointer-events: none;
+    z-index: 1000000;
+}
+html:root .bl-uni-win.bl-uni-shown {
+    display: flex !important;
+    pointer-events: auto !important;
+    animation: blUniIn .16s ease both !important;
+}
+@keyframes blUniIn { from { opacity: 0; } to { opacity: 1; } }
+
+html:root .bl-uni-win .bl-uni-head {
+    flex: 0 0 auto !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 8px;
+    box-sizing: border-box !important;
+    min-height: 40px !important;
+    max-height: 40px !important;
+    padding: 0 10px 0 14px !important;
+    background: var(--ui-secondary, #f8f9fa) !important;
+    border-bottom: 1px solid var(--ui-black-transparent, rgba(0,0,0,.08)) !important;
+    cursor: move !important;
+    user-select: none !important;
+    -webkit-user-select: none !important;
+}
+html:root .bl-uni-win .bl-uni-title {
+    flex: 1 1 auto !important;
+    min-width: 0;
+    font-size: 13px !important;
+    font-weight: 600 !important;
+    letter-spacing: 0 !important;
+    color: var(--text-primary, #575e75) !important;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+html:root .bl-uni-win .bl-uni-controls {
+    display: flex !important;
+    align-items: center !important;
+    gap: 4px;
+    flex: 0 0 auto !important;
+}
+html:root .bl-uni-win .bl-uni-btn {
+    display: flex !important;
+    align-items: center; justify-content: center;
+    width: 26px; height: 26px;
+    box-sizing: border-box !important;
+    padding: 0 !important;
+    border: none !important;
+    border-radius: 6px !important;
+    background: transparent !important;
+    color: var(--text-primary, #575e75) !important;
+    cursor: pointer !important;
+    font: inherit !important;
+    line-height: 1 !important;
+}
+html:root .bl-uni-win .bl-uni-btn:hover {
+    background: var(--ui-tertiary, #dee2e6) !important;
+}
+html:root .bl-uni-win .bl-uni-btn svg {
+    width: 13px; height: 13px;
+    stroke: currentColor; fill: none; stroke-width: 2;
+    stroke-linecap: round; stroke-linejoin: round;
+}
+html:root .bl-uni-win .bl-uni-content {
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    overflow: auto !important;
+    background: transparent !important;
+}
+/* 内容区里原有的根容器保持自己的宽度，不要被 flex 拉成一条 */
+html:root .bl-uni-win .bl-uni-content > * { flex-shrink: 0 !important; }
+
+/* ============ 3. 去 AI 味：自绘弹窗朴素化 ============ */
+html:root .bl-sv-mask {
+    background: rgba(20,28,42,.42) !important;
+    -webkit-backdrop-filter: blur(7px) saturate(130%) !important;
+    backdrop-filter: blur(7px) saturate(130%) !important;
+    animation: blSvFade .16s ease both !important;
+}
+html:root .bl-sv-dlg {
+    width: min(560px, 94vw) !important;
+    padding: 22px 24px 18px !important;
+    border-radius: 18px !important;
+    border: 1px solid var(--ui-black-transparent, rgba(0,0,0,.09)) !important;
+    background: var(--ui-primary, #fff) !important;
+    color: var(--text-primary, #2d3748) !important;
+    box-shadow: 0 22px 64px rgba(0,0,0,.24) !important;
+    animation: blSvFade .16s ease both !important;
+}
+html:root .bl-sv-eyebrow,
+html:root .blp-eyebrow { display: none !important; }
+html:root .bl-sv-dlg h3 { font-size: 15px !important; font-weight: 650 !important; margin: 0 0 4px !important; }
+html:root .bl-sv-dlg > p { font-size: 12px !important; opacity: .70 !important; margin: 0 0 12px !important; }
+html:root .bl-sv-card {
+    border-radius: 8px !important;
+    background: var(--ui-secondary, #f7f9fc) !important;
+    box-shadow: none !important;
+    transition: border-color .12s ease !important;
+}
+html:root .bl-sv-card:hover,
+html:root .bl-sv-card:focus-visible {
+    transform: none !important;
+    box-shadow: none !important;
+    border-color: var(--looks-secondary, #4c97ff) !important;
+}
+html:root .bl-sv-ico {
+    border-radius: 6px !important;
+    background: var(--looks-secondary, #4c97ff) !important;
+    color: var(--bl-on-accent, #ffffff) !important;
+}
+html:root .bl-sv-foot { margin-top: 16px !important; padding-top: 12px !important; }
+html:root .bl-sv-ready { font-weight: 600 !important; letter-spacing: 0 !important; }
+html:root .bl-sv-toast {
+    background: var(--ui-primary, #ffffff) !important;
+    color: var(--text-primary, #575e75) !important;
+    border: 1px solid var(--ui-black-transparent, rgba(0,0,0,.12)) !important;
+    box-shadow: 0 6px 20px rgba(0,0,0,.16) !important;
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+    border-radius: 8px !important;
+}
+
+/* 快速定位框：短淡入取代错开 + 回弹，去掉发光点与大字距 */
+html:root .bl-snap.is-open,
+html:root .bl-snap.is-open.bl-snap-pop { animation: blUniIn .16s ease both !important; }
+html:root .bl-snap.is-open .bl-snap-zone,
+html:root .bl-snap.is-open.bl-snap-pop .bl-snap-zone {
+    animation: none !important;
+    animation-delay: 0ms !important;
+}
+/* 贴靠面板回到顶层宿主后，预览框保持原生层级（低于面板、低于窗口）。 */
+html:root .bl-snap-preview {
+    position: fixed !important;
+    z-index: 29 !important;
+    border-radius: 8px !important;
+}
+html:root .bl-snap-head-dot { display: none !important; }
+html:root .bl-snap-head-t { font-size: 12px !important; font-weight: 650 !important; letter-spacing: 0 !important; }
+html:root .bl-snap-head-sub, html:root .bl-snap-foot { font-size: 10.5px !important; }
+html:root .bl-snap-foot b { font-weight: 650 !important; }
+html:root .bl-snap .bl-snap-zone { border-radius: 6px !important; transition: border-color .12s ease, background-color .12s ease !important; }
+html:root .bl-snap .bl-snap-zone:hover { transform: none !important; }
+html:root .bl-snap .bl-snap-zone.is-active { transform: none !important; }
+html:root .bl-snap.is-open.bl-snap-liquid-on,
+html:root.bl-snap-liquid-on .bl-snap.is-open { background-image: none !important; }
+
+/* ============ 4. 项目界面：零渐变，颜色随主题 ============ */
+html:root .blp-head {
+    background: var(--ui-secondary, #f8f9fb) !important;
+}
+html:root .blp-head h2 { font-size: 19px !important; font-weight: 650 !important; letter-spacing: 0 !important; }
+html:root .blp-chip { border-radius: 6px !important; }
+html:root .blp-chip b { font-weight: 650 !important; }
+html:root .blp-btn {
+    border-radius: 7px !important;
+    font-weight: 600 !important;
+    transition: background-color .12s ease, border-color .12s ease !important;
+}
+html:root .blp-btn:hover { transform: none !important; box-shadow: none !important; }
+html:root .blp-btn:active { transform: none !important; }
+html:root .blp-btn.primary {
+    background: var(--looks-secondary, #4c97ff) !important;
+    color: var(--bl-on-accent, #ffffff) !important;
+    border-color: transparent !important;
+    box-shadow: none !important;
+}
+html:root .blp-search, html:root .blp-sort { border-radius: 7px !important; }
+
+html:root .bl-proj-card {
+    border-radius: 9px !important;
+    background: var(--ui-secondary, #f8f9fb) !important;
+    box-shadow: none !important;
+    animation: none !important;
+    transition: border-color .12s ease !important;
+}
+html:root .bl-proj-card:hover { transform: none !important; box-shadow: none !important; }
+html:root .blp-thumb {
+    background: var(--ui-tertiary, #dee2e6) !important;
+}
+html:root .blp-thumb::before { display: none !important; }
+html:root .blp-thumb-none { color: var(--text-primary, #575e75) !important; opacity: .65; letter-spacing: 0 !important; }
+html:root .blp-badge {
+    border-radius: 5px !important;
+    background: var(--ui-primary, #ffffff) !important;
+    color: var(--text-primary, #575e75) !important;
+    border: 1px solid var(--ui-black-transparent, rgba(0,0,0,.12)) !important;
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+}
+html:root .blp-fmt {
+    border-radius: 5px !important;
+    background: var(--looks-secondary, #4c97ff) !important;
+    color: var(--bl-on-accent, #ffffff) !important;
+    letter-spacing: 0 !important;
+}
+html:root .blp-actions {
+    background: var(--ui-primary, #ffffff) !important;
+    border-top: 1px solid var(--ui-black-transparent, rgba(0,0,0,.10)) !important;
+    transition: transform .14s ease, opacity .14s ease !important;
+}
+html:root .blp-act {
+    border-radius: 6px !important;
+    color: var(--text-primary, #575e75) !important;
+    border: 1px solid var(--ui-black-transparent, rgba(0,0,0,.14)) !important;
+    background: var(--ui-secondary, #f8f9fb) !important;
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+}
+html:root .blp-act:hover { background: var(--ui-tertiary, #dee2e6) !important; }
+html:root .blp-act.primary {
+    background: var(--looks-secondary, #4c97ff) !important;
+    color: var(--bl-on-accent, #ffffff) !important;
+    border-color: transparent !important;
+}
+html:root .blp-act.danger:hover { background: var(--red-primary, #e64a4a) !important; }
+
+html:root .blp-empty-ico,
+html:root .blp-empty-ico i {
+    background: var(--ui-tertiary, #dee2e6) !important;
+    opacity: 1 !important;
+}
+html:root .blp-overlay, html:root .blp-confirm {
+    background: color-mix(in srgb, var(--ui-primary, #fff) 82%, transparent) !important;
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+}
+html:root .blp-busy-card, html:root .blp-ask-card {
+    border-radius: 9px !important;
+    box-shadow: 0 8px 24px rgba(0,0,0,.14) !important;
+    animation: none !important;
+}
+html:root .blp-ring {
+    background: transparent !important;
+    border: 5px solid var(--ui-tertiary, #dee2e6) !important;
+    border-top-color: var(--looks-secondary, #4c97ff) !important;
+    -webkit-mask: none !important;
+    mask: none !important;
+    animation: blpSpin .9s linear infinite !important;
+}
+html:root .blp-done .blp-ring {
+    background: transparent !important;
+    border-color: var(--looks-secondary, #4c97ff) !important;
+    opacity: 1 !important;
+    animation: none !important;
+}
+html:root .blp-bar,
+html:root .blp-bar > i { border-radius: 3px !important; }
+html:root .blp-bar { background: var(--ui-tertiary, #dee2e6) !important; }
+html:root .blp-bar > i { background: var(--looks-secondary, #4c97ff) !important; }
+html:root .blp-ask-ico {
+    background: var(--looks-secondary, #4c97ff) !important;
+    color: var(--bl-on-accent, #ffffff) !important;
+}
+html:root .blp-toast {
+    background: var(--ui-primary, #ffffff) !important;
+    color: var(--text-primary, #575e75) !important;
+    border: 1px solid var(--ui-black-transparent, rgba(0,0,0,.14)) !important;
+    box-shadow: 0 6px 20px rgba(0,0,0,.14) !important;
+    border-radius: 7px !important;
+}
+@media (prefers-reduced-motion: reduce) {
+    html:root .bl-uni-win.bl-uni-shown,
+    html:root .bl-snap.is-open,
+    html:root .blp-ring { animation: none !important; }
+}
+html:root.tb-eco .bl-uni-win.bl-uni-shown,
+html:root.tb-eco .bl-snap.is-open { animation: none !important; }

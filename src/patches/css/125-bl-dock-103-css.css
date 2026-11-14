@@ -1,0 +1,70 @@
+
+/* ① 工作区限定：不是「代码」标签就隐藏整个 DOCK 宿主（含最小化托盘）。
+      B33 用户设置「隐藏 Dock 栏」写的是 .bl-dock 的 inline display，
+      两者互不覆盖：回到代码区摘掉本类后，用户设置照旧生效。 */
+html.bl-dock-hidden .bl-dock-host { display: none !important; }
+
+/* ② 1.0.3 STAR 图标外观。下列规则统一压过 B62 / B84 / B86 / B87：
+      同特异性或更高 + !important，且本表位于文件末尾。 */
+html:root .bl-dock .bl-dock-item,
+html:root.bl-dock-glass-on .bl-dock .bl-dock-item,
+html:root.bl-dock-liquid-on .bl-dock .bl-dock-item {
+    background-color: transparent !important;
+    background-image: none !important;
+    border: 0 !important;
+    box-shadow: none !important;
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+}
+html:root .bl-dock .bl-dock-item:hover,
+html:root.bl-dock-glass-on .bl-dock .bl-dock-item:hover {
+    background-color: rgba(127, 127, 127, 0.14) !important;
+}
+html:root .bl-dock .bl-dock-item:active,
+html:root.bl-dock-glass-on .bl-dock .bl-dock-item:active {
+    background-color: rgba(127, 127, 127, 0.22) !important;
+}
+
+/* 立体底座 / 玻璃面整层撤掉：content:none 让 ::before 根本不生成盒子，
+   B62 的三层渐变、B86 的钉死背景、B87 的玻璃阴影全部无从绘制。 */
+html:root .bl-dock .bl-dock-item::before,
+html:root.bl-dock-glass-on .bl-dock .bl-dock-item::before,
+html:root.bl-dock-liquid-on .bl-dock .bl-dock-item::before,
+html:root.bl-dock-glass-on.bl-dock-liquid-on .bl-dock .bl-dock-item::before,
+html:root.bl-dock-glass-on .bl-dock .bl-dock-item:active::before {
+    content: none !important;
+    background: none !important;
+    background-image: none !important;
+    box-shadow: none !important;
+    border: 0 !important;
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+}
+
+/* 图标回到主题变量：去掉 B62 固定 #4a566b 与白色投影 */
+html:root .bl-dock .bl-dock-item > svg,
+html:root.bl-dock-glass-on .bl-dock .bl-dock-item > svg {
+    color: var(--text-primary, #333333) !important;
+    filter: none !important;
+}
+html:root .bl-dock .bl-dock-item > .bl-dock-custom-icon,
+html:root.bl-dock-glass-on .bl-dock .bl-dock-item > .bl-dock-custom-icon {
+    background: var(--ui-black-transparent, rgba(0, 0, 0, 0.08)) !important;
+    box-shadow: none !important;
+}
+
+/* 托盘横杠 / 分隔线：1.0.3 的 currentColor + 中性灰 */
+html:root .bl-dock .bl-dock-item.bl-dock-tray::after,
+html:root .bl-dock .bl-dock-item.is-docked::after,
+html:root.bl-dock-glass-on .bl-dock .bl-dock-item.bl-dock-tray::after,
+html:root.bl-dock-glass-on .bl-dock .bl-dock-item.is-docked::after {
+    background: currentColor !important;
+    opacity: 0.55 !important;
+}
+html:root .bl-dock .bl-dock-sep,
+html:root.bl-dock-glass-on .bl-dock .bl-dock-sep {
+    background: rgba(127, 127, 127, 0.35) !important;
+}
+@media (prefers-reduced-motion: reduce) {
+    html:root .bl-dock .bl-dock-item { transition: none !important; }
+}

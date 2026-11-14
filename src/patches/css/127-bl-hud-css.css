@@ -1,0 +1,62 @@
+
+/* ── [B112] 底部信息条 · 书包上移 ─────────────────────────────────────
+   书包是 gui_tabs (列 flex) 的最后一个子节点，页面根 gui_page-wrapper 是
+   整窗列 flex、body-wrapper flex-grow:1。给根容器留出 28px 底部内边距，
+   body-wrapper / tabs / tab-panel 的高度就少 28px，书包自动上移 28px，
+   腾出的最底位置由常驻状态条占据 —— 不往 React 树里插任何节点，
+   也不会和 React 的 reconcile 抢顺序。
+   配色只用主题变量、纯色、无渐变、无入场动画（延续「去 AI 味」）。
+   ──────────────────────────────────────────────────────────────────── */
+html.bl-hud-on [class*="gui_page-wrapper_"] {
+    box-sizing: border-box !important;
+    padding-bottom: 28px !important;
+}
+/* 允许列 flex 的子项真正收缩，否则 min-height:auto 会把状态条顶出视口 */
+html.bl-hud-on [class*="gui_body-wrapper_"],
+html.bl-hud-on [class*="gui_tabs_"],
+html.bl-hud-on [class*="gui_tab-panel_"] { min-height: 0; }
+/* 书包与状态条之间留一点空隙，并再多上移 6px */
+html.bl-hud-on [class*="backpack_backpack-container_"] { margin-bottom: 6px; }
+
+.bl-hud-bar {
+    position: fixed; left: 0; right: 0; bottom: 0;
+    height: 28px; z-index: 7900;
+    display: flex; align-items: stretch;
+    box-sizing: border-box; padding: 0 2px;
+    overflow-x: auto; overflow-y: hidden;
+    background: var(--ui-secondary, #f7f8fa);
+    border-top: 1px solid var(--ui-black-transparent, rgba(0, 0, 0, .08));
+    color: var(--text-primary, #2d3748);
+    font-family: inherit; font-size: 11px; line-height: 1;
+    scrollbar-width: none; -ms-overflow-style: none;
+    -webkit-user-select: none; user-select: none;
+}
+.bl-hud-bar::-webkit-scrollbar { height: 0; display: none; }
+.bl-hud-i {
+    flex: 0 0 auto; display: flex; align-items: center; gap: 5px;
+    height: 100%; padding: 0 10px; white-space: nowrap;
+    border-right: 1px solid var(--ui-black-transparent, rgba(0, 0, 0, .08));
+}
+.bl-hud-i:last-child { border-right: none; }
+.bl-hud-k { opacity: .55; font-size: 10.5px; letter-spacing: .02em; }
+.bl-hud-v {
+    font-weight: 600; font-variant-numeric: tabular-nums;
+    max-width: 180px; overflow: hidden; text-overflow: ellipsis;
+    color: var(--looks-secondary, #4c97ff);
+}
+/* 玻璃开启时跟着半透明 + 模糊，深浅主题由 --ui-* 兜底 */
+html.bl-dock-glass-on .bl-hud-bar {
+    background: var(--bl-glass-panel, rgba(255, 255, 255, .55));
+    -webkit-backdrop-filter: blur(var(--bl-glass-blur, 10px)) saturate(140%);
+    backdrop-filter: blur(var(--bl-glass-blur, 10px)) saturate(140%);
+}
+html.bl-hud-off .bl-hud-bar { display: none !important; }
+/* DOCK 宿主拿不到积木区 rect、退回整屏兜底时，胶囊别压在状态条上 */
+html.bl-hud-on .bl-dock-host:not([data-bl-rect-ok]) .bl-dock {
+    bottom: 44px !important;
+}
+@media (max-width: 720px) {
+    .bl-hud-i { padding: 0 7px; gap: 3px; }
+    .bl-hud-k { font-size: 10px; }
+    .bl-hud-v { max-width: 110px; }
+}

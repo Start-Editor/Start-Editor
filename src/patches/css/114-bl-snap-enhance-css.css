@@ -1,0 +1,247 @@
+
+/* ---------- 面板外壳：主题变量 + 弹出动画 ---------- */
+html:root .bl-snap {
+    padding: 9px !important;
+    border-radius: 18px !important;
+    background-color: var(--bl-snap-body, var(--ui-primary, #ffffff)) !important;
+    background-image: var(--bl-snap-sheen, none) !important;
+    border: 1px solid var(--bl-snap-line, var(--ui-black-transparent, rgba(0,0,0,.15))) !important;
+    box-shadow: var(--bl-snap-shadow, 0 14px 34px rgba(0,0,0,.30)) !important;
+    color: var(--text-primary, #575e75) !important;
+    max-width: calc(100vw - 32px) !important;
+    max-height: calc(100vh - 32px) !important;
+    overflow: auto !important;
+    scrollbar-width: thin !important;
+    transform-origin: top right !important;
+    transition: background-color .22s ease, border-color .22s ease,
+                box-shadow .22s ease !important;
+}
+html:root .bl-snap::-webkit-scrollbar { width: 6px; height: 6px; }
+html:root .bl-snap::-webkit-scrollbar-thumb {
+    background: var(--ui-black-transparent, rgba(0,0,0,.18));
+    border-radius: 999px;
+}
+
+/* 每次从隐藏到显示都重播：JS 负责 remove → 重排 → add .bl-snap-pop */
+/* 动画挂在 .is-open 本身：display:none → block 的那一帧就会播放，
+   不依赖异步补类，避免「先闪一帧最终态再从头播」。
+   .bl-snap-pop 由 JS 做 remove → 重排 → add，仅为强制重播保险。 */
+html:root .bl-snap.is-open,
+html:root .bl-snap.is-open.bl-snap-pop {
+    animation: blSnapPop .34s cubic-bezier(.18, .9, .28, 1.16) both !important;
+}
+html:root .bl-snap.is-open .bl-snap-zone,
+html:root .bl-snap.is-open.bl-snap-pop .bl-snap-zone {
+    animation: blSnapZoneIn .30s cubic-bezier(.2, .8, .25, 1) both !important;
+    animation-delay: calc(var(--bl-snap-i, 0) * 26ms) !important;
+}
+
+/* ---------- 标题条 / 提示条 ---------- */
+html:root .bl-snap-head {
+    display: flex !important; align-items: center !important; gap: 7px !important;
+    padding: 1px 3px 8px !important; margin: 0 0 7px !important;
+    border-bottom: 1px solid var(--bl-snap-line, var(--ui-black-transparent, rgba(0,0,0,.12))) !important;
+    white-space: nowrap;
+}
+html:root .bl-snap-head-dot {
+    width: 7px; height: 7px; border-radius: 50%; flex: 0 0 auto;
+    background: var(--looks-secondary, #4c97ff);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--looks-secondary, #4c97ff) 22%, transparent);
+}
+html:root .bl-snap-head-t {
+    font-size: 11.5px !important; font-weight: 800 !important;
+    letter-spacing: .06em !important;
+    color: var(--text-primary, #575e75) !important;
+}
+html:root .bl-snap-head-sub {
+    margin-left: auto !important; font-size: 10px !important;
+    opacity: .66 !important; color: var(--text-primary, #575e75) !important;
+}
+html:root .bl-snap-foot {
+    display: flex !important; align-items: center !important; justify-content: space-between !important;
+    padding: 8px 3px 1px !important; margin: 7px 0 0 !important;
+    border-top: 1px solid var(--bl-snap-line, var(--ui-black-transparent, rgba(0,0,0,.12))) !important;
+    font-size: 10px !important; opacity: .70 !important;
+    color: var(--text-primary, #575e75) !important; white-space: nowrap;
+}
+html:root .bl-snap-foot b { color: var(--looks-secondary, #4c97ff) !important; font-weight: 800; }
+
+/* ---------- 13 个定位点：4 列 3 行 + 底部一条跨列 ---------- */
+html:root .bl-snap .bl-snap-grid {
+    grid-template-columns: repeat(4, 62px) !important;
+    grid-template-rows: repeat(3, 58px) 34px !important;
+    gap: 6px !important;
+}
+html:root .bl-snap .bl-snap-zone {
+    position: relative !important;
+    box-sizing: border-box !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: flex-end !important;
+    padding: 3px 2px 4px !important;
+    border-radius: 10px !important;
+    border: 1.5px solid var(--bl-snap-line, var(--ui-black-transparent, rgba(0,0,0,.12))) !important;
+    background-color: var(--bl-snap-inner, var(--ui-secondary, #f2f5f9)) !important;
+    background-image: none !important;
+    color: var(--text-primary, #575e75) !important;
+    font-size: 10px !important;
+    font-weight: 700 !important;
+    line-height: 1.15 !important;
+    letter-spacing: .01em !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    cursor: pointer !important;
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+    transition: background-color .14s ease, border-color .14s ease,
+                color .14s ease, transform .14s ease !important;
+}
+/* 屏幕缩略图外框 */
+html:root .bl-snap .bl-snap-zone::before {
+    content: '';
+    position: absolute !important;
+    top: 5px !important; left: 50% !important;
+    width: 44px !important; height: 27px !important;
+    transform: translateX(-50%) !important;
+    box-sizing: border-box !important;
+    border: 1.5px solid currentColor !important;
+    border-radius: 4px !important;
+    opacity: .42 !important;
+}
+/* 高亮区域：clip-path 裁出该定位点对应的形状 */
+html:root .bl-snap .bl-snap-zone::after {
+    content: '';
+    position: absolute !important;
+    top: 5px !important; left: 50% !important;
+    width: 44px !important; height: 27px !important;
+    transform: translateX(-50%) !important;
+    border-radius: 3px !important;
+    background: var(--looks-secondary, #4c97ff) !important;
+    opacity: .82 !important;
+    clip-path: inset(0 0 0 0) !important;
+}
+html:root .bl-snap .bl-snap-zone[data-zone="left"]::after   { clip-path: inset(0 50% 0 0) !important; }
+html:root .bl-snap .bl-snap-zone[data-zone="right"]::after  { clip-path: inset(0 0 0 50%) !important; }
+html:root .bl-snap .bl-snap-zone[data-zone="top"]::after    { clip-path: inset(0 0 50% 0) !important; }
+html:root .bl-snap .bl-snap-zone[data-zone="bottom"]::after { clip-path: inset(50% 0 0 0) !important; }
+html:root .bl-snap .bl-snap-zone[data-zone="tl"]::after     { clip-path: inset(0 50% 50% 0) !important; }
+html:root .bl-snap .bl-snap-zone[data-zone="tr"]::after     { clip-path: inset(0 0 50% 50%) !important; }
+html:root .bl-snap .bl-snap-zone[data-zone="bl"]::after     { clip-path: inset(50% 50% 0 0) !important; }
+html:root .bl-snap .bl-snap-zone[data-zone="br"]::after     { clip-path: inset(50% 0 0 50%) !important; }
+html:root .bl-snap .bl-snap-zone[data-zone="thirdL"]::after { clip-path: inset(0 66.7% 0 0) !important; }
+html:root .bl-snap .bl-snap-zone[data-zone="thirdC"]::after { clip-path: inset(0 33.3% 0 33.3%) !important; }
+html:root .bl-snap .bl-snap-zone[data-zone="thirdR"]::after { clip-path: inset(0 0 0 66.7%) !important; }
+html:root .bl-snap .bl-snap-zone[data-zone="full"]::after   { clip-path: inset(0) !important; }
+html:root .bl-snap .bl-snap-zone[data-zone="center"]::after { clip-path: inset(20% 24% 20% 24%) !important; }
+
+/* 底部「居中还原」跨整行，横向排布 */
+html:root .bl-snap .bl-snap-zone[data-zone="center"] {
+    grid-column: 1 / -1 !important;
+    flex-direction: row !important;
+    justify-content: center !important;
+    gap: 9px !important;
+    font-size: 10.5px !important;
+}
+html:root .bl-snap .bl-snap-zone[data-zone="center"]::before,
+html:root .bl-snap .bl-snap-zone[data-zone="center"]::after {
+    top: 50% !important; left: 10px !important;
+    width: 26px !important; height: 19px !important;
+    transform: translateY(-50%) !important;
+}
+html:root .bl-snap .bl-snap-zone[data-zone="center"]::after { left: 10px !important; }
+
+/* 悬停 / 选中 */
+html:root .bl-snap .bl-snap-zone:hover {
+    transform: translateY(-2px) !important;
+    border-color: var(--looks-secondary, #4c97ff) !important;
+}
+html:root .bl-snap .bl-snap-zone.is-active {
+    background-color: var(--looks-secondary, #4c97ff) !important;
+    border-color: var(--looks-secondary, #4c97ff) !important;
+    color: var(--bl-on-accent, #ffffff) !important;
+    transform: scale(.97) !important;
+}
+html:root .bl-snap .bl-snap-zone.is-active::before { opacity: .72 !important; }
+html:root .bl-snap .bl-snap-zone.is-active::after {
+    background: var(--bl-on-accent, #ffffff) !important;
+    opacity: .92 !important;
+}
+
+/* ---------- 玻璃态：与弹窗同源，模糊只在面板这一层 ---------- */
+html:root.bl-snap-glass-on .bl-snap.is-open {
+    -webkit-backdrop-filter: var(--bl-snap-blur) !important;
+    backdrop-filter: var(--bl-snap-blur) !important;
+    background-color: var(--bl-snap-body) !important;
+    background-image: var(--bl-snap-sheen) !important;
+    border-color: var(--bl-snap-line) !important;
+    box-shadow: var(--bl-snap-shadow) !important;
+}
+html:root.bl-snap-glass-on .bl-snap .bl-snap-zone {
+    background-color: var(--bl-snap-inner) !important;
+    border-color: var(--bl-snap-line) !important;
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+}
+html:root.bl-snap-glass-on .bl-snap .bl-snap-head,
+html:root.bl-snap-glass-on .bl-snap .bl-snap-foot {
+    border-color: var(--bl-snap-line) !important;
+}
+/* 液态态：右上角不出现整条顶部亮线，沿用版本大卡的左上斜向高光 */
+html:root.bl-snap-liquid-on .bl-snap.is-open {
+    background-image:
+        radial-gradient(140% 1px at 0% 0%,
+            rgba(255,255,255,.34) 0%, rgba(255,255,255,0) 42%),
+        linear-gradient(135deg,
+            rgba(255,255,255,.20) 0%, rgba(255,255,255,0) 42%) !important;
+}
+
+/* ---------- 贴靠预览框：淡入缩放 + 玻璃感 ---------- */
+html:root .bl-snap-preview.is-open {
+    animation: blSnapPreviewIn .24s cubic-bezier(.2,.8,.25,1) both !important;
+    border-radius: 14px !important;
+    border: 2px dashed var(--looks-secondary, #4c97ff) !important;
+    background-color: var(--bl-snap-preview-bg,
+        color-mix(in srgb, var(--looks-secondary, #4c97ff) 18%, transparent)) !important;
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,.24),
+                0 8px 26px rgba(0,0,0,.16) !important;
+}
+html:root.bl-snap-glass-on .bl-snap-preview.is-open {
+    -webkit-backdrop-filter: var(--bl-snap-blur) !important;
+    backdrop-filter: var(--bl-snap-blur) !important;
+}
+
+/* ---------- 关键帧 ---------- */
+@keyframes blSnapPop {
+    0%   { opacity: 0; transform: translateY(-12px) scale(.88); }
+    62%  { opacity: 1; transform: translateY(2px) scale(1.025); }
+    100% { opacity: 1; transform: none; }
+}
+@keyframes blSnapZoneIn {
+    0%   { opacity: 0; transform: translateY(8px) scale(.86); }
+    100% { opacity: 1; transform: none; }
+}
+@keyframes blSnapPreviewIn {
+    0%   { opacity: 0; transform: scale(.965); }
+    100% { opacity: 1; transform: none; }
+}
+
+/* ---------- 收敛 ---------- */
+@media (max-width: 620px) {
+    html:root .bl-snap .bl-snap-grid {
+        grid-template-columns: repeat(3, 58px) !important;
+        grid-template-rows: repeat(5, 54px) 34px !important;
+    }
+}
+@media (prefers-reduced-motion: reduce) {
+    html:root .bl-snap.is-open,
+    html:root .bl-snap.is-open.bl-snap-pop,
+    html:root .bl-snap.is-open .bl-snap-zone,
+    html:root .bl-snap.is-open.bl-snap-pop .bl-snap-zone,
+    html:root .bl-snap-preview.is-open { animation: none !important; }
+    html:root .bl-snap, html:root .bl-snap .bl-snap-zone { transition: none !important; }
+}
+html:root.tb-eco .bl-snap.is-open,
+html:root.tb-eco .bl-snap.is-open.bl-snap-pop,
+html:root.tb-eco .bl-snap.is-open .bl-snap-zone,
+html:root.tb-eco .bl-snap.is-open.bl-snap-pop .bl-snap-zone { animation: none !important; }

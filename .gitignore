@@ -1,0 +1,25 @@
+# 构建产物（Cloudflare Pages / Vercel 都会自己生成）
+dist/
+.vercel/
+.wrangler/
+.dev.vars
+
+# 依赖（本项目零运行时依赖，保留以兼容未来扩展）
+node_modules/
+package-lock.json.bak
+
+# 编辑器 / 系统
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+.idea/
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# 日志与临时文件
+*.log
+npm-debug.log*
+.cache/
+.tmp/
+*.local

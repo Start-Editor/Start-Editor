@@ -1,0 +1,42 @@
+/* ── [B51] 标签栏层级兜底 ───────────────────────────────────────────────
+   依赖：B29
+   维护：保证竖排标签永远在自定义面板之上
+   ───────────────────────────────────────────────────────────── */
+
+/* 左侧竖排标签栏永远在自定义面板之上，避免「点了之后左侧选项全没了」 */
+ul[class*="gui_tab-list_"] { position: relative; z-index: 40; }
+/* 自定义工作区内部布局互不影响，切换时不再触发整页重排 */
+.bl-proj-panel, .ms-panel, .bl-py-panel, .bl-eval-panel { contain: layout style; }
+/* 打开项目面板时，把原生标签的高亮压回未选中态 */
+.bl-proj-active ul[class*="gui_tab-list_"] > li[class*="react-tabs__tab--selected"] {
+    color: var(--text-primary-transparent, rgba(87, 94, 117, 0.7)) !important;
+    background: var(--ui-tertiary) !important;
+    z-index: 1 !important;
+}
+
+/* --------------------------------------------------------------------------
+ * 「项目」打开时，原生积木面板（分类栏 + blocklyFlyout + 画布）整体让位。
+ * blocklyFlyout 自带 z-index:20 和 transform，属于独立层叠上下文，
+ * 只靠给面板加 z-index 盖不住；不处理的话它会压在面板左半边，
+ * 表现为「保存按钮只剩右半截 / 内容被积木栏挡住」。
+ * 用 visibility + pointer-events 而不是 display:none：保留 Blockly 的几何尺寸，
+ * 切回 Code 时画布不会塌成 0 再重排。
+ * -------------------------------------------------------------------------- */
+.bl-proj-active > [class*="gui_tab-panel_"] {
+    visibility: hidden !important;
+    pointer-events: none !important;
+}
+/* 面板自身再抬一层，压住缩放控件等高层元素；背景保持不透明 */
+.bl-proj-panel { z-index: 30 !important; }
+
+/* 「评测」打开时：原生 tab-panel 让位，原生选中标签压回未选中态。
+   用 visibility 而非 display，保留 Blockly 几何尺寸，切回代码不重排。 */
+.bl-eval-active > [class*="gui_tab-panel_"] {
+    visibility: hidden !important;
+    pointer-events: none !important;
+}
+.bl-eval-active ul[class*="gui_tab-list_"] > li[class*="react-tabs__tab--selected"] {
+    color: var(--text-primary-transparent, rgba(87, 94, 117, 0.7)) !important;
+    background: var(--ui-tertiary) !important;
+    z-index: 1 !important;
+}

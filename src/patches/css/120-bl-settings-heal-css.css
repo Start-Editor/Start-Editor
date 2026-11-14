@@ -1,0 +1,10 @@
+
+/* 正常项永远完整可见：中和 B67 动画结束后残留的 56px 裁切。
+   入场仍保留位移，淡入由 !important 的 opacity 接管为恒 1 —— 上一轮
+   已要求界面收敛动画观感，这里优先保证「一个选项都不会缺」。 */
+html [class*="modal-sidebar_group_"] [class*="modal-sidebar_item_"]:not(.bl-sidebar-out) {
+    max-height: none !important;
+    overflow: visible !important;
+    opacity: 1 !important;
+    pointer-events: auto !important;
+}

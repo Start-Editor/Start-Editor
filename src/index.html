@@ -1,0 +1,489 @@
+<!doctype html><html><head>
+<!-- ==========================================================================
+     StartEditor · 单文件结构总览（阅读入口）
+     ==========================================================================
+
+     本文件按「层」组织，从前往后依次是：
+
+       ① 启动层    B00–B07     DEFLATE 解码器、性能总线、加载页样式与逻辑
+       ② 资源层    B08–B12     __RES__ 资源表、合并后的压缩源码、3 个内嵌模板
+       ③ 桥接层    B13–B15     单 bundle 索引、chunk→Blob、资源 URL 重写
+       ④ 构建层    B16–B27     webpack 打包的编辑器本体（19 个 chunk）
+       ⑤ 补丁层    B28–B75     第 1～35 轮注入的功能与修复（约 0.79 MB）
+       ⑥ 样式层    B29/B44/…   与补丁层交错，每个样式块自带 [Bxx] 导航头
+
+     每个我们写的块都以 [Bxx] 开头，紧跟「依赖 / 维护」两行。
+     完整清单与改动索引见同目录《代码结构说明.md》。
+
+     ⚠ 三条禁忌（踩了会直接破坏加载）：
+        · 不要格式化 B08–B12 与 ④ 构建层：它们靠换行分段、字节哈希、
+          单行超长文本工作，格式化会毁掉惰性解码与加载提速成果；
+        · 不要往「合并压缩源码块」的文本里增删任何字符（B13 按换行建索引）；
+        · 不要在 B01 之前插入任何脚本：性能总线必须最先接管 DOM 观察。
+     ========================================================================== -->
+<meta charset="UTF-8"><script>{{include src/boot/000-b00.js}}</script>
+<script>{{include src/boot/001-b01.js}}</script>
+<script>{{include src/boot/002-b107.js}}</script>
+
+<meta name="viewport" content="width=device-width,initial-scale=1"><meta name="google" value="notranslate"><meta name="description" content="Bilup is a powerful Scratch mod that enhances your Scratch experience with advanced features and optimizations."/><meta property="og:title" content="Bilup - Elevate your creation"/><meta property="og:description" content="Bilup is a powerful Scratch mod that enhances your Scratch experience with advanced features and optimizations."/><meta property="og:type" content="website"/><meta property="og:image" content="/images/apple-touch-icon.png"/><meta property="og:url" content="https://com.bilup.org/"/><title>StartEditor——创新不只是说说而已</title><link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB2ZXJzaW9uPSIxLjEiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgeG1sbnM6eGxpbms9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkveGxpbmsiIHdpZHRoPSIyNTkuNjM0MzciIGhlaWdodD0iMjU3Ljc1OTc1IiB2aWV3Qm94PSIwLDAsMjU5LjYzNDM3LDI1Ny43NTk3NSI+PGRlZnM+PGxpbmVhckdyYWRpZW50IHgxPSIxMTAuMTgyODIiIHkxPSIxODAiIHgyPSIzNjkuODE3MTgiIHkyPSIxODAiIGdyYWRpZW50VW5pdHM9InVzZXJTcGFjZU9uVXNlIiBpZD0iY29sb3ItMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjNWY1ZjVmIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjMDAwMDAwIi8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoLTExMC4xODI4MiwtNTEuMTIwMTIpIj48ZyBzdHJva2U9Im5vbmUiIHN0cm9rZS13aWR0aD0iMCIgc3Ryb2tlLW1pdGVybGltaXQ9IjEwIj48cGF0aCBkPSJNMTIyLjY4MjgyLDMwOC44Nzk4OGMtNi45MDM1NiwwIC0xMi41LC01LjU5NjQ0IC0xMi41LC0xMi41di0yMzIuNzU5NzVjMCwtNi45MDM1NiA1LjU5NjQ0LC0xMi41IDEyLjUsLTEyLjVoMjM0LjYzNDM3YzYuOTAzNTYsMCAxMi41LDUuNTk2NDQgMTIuNSwxMi41djIzMi43NTk3NWMwLDYuOTAzNTYgLTUuNTk2NDQsMTIuNSAtMTIuNSwxMi41eiIgZmlsbD0idXJsKCNjb2xvci0xKSIgc3Ryb2tlLWxpbmVjYXA9ImJ1dHQiLz48cGF0aCBkPSJNMTg4LjQ0MjY1LDgzLjU4ODc4YzAsMCA3LjY4ODAyLC0yLjU3MTggMTYuMTkyNDksLTIuNzQ3MTVjMjIuMjk1LC0wLjQ1OTY5IDEyMi41NDQ0MiwtMC4xMTM0IDEyMi41NDQ0MiwtMC4xMTM0bC05LjUzNTE4LDM3LjE4NzIxaC02MC41NDg0MWwtMS45MDcwNCwxMTMuNDY4NjhsMTQuMzAyNzcsMC40NzY3NmMwLDAgNi40MDc1MiwtMS4zNzIwOSAxMC4yMTA4OSwtNS4wMTU4YzQuNDUzMSwtNC4yNjYxNiA2LjM5NzE1LC0xMS4xMTU5NSA2LjI3MTgzLC0xNC41NDEzMWMtMC4wOTIxMSwtMi41MTc3NCAxLjE0MzQ3LC04LjMwNDg5IC0yLjAyOTg1LC0xMS41NjU1NGMtNS4yMjc0NiwtNS4zNzEzMyAtMTUuODgzMTUsLTcuOTcxNiAtMTUuODgzMTUsLTcuOTcxNmwtMC45NTM1MiwtMzYuMjMzN2MwLDAgMTIuOTcyNTQsMC4yNjc3NiAyMy4xOTk3MSw0LjIzMDhjOS44NTY0MywzLjgxOTM4IDE2Ljg5MTQzLDExLjI0MDY3IDIxLjQ5MTYxLDE2LjI5NjcyYzguMDcxMjEsOC44NzEwNiAxMy40NzMzLDM4LjU5MDYxIDEzLjQ3MzMsMzguNTkwNjFjMCwwIC04LjA4Mzg3LDIzLjE3OTY1IC0xNi40MjI5NSwzMi4xNTQwOGMtMy4yNjkxMiwzLjUxODE5IC03LjA4MDQ1LDExLjI3OTc5IC0xMy45ODg0NiwxNC43ODA3N2MtMTAuNzMxMTUsNS40Mzg1NCAtMjQuODkyNjYsNS45ODU0MyAtMjQuODkyNjYsNS45ODU0M2wtMTIxLjA5NjgyLDAuOTUzNTFsMTAuOTY1NDYsLTM2LjIzMzY5bDYxLjAyNTE4LC0xLjQzMDI3bDEuNDMwMjcsLTM3LjY2Mzk4aC0yNy4xNzUyN2MwLDAgLTE1LjY0NjEyLC03LjE5OTk0IC0yNy4zMTk3LC0xOS44OTEwNGMtOS41MDgzNCwtMTAuMzM3MTQgLTE1LjQxODM5LC0yNS40NDA1MyAtMTUuOTQxMjcsLTM0LjEwNTMxYy0wLjA2MDEzLC0wLjk5NjMxIC0xLjE0NTIxLC0yOC40MzU4NiAxMC4xNjc0NCwtMzYuNzY1MTljMC4xODg2NSwtMC4zOTEyMiAwLjQ3NjIsLTAuNzI1NzkgMC44MzAyLC0wLjk3MTI4Yy0wLjA1MjYzLC0wLjIyOTE3IC0wLjAyNjM3LC0wLjQyMTE0IDAuMDg4MzgsLTAuNTcwNjdjOS40NzIzOSwtMTIuMzQyODkgMjUuNTAwMzIsLTE4LjMwNDYzIDI1LjUwMDMyLC0xOC4zMDQ2M3pNMTc4LjkxNzE4LDEzNi41MDYzMmMtMC45MTM5LDYuNDA0MjIgNS41MDg1OCwxNS41MzMyOCA3LjUwNzMyLDE3LjQ1Mzg0YzE3LjQ4NTE2LDE2LjgwMTMxIDM5Ljc0NTIzLDguNDQ2MzkgNDAuMzYxMTMsNS41NjM3MmMwLjY1MTM4LC0zLjA0ODczIC0yLjg1Mjc4LC00My43NTU5OSAtMi44NTI3OCwtNDMuNzU1OTlsLTMyLjk2MjAxLDQuMzAxNDFjLTAuMjg4MzksMC44OTE4OSAtMS4wNjQzNCwxLjU2NDQ5IC0yLjAxMzYzLDEuNzAzNThjLTAuMjQ5MzUsMC41NDIzMyAtMC42ODcxMSwwLjk4MDA5IC0xLjIyOTQ0LDEuMjI5NDRjLTAuMTMzNjEsMC45MTE4MiAtMC43NTk0NCwxLjY2MzcyIC0xLjU5OTAzLDEuOTc3MjNjLTEuODI0OCwzLjIwMDE3IC02LjUxMzY0LDYuNjM2MDMgLTcuMjExNTYsMTEuNTI2Nzd6IiBmaWxsPSIjZDRkNGQ0IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48L2c+PC9nPjwvc3ZnPjwhLS1yb3RhdGlvbkNlbnRlcjoxMjkuODE3MTg0NjQzNTEwMDI6MTI4Ljg3OTg3NjQ1MTEzODE2LS0+"/><link rel="icon" type="image/png" sizes="64x64" href="data:image/png;base64,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"/><link rel="apple-touch-icon" sizes="180x180" href="data:image/png;base64,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"/><meta name="theme-color" content="#000000"/><style>{{include src/boot/003-b02.css}}</style>
+<style id="bl-loading-css">{{include src/boot/004-bl-loading-css.css}}</style>
+<script>{{include src/boot/005-b85.js}}</script>
+</head><body>
+<div class="bl-loading" id="blLoading"><div class="bl-loading-bg"><span></span><span></span><span></span></div><div class="bl-loading-grid"></div><div class="bl-loading-core"><div class="bl-loading-mark"><div class="bl-loading-logo"><svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="717.03531" height="198.57283" viewBox="0,0,717.03531,198.57283"><g transform="translate(32.63999,-80.99389)"><g fill="currentColor" stroke-miterlimit="10"><path d="M6.93102,83.97955c0,0 7.68802,-2.5718 16.19249,-2.74715c22.295,-0.45969 122.54442,-0.1134 122.54442,-0.1134l-9.53518,37.18721h-60.54841l-1.90704,113.46868l14.30277,0.47676c0,0 6.40752,-1.37209 10.21089,-5.0158c4.4531,-4.26616 6.39715,-11.11595 6.27183,-14.54131c-0.09211,-2.51774 1.14347,-8.30489 -2.02985,-11.56554c-5.22746,-5.37133 -15.88315,-7.9716 -15.88315,-7.9716l-0.95352,-36.2337c0,0 12.97254,0.26776 23.19971,4.2308c9.85643,3.81938 16.89143,11.24067 21.49161,16.29672c8.07121,8.87106 13.4733,38.59061 13.4733,38.59061c0,0 -8.08387,23.17965 -16.42295,32.15408c-3.26912,3.51819 -7.08045,11.27979 -13.98846,14.78077c-10.73115,5.43854 -24.89266,5.98543 -24.89266,5.98543l-121.09682,0.95351l10.96546,-36.23369l61.02518,-1.43027l1.43027,-37.66398h-27.17527c0,0 -15.64612,-7.19994 -27.3197,-19.89104c-9.50834,-10.33714 -15.41839,-25.44053 -15.94127,-34.10531c-0.06268,-1.03863 -1.23924,-30.81452 11.67706,-37.71962c12.9163,-6.90511 18.59098,5.85412 23.14247,19.10495c1.48575,4.3255 -6.8115,8.28323 -7.75865,14.92043c-0.9139,6.40422 5.50858,15.53328 7.50732,17.45384c17.48516,16.80131 39.74523,8.44639 40.36113,5.56372c0.65138,-3.04873 -2.85278,-43.75599 -2.85278,-43.75599l-37.12325,4.84443c0,0 -25.90655,-16.06165 -23.86728,-18.7189c9.47239,-12.34289 25.50032,-18.30463 25.50032,-18.30463z" stroke="none" stroke-width="0" stroke-linecap="round"/><path d="M-19.73474,104.91066c0,-1.38071 1.11929,-2.5 2.5,-2.5c1.38071,0 2.5,1.11929 2.5,2.5c0,1.38071 -1.11929,2.5 -2.5,2.5c-1.38071,0 -2.5,-1.11929 -2.5,-2.5z" stroke="none" stroke-width="0.5" stroke-linecap="butt"/><path d="M1.24267,123.02751c0,-1.00836 0.59699,-1.87729 1.45682,-2.27262c0.15943,-1.08809 1.01979,-1.94845 2.10788,-2.10788c0.39533,-0.85983 1.26425,-1.45682 2.27262,-1.45682c1.38071,0 2.5,1.11929 2.5,2.5c0,1.25653 -0.927,2.29655 -2.13441,2.47346c-0.24935,0.54233 -0.68711,0.98009 -1.22944,1.22944c-0.17692,1.20741 -1.21693,2.13442 -2.47346,2.13442c-1.38071,0 -2.5,-1.11929 -2.5,-2.5z" stroke="none" stroke-width="0.5" stroke-linecap="butt"/><g transform="translate(149.99289,246.3008) scale(2.67685,-2.67685)"><path d="M24.84 7.6Q24.84 5.86 24.17 4.39Q23.5 2.93 22.09 1.87Q20.68 0.8 18.54 0.21Q16.41 -0.39 13.48 -0.39Q8.34 -0.39 5.47 1.41Q2.6 3.2 1.82 6.6L5.43 7.32Q5.7 6.25 6.27 5.37Q6.84 4.49 7.8 3.86Q8.77 3.22 10.2 2.87Q11.62 2.52 13.61 2.52Q15.27 2.52 16.66 2.8Q18.05 3.09 19.04 3.67Q20.04 4.26 20.6 5.19Q21.15 6.11 21.15 7.4Q21.15 8.75 20.54 9.59Q19.92 10.43 18.81 10.98Q17.7 11.52 16.15 11.89Q14.61 12.27 12.73 12.7Q11.58 12.95 10.42 13.25Q9.26 13.55 8.19 13.97Q7.13 14.39 6.19 14.96Q5.25 15.53 4.57 16.32Q3.89 17.11 3.5 18.15Q3.11 19.2 3.11 20.57Q3.11 22.52 3.9 23.92Q4.69 25.31 6.09 26.21Q7.5 27.11 9.41 27.52Q11.33 27.93 13.55 27.93Q16.11 27.93 17.93 27.53Q19.75 27.13 21 26.33Q22.25 25.53 23 24.35Q23.75 23.16 24.2 21.6L20.53 20.96Q20.25 21.95 19.74 22.73Q19.22 23.52 18.38 24.04Q17.54 24.57 16.34 24.84Q15.14 25.12 13.52 25.12Q11.6 25.12 10.3 24.78Q9 24.43 8.21 23.85Q7.42 23.26 7.08 22.47Q6.74 21.68 6.74 20.76Q6.74 19.53 7.35 18.74Q7.97 17.95 9.02 17.42Q10.08 16.89 11.46 16.54Q12.85 16.19 14.41 15.84Q15.68 15.55 16.94 15.24Q18.2 14.94 19.36 14.52Q20.51 14.1 21.51 13.54Q22.52 12.97 23.26 12.15Q24 11.33 24.42 10.21Q24.84 9.1 24.84 7.6ZM37.5 0.16Q36.7 -0.06 35.87 -0.19Q35.04 -0.31 33.95 -0.31Q29.73 -0.31 29.73 4.47V18.57H27.29V21.13H29.86L30.9 25.86H33.24V21.13H37.15V18.57H33.24V5.23Q33.24 3.71 33.74 3.1Q34.24 2.48 35.47 2.48Q35.98 2.48 36.46 2.56Q36.93 2.64 37.5 2.75ZM45.88 -0.39Q42.7 -0.39 41.09 1.29Q39.49 2.97 39.49 5.9Q39.49 7.99 40.28 9.33Q41.07 10.66 42.35 11.43Q43.63 12.19 45.27 12.48Q46.91 12.77 48.61 12.81L53.36 12.89V14.04Q53.36 15.35 53.09 16.27Q52.81 17.19 52.25 17.75Q51.68 18.32 50.83 18.58Q49.98 18.85 48.83 18.85Q47.81 18.85 46.99 18.7Q46.17 18.55 45.57 18.17Q44.96 17.79 44.59 17.14Q44.22 16.48 44.1 15.49L40.43 15.82Q40.62 17.07 41.17 18.12Q41.72 19.16 42.72 19.92Q43.73 20.68 45.24 21.1Q46.76 21.52 48.91 21.52Q52.89 21.52 54.9 19.7Q56.91 17.87 56.91 14.41V5.31Q56.91 3.75 57.32 2.96Q57.73 2.17 58.89 2.17Q59.18 2.17 59.47 2.21Q59.77 2.25 60.04 2.3V0.12Q59.38 -0.04 58.72 -0.12Q58.07 -0.2 57.32 -0.2Q56.33 -0.2 55.62 0.07Q54.9 0.33 54.45 0.87Q54 1.41 53.77 2.2Q53.54 2.99 53.48 4.04H53.36Q52.79 3.03 52.12 2.21Q51.45 1.39 50.55 0.81Q49.65 0.23 48.51 -0.08Q47.36 -0.39 45.88 -0.39ZM46.68 2.25Q48.36 2.25 49.62 2.86Q50.88 3.48 51.71 4.43Q52.54 5.39 52.95 6.52Q53.36 7.66 53.36 8.69V10.43L49.51 10.35Q48.22 10.33 47.06 10.17Q45.9 10 45.02 9.51Q44.14 9.02 43.62 8.14Q43.11 7.27 43.11 5.84Q43.11 4.12 44.03 3.18Q44.96 2.25 46.68 2.25ZM62.81 0V16.21Q62.81 16.88 62.8 17.57Q62.79 18.26 62.77 18.91Q62.75 19.55 62.73 20.12Q62.71 20.68 62.7 21.13H66.02Q66.04 20.68 66.06 20.11Q66.09 19.53 66.12 18.93Q66.15 18.32 66.16 17.76Q66.17 17.21 66.17 16.82H66.25Q66.62 18.03 67.04 18.92Q67.46 19.8 68.03 20.38Q68.59 20.96 69.38 21.24Q70.16 21.52 71.27 21.52Q71.7 21.52 72.09 21.46Q72.48 21.39 72.7 21.33V18.11Q72.34 18.2 71.88 18.25Q71.41 18.3 70.82 18.3Q69.61 18.3 68.76 17.75Q67.91 17.21 67.37 16.24Q66.84 15.27 66.58 13.94Q66.33 12.6 66.33 11.02V0ZM84.18 0.16Q83.38 -0.06 82.55 -0.19Q81.72 -0.31 80.62 -0.31Q76.41 -0.31 76.41 4.47V18.57H73.96V21.13H76.54L77.58 25.86H79.92V21.13H83.83V18.57H79.92V5.23Q79.92 3.71 80.42 3.1Q80.92 2.48 82.15 2.48Q82.66 2.48 83.13 2.56Q83.61 2.64 84.18 2.75ZM98.87 0V27.52H119.75V24.47H102.6V15.64H118.57V12.64H102.6V3.05H120.55V0ZM138.3 3.4Q137.32 1.37 135.71 0.49Q134.1 -0.39 131.72 -0.39Q127.71 -0.39 125.83 2.3Q123.95 5 123.95 10.47Q123.95 21.52 131.72 21.52Q134.12 21.52 135.72 20.64Q137.32 19.77 138.3 17.85H138.34Q138.34 18.05 138.33 18.47Q138.32 18.89 138.31 19.35Q138.3 19.8 138.3 20.21Q138.3 20.62 138.3 20.8V28.98H141.82V4.36Q141.82 3.59 141.83 2.89Q141.84 2.19 141.86 1.6Q141.88 1.02 141.89 0.6Q141.91 0.18 141.93 0H138.57Q138.54 0.2 138.51 0.56Q138.48 0.92 138.45 1.39Q138.42 1.86 138.4 2.37Q138.38 2.89 138.38 3.4ZM127.64 10.59Q127.64 8.4 127.91 6.84Q128.18 5.27 128.79 4.27Q129.39 3.26 130.33 2.79Q131.27 2.32 132.62 2.32Q134 2.32 135.07 2.77Q136.13 3.22 136.85 4.23Q137.56 5.23 137.93 6.86Q138.3 8.48 138.3 10.82Q138.3 13.07 137.93 14.62Q137.56 16.17 136.84 17.13Q136.11 18.09 135.07 18.51Q134.02 18.93 132.66 18.93Q131.37 18.93 130.43 18.48Q129.49 18.03 128.87 17.03Q128.24 16.04 127.94 14.44Q127.64 12.85 127.64 10.59ZM147.19 25.62V28.98H150.7V25.62ZM147.19 0V21.13H150.7V0ZM164.22 0.16Q163.42 -0.06 162.59 -0.19Q161.76 -0.31 160.66 -0.31Q156.45 -0.31 156.45 4.47V18.57H154V21.13H156.58L157.62 25.86H159.96V21.13H163.87V18.57H159.96V5.23Q159.96 3.71 160.46 3.1Q160.96 2.48 162.19 2.48Q162.7 2.48 163.17 2.56Q163.65 2.64 164.22 2.75ZM185.08 10.59Q185.08 5.04 182.64 2.32Q180.2 -0.39 175.55 -0.39Q173.34 -0.39 171.6 0.27Q169.86 0.94 168.66 2.3Q167.46 3.67 166.83 5.73Q166.19 7.79 166.19 10.59Q166.19 21.52 175.66 21.52Q178.12 21.52 179.91 20.84Q181.7 20.16 182.84 18.79Q183.98 17.42 184.53 15.37Q185.08 13.32 185.08 10.59ZM181.39 10.59Q181.39 13.05 181.01 14.65Q180.62 16.25 179.89 17.21Q179.16 18.16 178.11 18.54Q177.05 18.93 175.72 18.93Q174.38 18.93 173.29 18.53Q172.21 18.12 171.45 17.16Q170.68 16.19 170.28 14.59Q169.88 12.99 169.88 10.59Q169.88 8.12 170.31 6.51Q170.74 4.9 171.49 3.95Q172.25 2.99 173.27 2.6Q174.3 2.21 175.51 2.21Q176.86 2.21 177.95 2.59Q179.04 2.97 179.8 3.93Q180.57 4.88 180.98 6.5Q181.39 8.12 181.39 10.59ZM189.53 0V16.21Q189.53 16.88 189.52 17.57Q189.51 18.26 189.49 18.91Q189.47 19.55 189.45 20.12Q189.43 20.68 189.41 21.13H192.73Q192.75 20.68 192.78 20.11Q192.81 19.53 192.84 18.93Q192.87 18.32 192.88 17.76Q192.89 17.21 192.89 16.82H192.97Q193.34 18.03 193.76 18.92Q194.18 19.8 194.75 20.38Q195.31 20.96 196.09 21.24Q196.88 21.52 197.99 21.52Q198.42 21.52 198.81 21.46Q199.2 21.39 199.41 21.33V18.11Q199.06 18.2 198.59 18.25Q198.12 18.3 197.54 18.3Q196.33 18.3 195.48 17.75Q194.63 17.21 194.09 16.24Q193.55 15.27 193.3 13.94Q193.05 12.6 193.05 11.02V0Z"/></g><path d="M151.36529,266.99409v-6.00601h530.03003v6.00601z" stroke="currentColor" stroke-width="6" stroke-linecap="butt"/></g></g></svg><!--rotationCenter:352.63999071009243:99.00610595578131--></div></div><div class="bl-loading-bar"><i style="animation-delay:0.00s"></i><i style="animation-delay:0.26s"></i><i style="animation-delay:0.52s"></i><i style="animation-delay:0.78s"></i><i style="animation-delay:1.04s"></i><i style="animation-delay:1.30s"></i><i style="animation-delay:1.56s"></i><i style="animation-delay:1.82s"></i><i style="animation-delay:2.08s"></i><i style="animation-delay:2.34s"></i><i style="animation-delay:2.60s"></i><i style="animation-delay:2.86s"></i><i style="animation-delay:3.12s"></i><i style="animation-delay:3.38s"></i></div><div class="bl-loading-stage"><span>载入核心…</span><span>准备积木…</span><span>初始化界面…</span></div></div><p class="bl-loading-foot">STARTEDITOR <b>v1.0.5 SEA</b></p></div>
+<script>{{include src/boot/006-b04.js}}</script>
+<script>{{include src/boot/007-b05.js}}</script><noscript><div class="splash-screen"><div><h1>Bilup requires JavaScript</h1><p>Consider using <a href="https://desktop.turbowarp.org/">TurboWarp Desktop</a> if you are afraid of remote JavaScript.</p></div></div></noscript><div class="splash-screen spash-waiting-for-js" hidden><div class="splash-spinner"></div><div class="splash-error-title" hidden>Something went wrong. <a href="https://github.com/Bilup/scratch-gui/issues" target="_blank" rel="noreferrer">Please report</a> with the information below.</div><div class="splash-errors" hidden></div><button class="splash-reset" hidden>with the information below.</button></div><div class="splash-errors" hidden></div><button class="splash-reset" hidden>Click here to reset caches (can fix some errors)</button><script>{{include src/boot/008-b06.js}}</script><div id="app"></div><script>{{include src/boot/009-b07.js}}</script><script>{{include src/assets/010-b20.js}}</script>
+<script type="text/plain" id="bl-embedded-bundle">{{include src/assets/011-bl-embedded-bundle.txt}}</script>
+<script type="text/plain" id="bilup-site-source"></script>
+<script type="text/plain" id="bilup-addon-settings-source"></script>
+<script type="text/plain" id="bilup-packager-source"></script>
+<script>{{include src/bridge/015-b13.js}}</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<script>{{include src/bridge/016-b14.js}}</script>
+<script>{{include src/bridge/017-b15.js}}</script>
+<script type="text/plain" id="bl-ec-0">{{include src/vendor/chunks/018-bl-ec-0.txt}}</script><script data-bilup-src="js/gleba/git-libs.0bcea3aa8a11fd141302.js">{{include src/vendor/loaders/019-git-libs.js}}</script>
+<script type="text/plain" id="bl-ec-1">{{include src/vendor/chunks/020-bl-ec-1.txt}}</script><script data-bilup-src="js/gleba/scratch-engine.021d89a9102c55b54487.js">{{include src/vendor/loaders/021-scratch-engine.js}}</script>
+<script type="text/plain" id="bl-ec-2">{{include src/vendor/chunks/022-bl-ec-2.txt}}</script><script data-bilup-src="js/gleba/scratch-paint.c903e2f6cc2da8ac1d0d.js">{{include src/vendor/loaders/023-scratch-paint.js}}</script>
+<script type="text/plain" id="bl-ec-3">{{include src/vendor/chunks/024-bl-ec-3.txt}}</script><script data-bilup-src="js/gleba/vendors~addon-settings~community~editor~embed~fullscreen~player.a6b36c086634a11c66fd.js">{{include src/vendor/loaders/025-vendors~addon-settings~community~editor~embed~fullscreen~player.js}}</script>
+<script type="text/plain" id="bl-ec-4">{{include src/vendor/chunks/026-bl-ec-4.txt}}</script><script data-bilup-src="js/gleba/vendors~community~editor~embed~fullscreen~player.0b4e8e66705a0e9763e9.js">{{include src/vendor/loaders/027-vendors~community~editor~embed~fullscreen~player.js}}</script>
+<script type="text/plain" id="bl-ec-5">{{include src/vendor/chunks/028-bl-ec-5.txt}}</script><script data-bilup-src="js/gleba/vendors~editor~embed~fullscreen~player.ec746883a2b4db19971e.js">{{include src/vendor/loaders/029-vendors~editor~embed~fullscreen~player.js}}</script>
+<script type="text/plain" id="bl-ec-6">{{include src/vendor/chunks/030-bl-ec-6.txt}}</script><script data-bilup-src="js/gleba/addon-settings~community~editor~embed~fullscreen~player.9d291eb890746a6f839c.js">{{include src/vendor/loaders/031-addon-settings~community~editor~embed~fullscreen~player.js}}</script>
+<script type="text/plain" id="bl-ec-7">{{include src/vendor/chunks/032-bl-ec-7.txt}}</script><script data-bilup-src="js/gleba/community~editor~embed~fullscreen~player.a6284e7b9a184e056133.js">{{include src/vendor/loaders/033-community~editor~embed~fullscreen~player.js}}</script>
+<script type="text/plain" id="bl-ec-8">{{include src/vendor/chunks/034-bl-ec-8.txt}}</script><script data-bilup-src="js/gleba/addon-settings~editor~embed~fullscreen~player.4b0eb249f898d1637b97.js">{{include src/vendor/loaders/035-addon-settings~editor~embed~fullscreen~player.js}}</script>
+<script type="text/plain" id="bl-ec-9">{{include src/vendor/chunks/036-bl-ec-9.txt}}</script><script data-bilup-src="js/gleba/editor~embed~fullscreen~player.d36303cb32f5c8fa540a.js">{{include src/vendor/loaders/037-editor~embed~fullscreen~player.js}}</script>
+<script type="text/plain" id="bl-ec-10">{{include src/vendor/chunks/038-bl-ec-10.txt}}</script><script data-bilup-src="js/gleba/editor~fullscreen~player.5c26106f1954b465b18c.js">{{include src/vendor/loaders/039-editor~fullscreen~player.js}}</script>
+<script type="text/plain" id="bl-ec-11">{{include src/vendor/chunks/040-bl-ec-11.txt}}</script><script data-bilup-src="js/gleba/editor.1453f301502e937aad51.js">{{include src/vendor/loaders/041-editor.js}}</script>
+<script>{{include src/patches/js/042-b28.js}}</script>
+
+<style id="bilup-custom-layout">{{include src/patches/css/043-bilup-custom-layout.css}}</style>
+<script>{{include src/patches/js/044-b79.js}}</script>
+<script>{{include src/patches/js/045-b82.js}}</script>
+<script>{{include src/patches/js/046-b83.js}}</script>
+<script>{{include src/patches/js/047-b32.js}}</script>
+<script>{{include src/patches/js/048-b33.js}}</script>
+<script>{{include src/patches/js/049-b34.js}}</script>
+<script>{{include src/patches/js/050-b35.js}}</script>
+<script>{{include src/patches/js/051-chunk.js}}</script>
+
+<script>{{include src/patches/js/052-b92.js}}</script>
+
+<script>{{include src/patches/js/053-b37.js}}</script>
+<script>{{include src/patches/js/054-b38.js}}</script>
+<script>{{include src/patches/js/055-b94.js}}</script>
+
+<script>{{include src/patches/js/056-b39.js}}</script>
+<script>{{include src/patches/js/057-b40.js}}</script>
+
+
+
+
+
+
+
+<script>{{include src/patches/js/058-b41.js}}</script>
+
+
+
+<script>{{include src/patches/js/059-b42.js}}</script>
+
+
+<script>{{include src/patches/js/060-b96.js}}</script>
+
+<style>{{include src/patches/css/061-b96.css}}</style>
+
+
+<script>{{include src/patches/js/062-b47.js}}</script>
+
+<script>{{include src/patches/js/063-b48.js}}</script>
+
+<script>{{include src/patches/js/064-b49.js}}</script>
+
+<script>{{include src/patches/js/065-b50.js}}</script>
+
+<style>{{include src/patches/css/066-b51.css}}</style>
+<script>{{include src/patches/js/067-b52.js}}</script>
+
+
+<script>{{include src/patches/js/068-b53.js}}</script>
+
+
+<style>{{include src/patches/css/069-b54.css}}</style>
+
+<script>{{include src/patches/js/070-b55.js}}</script>
+
+
+<style>{{include src/patches/css/071-b56.css}}</style>
+
+
+<style>{{include src/patches/css/072-b57.css}}</style>
+
+<script>{{include src/patches/js/073-b58.js}}</script>
+
+
+<style>{{include src/patches/css/074-b59.css}}</style>
+
+<script>{{include src/patches/js/075-b60.js}}</script>
+
+
+<style>{{include src/patches/css/076-b61.css}}</style>
+
+<script>{{include src/patches/js/077-b62.js}}</script>
+
+
+<style>{{include src/patches/css/078-b63.css}}</style>
+
+<script>{{include src/patches/js/079-b64.js}}</script>
+
+
+<style>{{include src/patches/css/080-b65.css}}</style>
+
+<script>{{include src/patches/js/081-b66.js}}</script>
+
+
+<style>{{include src/patches/css/082-b67.css}}</style>
+
+<script>{{include src/patches/js/083-b68.js}}</script>
+
+
+<script>{{include src/patches/js/084-b69.js}}</script>
+
+
+
+<!-- ===== DOCK 工具箱：六个独立弹窗工具 ===== -->
+<style>{{include src/patches/css/085-b70.css}}</style>
+<script>{{include src/patches/js/086-b71.js}}</script>
+
+<style>{{include src/patches/css/087-b72.css}}</style>
+<script>{{include src/patches/js/088-b73.js}}</script>
+
+
+
+<script>{{include src/patches/js/089-b97.js}}</script>
+
+<style id="bl-os-settings-style">{{include src/patches/css/090-bl-os-settings-style.css}}</style>
+<script>{{include src/patches/js/091-b74.js}}</script>
+
+
+<script>{{include src/patches/js/092-b75.js}}</script><!-- ── [B77] 造型界面：画布铺满 + 隐藏舞台/角色栏 + 无边框角色造型缩略图 ────
+     依赖：原生 gui_flex-wrapper / gui_tab-list / paint-editor / ReduxStore
+     维护：仅在造型（或背景）标签激活时生效；切回代码/声音立即还原
+           显示当前角色造型（paper 画布 / VM 资源 / 造型列表三层兜底）
+           最后好图保护：编辑造型时不空白；absolute 挂画布容器，不拉伸不溢出
+     ───────────────────────────────────────────────────────────── -->
+<style id="bl-paint-wide-css">{{include src/patches/css/093-bl-paint-wide-css.css}}</style>
+<script>{{include src/patches/js/094-b80.js}}</script>
+
+<!-- ── [B78] 语言切换后强制留在编辑器 / 播放器首页自动返回 ──────────────
+     依赖：window.ReduxStore（GUI 根组件每次重建都会重新赋值）
+     维护：只锁 mode.isPlayerOnly，不改语言切换、不重载、不动作品，
+           其它 action 与 thunk 全部原样透传
+     ───────────────────────────────────────────────────────────── -->
+<script>{{include src/patches/js/095-chunk.js}}</script>
+
+<!-- ── [B79] 最小化动画：神灯效果 / 缩放效果 ────────────────────────────
+     依赖：B47(popOut) / B41(__blSettings) / B60(最小化标记) / DOCK
+     维护：设置页「最小化动画」只保留两项；动画以 window.__blMinimizeAnim
+           暴露给 popOut，返回时长（ms），结束时自行调用 fin
+     ───────────────────────────────────────────────────────────── -->
+<style id="bl-genie-css">{{include src/patches/css/096-bl-genie-css.css}}</style>
+<script>{{include src/patches/js/097-b107.js}}</script>
+
+<!-- ── [B81] 绘画工具快捷键角标 + 画布缩放动画 ─────────────────────────────
+     依赖：B77（造型界面宽布局）/ B80（工具单列）/ scratch-paint 原生类名
+     维护：工具右下角快捷键、fallback 键绑定、zoom/wheel 平滑脉冲
+     ───────────────────────────────────────────────────────────────────── -->
+<style id="bl-paint-plus-css">{{include src/patches/css/098-bl-paint-plus-css.css}}</style>
+<script>{{include src/patches/js/099-b107.js}}</script>
+
+<!-- ── [B84] DOCK 栏显示修复 ──────────────────────────────────────────────
+     依赖：B33（宿主同步）/ B54（迁移动画）/ B62（立体图标）
+     维护：① 宿主 rect 无效时强制回整屏，杜绝 DOCK 被钉到舞台头部；
+           ② 立体底座与全部图标内容的层级钉死，杜绝「只剩浅色方块」；
+           ③ 玻璃层 / 徽标 / 托盘横杠层级明确，鱼眼放大不互相盖住。
+     ────────────────────────────────────────────────────────────────── -->
+<style id="bl-dock-fix-css">{{include src/patches/css/100-bl-dock-fix-css.css}}</style>
+<script>{{include src/patches/js/101-chunk.js}}</script>
+
+
+<!-- ── [B86] DOCK 双层矩形 / 图标高光修复 ──────────────────────────────────
+     依赖：B33 / B62（立体底座）/ B84 / 液态玻璃补充样式表
+     维护：① 容器层绝不被染成第二层玻璃矩形；
+           ② 立体底座渐变钉死、青绿高光收成小圆点、空 badge 隐藏；
+           ③ 清掉页面上可能残留的 data-bl-lg / soften inline 底色。
+           真正的玻璃层 .bl-dock-inner::before 完全不动，层次照旧。
+     ────────────────────────────────────────────────────────────────── -->
+<style id="bl-dock-fix2-css">{{include src/patches/css/102-bl-dock-fix2-css.css}}</style>
+<script>{{include src/patches/js/103-b107.js}}</script>
+
+
+<!-- ── [B87] DOCK 图标跟随玻璃效果 ────────────────────────────────────────
+     依赖：B33 玻璃条 / B62 立体底座 / B86 DOCK 显示修复 /
+           毛玻璃补充样式表（--bl-glass-*）/ 液态玻璃配置
+     维护：玻璃开 → 图标换半透明玻璃面；玻璃关 → 回到 B86 实体按钮
+           两种玻璃与深浅主题共用同一组变量，改取值只需动 publish()
+     ────────────────────────────────────────────────────────────────── -->
+<style id="bl-dock-glass-css">{{include src/patches/css/104-bl-dock-glass-css.css}}</style>
+<script>{{include src/patches/js/105-b107.js}}</script>
+
+
+
+
+<!-- ── [B93] 设置 → 常规 → STAR AI（1.0.5 SEA · 只读） ────────────────────
+     新增侧栏选项卡「STAR AI」，右侧沿用设置页的两列浅蓝卡片排版。
+     选项：总开关 / STAR 对你的称呼 / STAR 的温度 / STAR AI 的 API
+           （依旧是内置的三个免费模型）/ 能力范围（只读说明）/ STT 提示。
+     AI 只能聊天或用文字教学 Start Editor 的用法；不编程、不点击编辑器。
+     canOperate 恒为 false，历史存档里的授权一律忽略。
+     总开关关闭时其余选项禁用；配置写入 bl.star.ai 并广播给 [B37]。
+     ────────────────────────────────────────────────────────────────── -->
+<style id="bl-starai-css">{{include src/patches/css/106-bl-starai-css.css}}</style>
+
+<style id="bl-ver-themes-css">{{include src/patches/css/107-bl-ver-themes-css.css}}</style>
+
+<script>{{include src/patches/js/108-b37.js}}</script>
+
+<!-- ── [B99] 造型顶部工具行：横向滚动交互 ───────────────────────────────
+     依赖：B77 / B80（bl-paint-wide + 工具行已设为 overflow-x:auto）
+     维护：普通竖向滚轮 → 横向滚动、Shift/触控板交给原生、空白处拖拽、
+           方向键 / Home / End、React 重绘后保留位置、两端渐隐提示
+     ───────────────────────────────────────────────────────────────────── -->
+<script>{{include src/patches/js/109-b107.js}}</script>
+
+
+<!-- ── [B100] 舞台、角色栏弹窗化 ──────────────────────────────────────────
+     设置 → 常规 → 「舞台、角色栏弹窗化」开关。
+     开启后把 gui_stage-and-target-wrapper 搬进一枚 .addon-window 浮窗：
+       · 标题栏拖动、置顶、玻璃/按钮皮肤、最小化进 DOCK、神灯/缩放动画
+         全部复用已有窗口运行时（只要用对类名，一行都不用重新实现）
+       · 8 方向缩放手柄自己实现；尺寸/位置记忆在 localStorage
+       · 窗口尺寸变化时用 CSS zoom 等比放大整块舞台 + 角色栏，
+         角色栏 flex-grow 占满剩余高度 —— 改多大就充满多大
+     关闭：注释锚点把节点放回原来的 flex-wrapper 位置，并派发 resize
+           让 Blockly / 舞台重新计算。
+     ───────────────────────────────────────────────────────────────────── -->
+<style id="bl-stage-pop-css">{{include src/patches/css/110-bl-stage-pop-css.css}}</style>
+<script>{{include src/patches/js/111-chunk.js}}</script>
+
+<!-- ── [B101] 版本大卡 · 跟随版本切换皮肤 ─────────────────────────────────
+     依赖：B56 版本历史数据 / B74 大卡注入 / B98 七套版本主题
+     维护：点击时间线里任意版本卡 → 顶部大卡换成该版本的
+           背景 / 图案 / 动画 / 配色 / 文本 / 宣传语 / 排版；
+           当前版本默认 SEA 深海青蓝，ART 版保留原 ColorOS 液态玻璃。
+           文本全部从时间线 DOM 读取，中英双语自动跟随，零硬编码文案。
+     ------------------------------------------------------------------
+     设计约束：纯 2D（transform / opacity / background-position / border-radius），
+     静态模糊不进关键帧；prefers-reduced-motion 与窄屏都有收敛分支。
+     ========================================================================== -->
+<style id="bl-hero-themes-css">{{include src/patches/css/112-bl-hero-themes-css.css}}</style>
+<script>{{include src/patches/js/113-b107.js}}</script>
+
+<!-- ── [B102] 快速定位框 · 弹出动画 / 玻璃与主题跟随 / 新增定位点 ─────────
+     依赖：窗口拖动贴靠面板（.bl-snap / .bl-snap-zone / .bl-snap-preview）
+           B55 毛玻璃补充表 --bl-glass-*、液态玻璃配置、B87 同源取值口径
+     维护：13 个定位点（原 6 + 上/下半、三等分、铺满、居中还原）；
+           面板与格子错开弹出，预览框淡入；
+           毛玻璃 / 液态 / 关闭三态 + 深浅主题都跟随，右上角不打光影。
+     ------------------------------------------------------------------
+     设计约束：纯 2D（transform / opacity / clip-path），模糊只在面板这一层，
+     格子不叠第二层 backdrop-filter；prefers-reduced-motion 全停；
+     静息时签名短路，零 DOM 写入。
+     ========================================================================== -->
+<style id="bl-snap-enhance-css">{{include src/patches/css/114-bl-snap-enhance-css.css}}</style>
+<script>{{include src/patches/js/115-b104.js}}</script>
+
+<!-- ── [B104] 统一弹窗格式 / 玻璃图层对齐 / 项目面板随主题 ─────────────
+     1. 修「有的弹窗玻璃图层偏移」：
+        · 液态玻璃的 feImage 强制 preserveAspectRatio=none（核心 JS 已改）
+        · 原生下拉 / 右键菜单退出液态位移滤镜，只保留一层干净模糊玻璃
+        · 清掉历史残留的 url(#bl-lg-*) 内联滤镜与 soften 内联底色
+     2. 自绘浮层统一升级为原版 .addon-window 可拖动格式：
+        header(+标题/最小化/关闭) + content，自动接入既有的拖动、贴靠、
+        统一置顶、DOCK 最小化、玻璃与 MAC/WIN 按钮体系。
+     3. 去 AI 味：去掉渐变、发光、错开入场、回弹曲线、emoji 与宣传式文案，
+        保留一个 0.16s 纯淡入。
+     4. 项目界面：完全没有渐变，颜色只取 --ui-* / --text-primary /
+        --looks-secondary 主题变量；切换加载动画保留但改成纯色环。
+     ------------------------------------------------------------------
+     约束：不改任何既有模块的 JS 逻辑，只在既有节点上补结构与类；
+     节点引用全部保持有效（不 replaceChild）；签名短路，静息零写入。
+     ========================================================================== -->
+<style id="bl-uni-window-css">{{include src/patches/css/116-bl-uni-window-css.css}}</style>
+<script>{{include src/patches/js/117-chunk.js}}</script>
+
+<!-- ── [B105] 教程重写 · 首次导览 / 最高层 / 自动播放 ────────────────────
+     需求：
+       · 删除 DOCK 栏「教程」入口，但首次进入仍自动过一遍教程
+       · 教程弹窗图层最高，整个界面变暗，只有教程弹窗（与当前演示弹窗）是亮的
+       · ① 先选「Scratch 高手 / Scratch 小白」，高手直接跳过
+       · ② 问「怎么称呼你？」→ 与编辑器用户同步
+       · ③ 自动介绍 StartEditor 对比原版 Bilup 的新功能，逐条打开对应弹窗，
+            全程不需要点「下一步」
+       · ④ 结尾「接下来自己去探索Start Editor吧awa！」
+     实现：不改动既有脚本字节；只新增本块。
+       · 同步写 bilup.tutorialDone=1 阻止原版 6 步教程自动弹出；
+         并接管 __blStudio.openTutorial，菜单里「显示教程」也走新流程。
+       · 遮罩用四块 dim 拼成，按当前演示弹窗 rect「挖洞」，
+         因此教程卡与演示弹窗都亮、其余界面全暗；教程卡挂在 body 末尾，
+         z-index 取 CSS 上限 2147483647，稳定压过 DOCK 宿主与加载层。
+     ========================================================================== -->
+<style id="bl-tour-v2-css">{{include src/patches/css/118-bl-tour-v2-css.css}}</style>
+<script>{{include src/patches/js/119-chunk.js}}</script>
+
+
+<!-- ── [B106] 设置选项「有时消失」统一自愈 ─────────────────────────────────
+     根因（三处叠加，都只在特定时序出现）：
+       1. B67 给侧栏项写了 animation-fill-mode:both，入场动画结束后
+          max-height:56px + overflow:hidden 被永久保留；项一旦高于 56px
+          （副标题 / 徽章 / 大字体 / 页面缩放）下半截就被裁掉。
+       2. B68 折叠分组时给所有项加 .bl-sidebar-out，190ms 后才放行原生
+          click。这 190ms 内只要 React 重绘（切语言、切分类、Redux 重建），
+          退场类就永远留在节点上：opacity:0 / max-height:0，整组选项空白。
+       3. B56 / B93 的「隐藏其它所有分类内容」是 !important 规则。
+          bl-ver-mode / bl-starai-mode / html.bl-sa-active 只要在窗口关闭、
+          语言重挂载或 React 复用 body 节点后残留一次，重新打开设置就是
+          一整页空白。
+     本块不重写任何模块，只做 CSS 中和 + 状态自愈 + 注入项补挂。
+     ────────────────────────────────────────────────────────────────── -->
+<style id="bl-settings-heal-css">{{include src/patches/css/120-bl-settings-heal-css.css}}</style>
+
+<script>{{include src/patches/js/121-chunk.js}}</script>
+
+<style id="bl-theme108-css">{{include src/patches/css/122-bl-theme108-css.css}}</style>
+<script>{{include src/patches/js/123-b108.js}}</script>
+<script>{{include src/patches/js/124-b110.js}}</script>
+
+<!-- ── [B111] DOCK：只在积木工作区显示 + 图标恢复 1.0.3 STAR 样式 ──────────
+     依据：1.0.3 STAR 时代快照（_r20_snapshot.html）里 .bl-dock-item 是
+     透明扁平按钮 + 主题色 SVG + hover 中性灰底，没有 B62 立体凝胶底座，
+     也没有 B87 的图标级玻璃跟随。本块只覆盖「图标」，胶囊玻璃条
+     （B84/B86/B87 修好的双层矩形、右上无光影）原样保留。
+     ────────────────────────────────────────────────────────────────── -->
+<style id="bl-dock-103-css">{{include src/patches/css/125-bl-dock-103-css.css}}</style>
+<script>{{include src/patches/js/126-chunk.js}}</script>
+<style id="bl-hud-css">{{include src/patches/css/127-bl-hud-css.css}}</style>
+<script>{{include src/patches/js/128-b112.js}}</script>
+
+<!-- ── [B113] 左侧导航栏「详情」项移除 ─────────────────────────────────────
+     这一项不是补丁层静态写死的：静态源码里没有文本为「详情」的 li，它是
+     运行时（原生 React / addon / 内嵌页）往导航容器里插入的。因此从注入
+     层处理：命中即同帧移除，并阻止 React 重绘、语言切换、iframe 重建后
+     复现。只按「可见文本 / title / aria-label 完全等于 详情」匹配，
+     其它标签（代码 / 造型 / 声音 / 项目 / 评测 / 音乐 / 工程文件 / 置顶 /
+     DOCK 入口）文本不同，一个都不会被碰到。
+     · 用 data-bl-xq + CSS display:none 而不是 remove()：不跟 React 的
+       子节点 reconcile 抢 DOM，也不会让 React 下次 insertBefore 报错。
+     · 挂 B107 同步总线（注册即同步跑一次）+ 文档级 MutationObserver
+       （childList 回调内同步标记，绘制前完成，无「慢半拍」）。
+     · 只写属性不增删节点 → 不触发 childList，不会重演连锁卡顿；
+       状态没变化时零 DOM 写入。
+     ──────────────────────────────────────────────────────────────────── -->
+<style id="bl-xq-css">{{include src/patches/css/129-bl-xq-css.css}}</style>
+<style id="bl-panel-solid-css">{{include src/patches/css/130-bl-panel-solid-css.css}}</style>
+<script>{{include src/patches/js/131-chunk.js}}</script>
+<!-- ── [B116] 舞台/角色栏双窗样式 · 可拖动弹窗统一 · 快速定位栏最高层 · 评测残留清理 ──
+     依赖：B100 v2（双窗口 DOM）、B104/B106（贴靠面板宿主）、B107（同帧补挂总线）
+     本块不改动任何既有模块，只新增样式与极轻量的状态同步。
+     ========================================================================== -->
+<style id="bl-dw-css">{{include src/patches/css/132-bl-dw-css.css}}</style>
+<script>{{include src/patches/js/133-chunk.js}}</script>
+</body></html>

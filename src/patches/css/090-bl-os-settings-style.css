@@ -1,0 +1,673 @@
+
+/* ── [B74] 设置页 HyperOS 风格排版 ──────────────────────────────────
+   依赖：设置弹窗原生类名（settings-modal_* / modal-sidebar_*）
+   维护：CSS 重排 / 版本页专属 hero（ColorOS 曲面 + 液态玻璃流动，纯 2D）/ 原生 hero 兜底防回退 / 精确观察即时补挂 / 单列排版 / 玻璃页防错位 / 切换动画 / 输入框溢出修复
+   ───────────────────────────────────────────────────────────── */
+/* 左侧细栏：圆角条目、选中态蓝点，贴着参考图的观感 */
+[class*="modal-sidebar_item_"] {
+    margin: 2px 10px !important;
+    padding: 10px 14px !important;
+    border-radius: 10px !important;
+    transition: background-color .18s ease, transform .18s ease !important;
+}
+[class*="modal-sidebar_item_"]:hover {
+    background-color: rgba(127, 127, 127, .10) !important;
+}
+[class*="modal-sidebar_itemSelected_"] {
+    background-color: rgba(59, 130, 246, .16) !important;
+}
+[class*="modal-sidebar_itemSelected_"]::before {
+    content: '';
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: #3b82f6;
+    margin-right: 9px;
+    flex: 0 0 auto;
+}
+/* 右侧内容区：两列卡片栅格 */
+[class*="settings-modal_body_"] {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) !important;
+    gap: 14px !important;
+    align-content: start !important;
+    padding: 18px 22px 26px !important;
+    overflow-y: auto !important;
+}
+[class*="settings-modal_body_"] > * {
+    min-width: 0;
+    align-self: start !important;
+    margin: 0 !important;
+    padding: 18px 20px !important;
+    border-radius: 18px !important;
+    /* --ui-primary 在浅色主题下本身就是 hsla(215,100%,95%) 的浅蓝，
+       正好是参考图那种卡片底；深色主题自动跟随，不需要另写一套色值。 */
+    background: var(--ui-primary, rgba(230, 239, 255, .94)) !important;
+    border: 1px solid rgba(90, 130, 210, .18) !important;
+    box-shadow: 0 4px 16px rgba(45, 80, 160, .08),
+                inset 0 1px 0 rgba(255, 255, 255, .50) !important;
+}
+/* 卡片内部排版：标题左、数值右，滑杆独占一行、蓝色轨道 */
+[class*="settings-modal_body_"] label,
+[class*="settings-modal_body_"] [class*="settings-modal_setting"] label {
+    font-size: 13.5px !important;
+    color: var(--text-primary, #2b3a55) !important;
+}
+[class*="settings-modal_body_"] input[type="range"] {
+    width: 100% !important;
+    height: 6px !important;
+    accent-color: #2f7bff !important;
+    border-radius: 999px !important;
+}
+[class*="settings-modal_body_"] input[type="range"]::-webkit-slider-thumb {
+    width: 18px !important; height: 18px !important;
+    border-radius: 50% !important;
+    background: #fff !important;
+    box-shadow: 0 1px 5px rgba(0, 0, 0, .26) !important;
+    border: 0 !important;
+}
+[class*="settings-modal_body_"] input[type="range"]::-moz-range-thumb {
+    width: 18px !important; height: 18px !important;
+    border-radius: 50% !important;
+    background: #fff !important;
+    box-shadow: 0 1px 5px rgba(0, 0, 0, .26) !important;
+    border: 0 !important;
+}
+[class*="settings-modal_body_"] select,
+[class*="settings-modal_body_"] input[type="text"] {
+    border-radius: 8px !important;
+}
+[theme="dark"] [class*="settings-modal_body_"] > *,
+[data-theme="dark"] [class*="settings-modal_body_"] > * {
+    border-color: rgba(150, 180, 240, .14) !important;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, .22),
+                inset 0 1px 0 rgba(255, 255, 255, .06) !important;
+}
+[theme="dark"] [class*="settings-modal_body_"] input[type="range"]::-webkit-slider-thumb,
+[data-theme="dark"] [class*="settings-modal_body_"] input[type="range"]::-webkit-slider-thumb {
+    background: #e8efff !important;
+}
+
+/* 分组标题跨两列，保持"标题 → 卡片"的节奏 */
+[class*="settings-modal_body_"] > [class*="settings-modal_header_"],
+[class*="settings-modal_body_"] > h1,
+[class*="settings-modal_body_"] > h2,
+[class*="settings-modal_body_"] > h3 {
+    grid-column: 1 / -1;
+    background: transparent !important;
+    border: 0 !important;
+    box-shadow: none !important;
+    padding: 10px 2px 2px !important;
+    font-weight: 700 !important;
+    font-size: 15px !important;
+}
+/* 顶部大卡片：版本 hero + 右侧设备示意，对应参考图第一张大卡 */
+/* ── 第 37 轮：ColorOS 风格版本大卡 ──────────────────────────────────
+   构图取自 ColorOS 16 正式版启动画面：蓝紫→洋红曲面、巨大版本号、
+   拉开字距的产品名、短副标题、底部白色胶囊徽标。
+   动画分三层循环：曲面漂移 / 光晕呼吸 / 斜向扫光，互不抢帧。        */
+.bl-os-hero {
+    grid-column: 1 / -1;
+    order: -1;  /* React 重绘可能把节点插到最前，强制 hero 永远排第一张卡 */
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    min-height: 258px;
+    padding: 30px 28px 32px !important;
+    border-radius: 22px !important;
+    color: #fff !important;
+    background: linear-gradient(136deg, #2a1a6e 0%, #5a2589 32%,
+                #a52a70 62%, #e0567f 88%, #f37a8c 100%) !important;
+    background-size: 220% 220% !important;   /* 底色缓慢流动 */
+    border: 1px solid rgba(255, 255, 255, .20) !important;
+    box-shadow: 0 14px 38px rgba(58, 14, 70, .32),
+                inset 0 1px 0 rgba(255, 255, 255, .28) !important;
+}
+/* 曲面 / 光晕 / 扫光统一放在一个绝对定位层里，避免与入场动画抢层级 */
+.bl-os-hero-fx {
+    position: absolute; inset: 0; z-index: 0;
+    overflow: hidden; pointer-events: none;
+    border-radius: inherit;
+}
+.bl-os-hero-fx::before {
+    content: '';
+    position: absolute; inset: -45%;
+    background:
+        radial-gradient(ellipse 58% 52% at 26% 76%, rgba(255, 132, 176, .85), rgba(255, 132, 176, 0) 72%),
+        radial-gradient(ellipse 52% 62% at 88% 16%, rgba(126, 116, 255, .72), rgba(126, 116, 255, 0) 70%),
+        radial-gradient(ellipse 72% 42% at 62% 118%, rgba(255, 84, 138, .62), transparent 72%),
+        radial-gradient(ellipse 44% 38% at 12% 22%, rgba(160, 220, 255, .42), transparent 70%);
+    filter: blur(8px);
+    animation: blHeroFlow 18s ease-in-out infinite;
+}
+/* 曲面流带：一层薄液体沿弧面淌过，边角随动画形变 */
+.bl-os-hero-fx::after {
+    content: '';
+    position: absolute;
+    left: -30%; top: -110%;
+    width: 160%; height: 165%;
+    border-radius: 46% 54% 40% 60% / 62% 38% 62% 38%;
+    background: linear-gradient(158deg, rgba(196, 178, 255, .58) 0%,
+                rgba(255, 158, 198, .22) 42%, rgba(255, 255, 255, 0) 72%);
+    filter: blur(2px);
+    transform: rotate(-13deg);
+    animation: blHeroRibbon 22s ease-in-out infinite alternate;
+}
+/* 液体团：320px 小层做边角形变 + 绕行，模拟玻璃内部未凝固的一团 */
+.bl-os-hero-liquid {
+    position: absolute;
+    left: 50%; top: 42%;
+    width: 320px; height: 320px;
+    margin: -160px 0 0 -160px;
+    border-radius: 52% 48% 40% 60% / 55% 45% 60% 40%;
+    background: radial-gradient(circle at 35% 35%, rgba(255, 226, 245, .60),
+                rgba(255, 150, 200, .34) 46%, rgba(126, 116, 255, .16) 72%,
+                transparent 82%);
+    filter: blur(14px);
+    pointer-events: none;
+    animation: blLiquidMorph 12s ease-in-out infinite;
+}
+.bl-os-hero-glow {
+    position: absolute;
+    left: 50%; top: 46%;
+    width: 340px; height: 340px;
+    margin: -170px 0 0 -170px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(255, 206, 232, .42), rgba(255, 206, 232, 0) 68%);
+    animation: blHeroGlow 7s ease-in-out infinite;
+}
+/* 折射流光：宽幅柔光带，扫过时亮起再淡出 */
+.bl-os-hero-shine {
+    position: absolute;
+    top: -35%; bottom: -35%; left: 0;
+    width: 42%;
+    background: linear-gradient(90deg, rgba(255,255,255,0) 0%,
+                rgba(255,255,255,.06) 22%, rgba(255,255,255,.24) 50%,
+                rgba(255,255,255,.06) 78%, rgba(255,255,255,0) 100%);
+    filter: blur(7px);
+    transform: translateX(-160%) skewX(-18deg);
+    animation: blHeroShine 8s ease-in-out infinite;
+}
+/* 居中构图 */
+.bl-os-hero-in {
+    position: relative; z-index: 1;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    text-align: center;
+    min-height: 196px;
+}
+.bl-os-hero-txt { min-width: 0; max-width: 100%; }
+.bl-os-hero-num {
+    font-size: clamp(58px, 8.5vw, 94px);
+    font-weight: 800; line-height: 1;
+    letter-spacing: -.045em;
+    background: linear-gradient(100deg, #ffffff 0%, #ffe0ef 26%, #dcd0ff 50%, #ffe0ef 74%, #ffffff 100%);
+    background-size: 220% 100%;
+    -webkit-background-clip: text; background-clip: text;
+    color: transparent;
+    filter: drop-shadow(0 10px 26px rgba(255, 176, 218, .38));
+    animation: blHeroFloat 5.2s ease-in-out infinite,
+               blLiquidTextFlow 9s ease-in-out infinite;
+}
+.bl-os-hero-product {
+    margin-top: 4px;
+    font-size: 19px; font-weight: 600;
+    letter-spacing: .22em; text-transform: none;
+    text-shadow: 0 2px 12px rgba(50, 10, 60, .30);
+}
+.bl-os-hero-slogan {
+    margin-top: 9px;
+    font-size: 12px; letter-spacing: .14em;
+    opacity: .84;
+}
+.bl-os-hero-badge {
+    display: inline-block;
+    margin-top: 20px;
+    padding: 7px 28px;
+    border-radius: 999px;
+    background: #fff !important;
+    color: #25123f !important;
+    font-size: 14px; font-weight: 700; letter-spacing: .10em;
+    box-shadow: 0 6px 18px rgba(60, 10, 50, .28);
+    animation: blHeroBadge 3.6s ease-in-out infinite;
+}
+.bl-os-hero-meta {
+    display: flex; flex-wrap: wrap; justify-content: center;
+    gap: 6px 16px; margin-top: 16px;
+    font-size: 11px; opacity: .60;
+}
+.bl-os-hero-dev { display: none !important; }   /* 新构图不再用右侧设备图 */
+
+/* ── 第 42 轮：液态玻璃流动（全程平面变换） ──────────────────────
+   层次按周期错开，形成视差流动：
+     18s  底层色团漂移   22s  曲面流带   12s  液体团形变绕行
+     20s  底色渐变流动    7s  边缘高光    8s  折射流光扫过
+      9s  数字内部流光    5.2s 数字浮动   3.6s 胶囊起伏
+   只有 transform / opacity / background-position / box-shadow 进动画；
+   blur 是静态值，不逐帧重算；border-radius 形变只用在 320px 小层。   */
+@keyframes blHeroFlow {
+    0%   { transform: translate(-4%, -3%) scale(1.02) rotate(-2deg); opacity: .88; }
+    25%  { transform: translate(1%, -1%)  scale(1.07) rotate(1deg);  opacity: 1;   }
+    50%  { transform: translate(4%, 3%)   scale(1.11) rotate(2.5deg); opacity: .94; }
+    75%  { transform: translate(-1%, 4%)  scale(1.05) rotate(-1deg);  opacity: 1;   }
+    100% { transform: translate(-3%, -2%) scale(1.03) rotate(-2.5deg);opacity: .90; }
+}
+/* 曲面流带：像一层液体沿玻璃弧面缓缓淌过，边角跟着形变 */
+@keyframes blHeroRibbon {
+    0%   { transform: rotate(-15deg) translate(-5%, -2%) scale(1) skewX(0deg);
+           border-radius: 46% 54% 40% 60% / 62% 38% 62% 38%; opacity: .82; }
+    50%  { transform: rotate(-9deg)  translate(2%, 3%)  scale(1.09) skewX(4deg);
+           border-radius: 58% 42% 55% 45% / 42% 58% 38% 62%; opacity: 1; }
+    100% { transform: rotate(-4deg)  translate(7%, 6%)  scale(1.14) skewX(-3deg);
+           border-radius: 40% 60% 48% 52% / 55% 45% 60% 40%; opacity: .86; }
+}
+@keyframes blHeroGlow {
+    0%, 100% { opacity: .38; transform: scale(.88) translate(-3%, 2%); }
+    50%      { opacity: .82; transform: scale(1.16) translate(3%, -2%); }
+}
+/* 折射流光：宽幅柔光带扫过曲面，中途亮起再淡出，不是一根硬线 */
+@keyframes blHeroShine {
+    0%       { transform: translateX(-160%) skewX(-18deg); opacity: 0; }
+    18%      { opacity: .85; }
+    62%      { opacity: .65; }
+    88%,100% { transform: translateX(420%) skewX(-18deg); opacity: 0; }
+}
+@keyframes blHeroFloat {
+    0%, 100% { transform: translateY(0); }
+    50%      { transform: translateY(-6px); }
+}
+@keyframes blHeroBadge {
+    0%, 100% { transform: translateY(0);    box-shadow: 0 6px 18px rgba(60, 10, 50, .28); }
+    50%      { transform: translateY(-4px); box-shadow: 0 12px 26px rgba(60, 10, 50, .38); }
+}
+/* 液体团：小面积缓慢形变并绕行，是「液态」最直观的一层 */
+@keyframes blLiquidMorph {
+    0%   { transform: translate(-12%, 8%)   scale(.92) rotate(0deg);
+           border-radius: 52% 48% 40% 60% / 55% 45% 60% 40%; opacity: .42; }
+    33%  { transform: translate(6%, -10%)  scale(1.12) rotate(28deg);
+           border-radius: 38% 62% 58% 42% / 42% 62% 38% 58%; opacity: .72; }
+    66%  { transform: translate(14%, 10%)  scale(1.02) rotate(-18deg);
+           border-radius: 62% 38% 46% 54% / 60% 38% 55% 45%; opacity: .56; }
+    100% { transform: translate(-12%, 8%)  scale(.92) rotate(0deg);
+           border-radius: 52% 48% 40% 60% / 55% 45% 60% 40%; opacity: .42; }
+}
+@keyframes blLiquidBg {
+    0%   { background-position: 0% 20%; }
+    50%  { background-position: 100% 80%; }
+    100% { background-position: 0% 20%; }
+}
+@keyframes blLiquidEdge {
+    0%, 100% { box-shadow: 0 12px 30px rgba(58, 14, 70, .28),
+                         inset 0 1px 0 rgba(255, 255, 255, .22),
+                         inset 0 0 22px rgba(255, 190, 225, .10); }
+    50%      { box-shadow: 0 14px 36px rgba(58, 14, 70, .34),
+                         inset 0 1px 0 rgba(255, 255, 255, .46),
+                         inset 0 0 34px rgba(255, 190, 225, .26); }
+}
+/* 大数字里的光在流动：渐变被 background-clip:text 裁进字形 */
+@keyframes blLiquidTextFlow {
+    0%   { background-position: 0% 50%; }
+    50%  { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+/* 参考图里第二排是两张并排的信息卡：让前两个普通卡片天然落在两列 */
+@media (max-width: 720px) {
+    [class*="settings-modal_body_"] { grid-template-columns: minmax(0, 1fr) !important; }
+    .bl-os-hero-dev { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+    [class*="modal-sidebar_item_"] { transition: none !important; }
+    .bl-os-hero,
+    .bl-set-anim > *,
+    [class*="modal-sidebar_itemSelected_"],
+    [class*="modal-sidebar_itemSelected_"]::before { animation: none !important; }
+    .bl-os-hero { background-position: 50% 50% !important; }
+    [class*="settings-modal_body_"] { scroll-behavior: auto; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .bl-os-hero-fx::before, .bl-os-hero-fx::after,
+    .bl-os-hero-glow, .bl-os-hero-shine, .bl-os-hero-liquid,
+    .bl-os-hero-num, .bl-os-hero-badge { animation: none !important; }
+    .bl-os-hero-shine, .bl-os-hero-liquid { display: none !important; }
+    .bl-os-hero-fx::after { opacity: .9 !important; }
+}
+
+
+/* ── 第 36 轮 ①：版本大卡只出现在「版本」分类 ───────────────────────
+   版本历史页自带 .bl-ver-mode，会把 body 下除 .bl-ver-history 外的
+   所有子节点隐藏。所以大卡放进历史面板内部，而不是挂在 body 上；
+   面板里重复的那张「当前版本」小卡同时收起，避免两张版本卡叠着。 */
+.bl-ver-history > .bl-os-hero {
+    display: block !important;
+    margin: 0 0 18px !important;
+    min-height: 258px;
+}
+.bl-ver-history.bl-ver-has-os > .bl-ver-hero { display: none !important; }
+/* 非版本分类：兜底，任何残留的大卡都不显示 */
+[class*="settings-modal_body_"] > .bl-os-hero { display: none !important; }
+
+/* ── 第 36 轮 ②：设置页动画 ─────────────────────────────────────────
+   切换分类时由脚本给 body 挂 .bl-set-anim，卡片逐张淡入上滑；
+   React 复用节点时靠 remove → 强制重排 → add 重播动画。
+   侧栏选中态用 class 变化自动触发，不需要额外 JS。 */
+@keyframes blSetCardIn {
+    from { opacity: 0; transform: translateY(10px) scale(.995); }
+    to   { opacity: 1; transform: none; }
+}
+@keyframes blSetHeroIn {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: none; }
+}
+@keyframes blSetDotIn {
+    from { transform: scale(0); opacity: 0; }
+    70%  { transform: scale(1.25); opacity: 1; }
+    to   { transform: scale(1); opacity: 1; }
+}
+@keyframes blSetNavIn {
+    from { background-color: rgba(59, 130, 246, 0); }
+    to   { background-color: rgba(59, 130, 246, .16); }
+}
+.bl-os-hero {
+    animation: blSetHeroIn .34s cubic-bezier(.2, .8, .25, 1) both,
+               blLiquidBg 20s ease-in-out infinite,
+               blLiquidEdge 7s ease-in-out infinite;
+}
+.bl-set-anim > * {
+    animation: blSetCardIn .26s cubic-bezier(.2, .75, .25, 1) both;
+}
+.bl-set-anim > *:nth-child(2) { animation-delay: .035s; }
+.bl-set-anim > *:nth-child(3) { animation-delay: .07s; }
+.bl-set-anim > *:nth-child(4) { animation-delay: .105s; }
+.bl-set-anim > *:nth-child(5) { animation-delay: .14s; }
+.bl-set-anim > *:nth-child(6) { animation-delay: .175s; }
+.bl-set-anim > *:nth-child(n+7) { animation-delay: .21s; }
+[class*="modal-sidebar_itemSelected_"] {
+    animation: blSetNavIn .24s ease-out both;
+}
+[class*="modal-sidebar_itemSelected_"]::before {
+    animation: blSetDotIn .3s cubic-bezier(.2, .8, .3, 1.2) both;
+}
+/* 内容区滚动条与卡片进场不打架 */
+[class*="settings-modal_body_"] { scroll-behavior: smooth; }
+
+/* ── 第 36 轮 ③：输入框溢出 ─────────────────────────────────────────
+   典型现场：云主机 wss://clouddata.turbowarp.org 这类长 URL 在窄行里
+   被固定宽度的 input 撑破，文字顶出边框、把右侧「?」帮助按钮挤走。
+   这里只针对弹窗/设置区里的文本类输入框，不动 range / 勾选 / 颜色。 */
+:is([class*="settings-modal_"], [class*="modal_"], [class*="cloud"],
+    [class*="server"], .addon-window, .tb-win, .bl-us-window)
+  :is(input:not([type="range"]):not([type="checkbox"]):not([type="radio"])
+        :not([type="color"]):not([type="file"]):not([type="button"]),
+      select) {
+    box-sizing: border-box !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    flex-shrink: 1 !important;          /* 只放开收缩，不夺走原有的 flex-grow */
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+}
+/* 多行输入框（油猴代码编辑器等）只在尺寸上兜底，保留换行与滚动 */
+:is([class*="settings-modal_"], [class*="modal_"], [class*="cloud"],
+    [class*="server"], .addon-window, .tb-win, .bl-us-window) textarea {
+    box-sizing: border-box !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+}
+/* 输入框所在的行：允许收缩，帮助按钮保持不被压扁 */
+:is([class*="settings-modal_"], [class*="modal_"], [class*="cloud"],
+    [class*="server"], .addon-window, .tb-win, .bl-us-window)
+  :is(label, [class*="row"], [class*="field"], [class*="input"], [class*="group"]) {
+    min-width: 0 !important;
+    max-width: 100% !important;
+}
+:is([class*="settings-modal_"], [class*="modal_"], [class*="cloud"],
+    [class*="server"], .addon-window, .tb-win, .bl-us-window)
+  :is(button, [role="button"], [class*="help"]) {
+    flex: 0 0 auto !important;
+}
+@media (max-width: 720px) {
+    .bl-os-hero { padding: 24px 18px 26px !important; }
+    .bl-ver-history > .bl-os-hero { min-height: 226px; }
+    .bl-os-hero-num { font-size: clamp(52px, 15vw, 74px); }
+    .bl-os-hero-product { font-size: 16px; letter-spacing: .16em; }
+    .bl-os-hero-meta { gap: 4px 10px; }
+}
+
+
+/* ── 第 38 轮 ①：版本页排版修复 ─────────────────────────────────────
+   症状：历史面板被两列栅格挤成半宽、套上浅蓝卡片底、内部又自己滚动，
+   于是「历代版本与更新内容」折行、时间线看不到、大版本号右边被裁。
+   这里让版本页回到单列，面板跨满整行、透明无边框、由外层统一滚动。 */
+[class*="settings-modal_body_"].bl-ver-mode {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) !important;
+    align-content: start !important;
+    overflow-y: auto !important;
+}
+[class*="settings-modal_body_"] > .bl-ver-history {
+    grid-column: 1 / -1 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 2px 4px 18px !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    max-height: none !important;
+    overflow: visible !important;
+}
+/* 面板内的大卡：宽度跟着面板走，不再被窄容器裁切 */
+.bl-ver-history > .bl-os-hero { width: 100% !important; max-width: 100% !important; }
+.bl-os-hero-in { width: 100%; padding: 0 6px; }
+.bl-os-hero-txt { width: 100%; }
+.bl-os-hero-num {
+    max-width: 100%;
+    white-space: nowrap;
+    font-size: clamp(42px, 6vw, 82px);
+    line-height: 1.06;
+}
+.bl-os-hero-product, .bl-os-hero-slogan, .bl-os-hero-meta {
+    max-width: 100%;
+    overflow-wrap: anywhere;
+}
+/* 版本页里小 hero 的重复内容：改成看「大卡是否存在」，
+   不再依赖脚本加的 class —— class 被 React 重绘冲掉时也不会闪回旧样式。 */
+.bl-ver-history:has(> .bl-os-hero) > .bl-ver-hero { display: none !important; }
+@media (max-width: 720px) {
+    [class*="settings-modal_body_"] > .bl-ver-history { padding: 2px 0 14px !important; }
+    .bl-os-hero-num { font-size: clamp(40px, 13vw, 68px); }
+}
+
+
+/* ── 第 40 轮 ②：玻璃效果页排版修复 ─────────────────────────────────
+   两列 grid 把这一页的原生设置行按「元素」平铺，一个设置项的
+   label / range / rangeLabels 被拆到不同格子 —— 截图里右上只剩滑块
+   和 4px/24px、标题跑到别处，开关与滑杆看着就是错位的。
+   玻璃效果分类回到单列流式，且不再给每个直接子元素套卡片，
+   让开关、标题、滑杆、两端标签保持原生连续排列。 */
+[class*="settings-modal_body_"].bl-set-stack {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) !important;
+    row-gap: 6px !important;
+    column-gap: 14px !important;
+    align-content: start !important;
+    overflow-y: auto !important;
+}
+/* 毛玻璃/液态玻璃这一页的原生结构会把一个设置项拆成
+   label / range / rangeLabels 多个兄弟节点。它们必须整行排列，
+   绝不能被分到不同列 —— 否则就是之前修过的「开关与滑杆错位」。
+   row-gap 收到 6px，视觉上仍是连续的一组。 */
+[class*="settings-modal_body_"].bl-set-stack > * {
+    grid-column: 1 / -1 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+}
+/* 完整的设置项容器（label + 控件都在里面）才是「一张卡片」，
+   可以安全地两列排布；液态玻璃注入段内容多，跨整行。 */
+[class*="settings-modal_body_"].bl-set-stack > [class*="settings-modal_setting"] {
+    grid-column: auto !important;
+    padding: 18px 20px !important;
+    border-radius: 18px !important;
+    background: var(--ui-primary, rgba(230, 239, 255, .94)) !important;
+    border: 1px solid rgba(90, 130, 210, .18) !important;
+    box-shadow: 0 4px 16px rgba(45, 80, 160, .08),
+                inset 0 1px 0 rgba(255, 255, 255, .50) !important;
+}
+[class*="settings-modal_body_"].bl-set-stack > [data-bl-lg-sec] {
+    grid-column: 1 / -1 !important;
+    margin: 0 0 8px !important;
+    padding: 18px 20px !important;
+    border-radius: 18px !important;
+    background: var(--ui-primary, rgba(230, 239, 255, .94)) !important;
+    border: 1px solid rgba(90, 130, 210, .18) !important;
+    box-shadow: 0 4px 16px rgba(45, 80, 160, .08),
+                inset 0 1px 0 rgba(255, 255, 255, .50) !important;
+}
+/* 分组标题不再跨列 */
+[class*="settings-modal_body_"].bl-set-stack > [class*="settings-modal_header_"],
+[class*="settings-modal_body_"].bl-set-stack > h1,
+[class*="settings-modal_body_"].bl-set-stack > h2,
+[class*="settings-modal_body_"].bl-set-stack > h3 {
+    grid-column: auto !important;
+}
+
+
+/* ── 第 41 轮：版本页「回退老版」根治 ─────────────────────────────────
+   之前大卡是 JS 注入的独立节点，原生小 hero 是蓝白浅渐变。React 换掉
+   body / 版本页脚本重建面板 / 性能总线冻结期间，大卡补挂会慢一拍，
+   露出的就是那张蓝白小卡 —— 用户看到的「有时变成老版本样子」。
+
+   这里把原生小 hero 本身也改成 ColorOS 紫红曲面 + 巨大版本号 + 白色
+   胶囊，纯 CSS、不依赖任何注入节点或脚本加的 class。于是无论大卡
+   在不在，页面都是新版；大卡补上后再把这张原生 hero 整块隐藏。        */
+.bl-ver-history > .bl-ver-hero {
+    position: relative !important;
+    isolation: isolate;
+    overflow: hidden !important;
+    display: flex !important;
+    flex-direction: column;
+    align-items: center;
+    text-align: center !important;
+    padding: 26px 22px 28px !important;
+    margin: 0 0 18px !important;
+    border-radius: 20px !important;
+    border: 1px solid rgba(255, 255, 255, .20) !important;
+    color: #fff !important;
+    background: linear-gradient(136deg, #2a1a6e 0%, #5a2589 32%,
+                #a52a70 62%, #e0567f 88%, #f37a8c 100%) !important;
+    background-size: 220% 220% !important;   /* 底色缓慢流动 */
+    box-shadow: 0 12px 30px rgba(58, 14, 70, .28),
+                inset 0 1px 0 rgba(255, 255, 255, .26) !important;
+    animation: blLiquidBg 20s ease-in-out infinite,
+               blLiquidEdge 7s ease-in-out infinite;
+}
+.bl-ver-history > .bl-ver-hero::before {
+    content: '';
+    position: absolute; inset: -45%; z-index: 0;
+    pointer-events: none;
+    background:
+        radial-gradient(ellipse 58% 52% at 26% 76%, rgba(255, 132, 176, .80), transparent 72%),
+        radial-gradient(ellipse 52% 62% at 88% 16%, rgba(126, 116, 255, .70), transparent 70%),
+        radial-gradient(ellipse 72% 42% at 62% 118%, rgba(255, 84, 138, .58), transparent 72%);
+    filter: blur(8px);
+    animation: blHeroFlow 18s ease-in-out infinite;
+}
+.bl-ver-history > .bl-ver-hero::after {
+    content: '';
+    position: absolute; z-index: 0;
+    left: 50%; top: 46%;
+    width: 320px; height: 320px;
+    margin: -160px 0 0 -160px;
+    border-radius: 52% 48% 40% 60% / 55% 45% 60% 40%;
+    background: radial-gradient(circle at 35% 35%, rgba(255, 226, 245, .58),
+                rgba(255, 150, 200, .32) 46%, rgba(126, 116, 255, .14) 72%,
+                transparent 82%);
+    filter: blur(14px);
+    pointer-events: none;
+    animation: blLiquidMorph 12s ease-in-out infinite;
+}
+.bl-ver-history > .bl-ver-hero > * { position: relative; z-index: 1; }
+.bl-ver-history > .bl-ver-hero > .bl-ver-hero-v {
+    order: 1;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 0 !important;
+    margin: 0 !important;
+    font-size: clamp(48px, 7vw, 84px) !important;
+    font-weight: 800;
+    line-height: 1.06;
+    letter-spacing: -.045em;
+    color: transparent !important;
+    background: linear-gradient(100deg, #fff 0%, #ffe0ef 26%, #ddd0ff 50%, #ffe0ef 74%, #fff 100%);
+    background-size: 220% 100%;
+    -webkit-background-clip: text; background-clip: text;
+    filter: drop-shadow(0 10px 26px rgba(255, 176, 218, .38));
+    animation: blHeroFloat 5.2s ease-in-out infinite,
+               blLiquidTextFlow 9s ease-in-out infinite;
+}
+.bl-ver-history > .bl-ver-hero > .bl-ver-hero-v .bl-ver-badge { display: none !important; }
+.bl-ver-history > .bl-ver-hero > .bl-ver-hero-k {
+    order: 2;
+    margin-top: 4px;
+    font-size: 18px !important;
+    font-weight: 600;
+    letter-spacing: .22em;
+    text-transform: none !important;
+    color: #fff !important;
+    opacity: 1 !important;
+    text-shadow: 0 2px 12px rgba(50, 10, 60, .30);
+}
+.bl-ver-history > .bl-ver-hero > .bl-ver-hero-d {
+    order: 3;
+    margin-top: 9px;
+    font-size: 12px !important;
+    letter-spacing: .14em;
+    color: #fff !important;
+    opacity: .84 !important;
+}
+.bl-ver-history > .bl-ver-hero > .bl-ver-hero-note {
+    order: 4;
+    display: inline-block;
+    margin-top: 18px !important;
+    padding: 7px 26px;
+    border-radius: 999px;
+    background: #fff !important;
+    color: #25123f !important;
+    font-size: 13px !important;
+    font-weight: 700;
+    letter-spacing: .08em;
+    opacity: 1 !important;
+    box-shadow: 0 6px 18px rgba(60, 10, 50, .28);
+    animation: blHeroBadge 3.6s ease-in-out infinite;
+}
+
+/* 单列排版兜底：不依赖脚本加的 .bl-ver-mode。
+   body 被 React 换掉时 class 会丢，两列老排版就是这样回来的。 */
+[class*="settings-modal_body_"]:has(> .bl-ver-history) {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) !important;
+    align-content: start !important;
+    overflow-y: auto !important;
+}
+@media (prefers-reduced-motion: reduce) {
+    .bl-ver-history > .bl-ver-hero,
+    .bl-ver-history > .bl-ver-hero::before,
+    .bl-ver-history > .bl-ver-hero::after,
+    .bl-ver-history > .bl-ver-hero > .bl-ver-hero-v,
+    .bl-ver-history > .bl-ver-hero > .bl-ver-hero-note {
+        animation: none !important;
+    }
+    .bl-ver-history > .bl-ver-hero { background-position: 50% 50% !important; }
+    .bl-ver-history > .bl-ver-hero::after { display: none !important; }
+}
+@media (max-width: 720px) {
+    .bl-ver-history > .bl-ver-hero > .bl-ver-hero-v { font-size: clamp(40px, 13vw, 66px) !important; }
+    .bl-ver-history > .bl-ver-hero > .bl-ver-hero-k { font-size: 15px !important; }
+}

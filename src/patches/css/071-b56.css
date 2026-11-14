@@ -1,0 +1,122 @@
+/* ── [B56] 版本历史页样式 ───────────────────────────────────────────────
+   依赖：B73 之前的版本页脚本
+   维护：时间线、当前版本徽标、双语
+   ───────────────────────────────────────────────────────────── */
+
+/* ==========================================================================
+ * 版本历史页（设置 → 常规 → 版本号）
+ * 只作用于右侧内容区：加 .bl-ver-mode 时隐藏原生分类内容，显示历史面板。
+ * ========================================================================== */
+.bl-ver-history { display: none; width: 100%; box-sizing: border-box; }
+.bl-ver-history.is-on { display: block; animation: blVerIn .26s cubic-bezier(.2,.8,.2,1) both; }
+@keyframes blVerIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+
+.bl-ver-mode:has(> .bl-ver-history.is-on) > *:not(.bl-ver-history) { display: none !important; }
+.bl-ver-mode > .bl-ver-history {
+    max-height: 100%;
+    overflow-y: auto;
+    padding: 20px 24px 28px;
+    scrollbar-width: thin;
+}
+
+.bl-ver-history, .bl-ver-history * { box-sizing: border-box; }
+.bl-ver-history {
+    color: var(--text-primary, #2d3748);
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+/* 顶部当前版本 hero */
+.bl-ver-hero {
+    padding: 14px 18px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, rgba(76,151,255,.16), rgba(133,92,214,.13));
+    border: 1px solid var(--ui-black-transparent, rgba(0,0,0,.08));
+    margin-bottom: 14px;
+}
+.bl-ver-hero-k {
+    font-size: 11px; letter-spacing: .08em; text-transform: uppercase;
+    color: var(--text-primary-transparent, rgba(87,94,117,.65));
+}
+.bl-ver-hero-v {
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    font-size: 26px; font-weight: 800; letter-spacing: -.02em; margin: 4px 0 6px;
+    color: var(--text-primary, #2d3748);
+}
+.bl-ver-badge {
+    font-size: 11px; font-weight: 700; letter-spacing: .06em;
+    padding: 3px 9px; border-radius: 999px; color: #fff;
+    background: linear-gradient(135deg, #2fa46f, #38b98a);
+}
+.bl-ver-hero-d { font-size: 12px; color: var(--text-primary-transparent, rgba(87,94,117,.75)); }
+.bl-ver-hero-note { font-size: 11px; margin-top: 6px; color: var(--text-primary-transparent, rgba(87,94,117,.6)); }
+
+.bl-ver-sec {
+    display: flex; align-items: baseline; justify-content: space-between; gap: 10px;
+    font-size: 12px; font-weight: 700; letter-spacing: .04em;
+    margin: 0 0 10px 2px;
+    color: var(--text-primary-transparent, rgba(87,94,117,.75));
+}
+.bl-ver-sec-hint {
+    font-size: 10px; font-weight: 400; letter-spacing: 0; white-space: nowrap;
+    color: var(--text-primary-transparent, rgba(87,94,117,.55));
+}
+
+/* 时间线 */
+.bl-ver-timeline { position: relative; padding-left: 22px; }
+.bl-ver-timeline::before {
+    content: ''; position: absolute; left: 6px; top: 8px; bottom: 8px;
+    width: 2px; border-radius: 2px;
+    background: var(--ui-black-transparent, rgba(0,0,0,.09));
+}
+.bl-ver-entry { position: relative; margin-bottom: 10px; }
+.bl-ver-dot {
+    position: absolute; left: -21px; top: 18px;
+    width: 12px; height: 12px; border-radius: 50%;
+    background: var(--ui-secondary, #fff);
+    border: 2px solid rgba(76,151,255,.55);
+    box-shadow: 0 0 0 3px var(--ui-modal-background, #fff);
+}
+.bl-ver-entry.is-current .bl-ver-dot {
+    background: #4c97ff; border-color: #4c97ff;
+    box-shadow: 0 0 0 3px var(--ui-modal-background, #fff), 0 0 10px rgba(76,151,255,.55);
+}
+.bl-ver-card2 {
+    padding: 11px 14px;
+    border-radius: 12px;
+    background: var(--ui-secondary, rgba(246,248,252,.9));
+    border: 1px solid var(--ui-black-transparent, rgba(0,0,0,.07));
+}
+.bl-ver-entry.is-current .bl-ver-card2 {
+    border-color: rgba(76,151,255,.45);
+    background: linear-gradient(135deg, rgba(76,151,255,.10), rgba(246,248,252,.9));
+    box-shadow: 0 3px 14px rgba(76,151,255,.12);
+}
+.bl-ver-row1 { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.bl-ver-v { font-size: 14px; font-weight: 700; color: var(--text-primary, #2d3748); }
+.bl-ver-tag {
+    font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 5px;
+    color: #fff; background: #2fa46f;
+}
+.bl-ver-date {
+    margin-left: auto; display: inline-flex; align-items: center; gap: 4px;
+    font-size: 11px; color: var(--text-primary-transparent, rgba(87,94,117,.7));
+    white-space: nowrap;
+}
+.bl-ver-title {
+    font-size: 12px; font-weight: 600; margin: 7px 0 6px;
+    color: var(--text-primary-transparent, rgba(87,94,117,.9));
+}
+.bl-ver-items { margin: 0; padding-left: 17px; }
+.bl-ver-items li {
+    font-size: 12px; margin: 2px 0;
+    color: var(--text-primary-transparent, rgba(87,94,117,.85));
+}
+.bl-ver-foot {
+    margin-top: 18px; padding-top: 12px; font-size: 11px;
+    border-top: 1px dashed var(--ui-black-transparent, rgba(0,0,0,.12));
+    color: var(--text-primary-transparent, rgba(87,94,117,.6));
+}
+@media (prefers-reduced-motion: reduce) {
+    .bl-ver-history.is-on { animation-duration: .01ms !important; }
+}

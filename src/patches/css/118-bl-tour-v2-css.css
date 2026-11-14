@@ -1,0 +1,150 @@
+
+/* ---------- 最高层遮罩：四块拼出「洞」 ---------- */
+.bl-tour-overlay {
+    position: fixed !important;
+    inset: 0 !important;
+    z-index: 2147483646 !important;
+    pointer-events: auto !important;
+    background: transparent !important;
+}
+.bl-tour-dim {
+    position: fixed !important;
+    background: rgba(3, 6, 13, .84) !important;
+    pointer-events: auto !important;
+    transition: none !important;
+}
+/* 教程期间把 DOCK 宿主降到遮罩之下，避免它成为暗背景里唯一亮着的一条 */
+html.bl-tour-on .bl-dock-host { z-index: 2147483645 !important; }
+html.bl-tour-on .bl-tour-spot {
+    /* 绝不改 position：原版窗口是 fixed + 内联 left/top，改成 relative
+       会让窗口瞬间跳回文档流，挖洞就再也对准不了。 */
+    z-index: 2147483646 !important;
+    box-shadow: 0 0 0 1px var(--looks-secondary, #3b82f6), 0 18px 48px rgba(0,0,0,.5) !important;
+}
+/* ---------- 教程弹窗（唯一最亮，body 直属 / CSS 上限层级） ---------- */
+.bl-tour-card {
+    position: fixed !important;
+    z-index: 2147483647 !important;
+    box-sizing: border-box !important;
+    width: min(560px, 92vw) !important;
+    padding: 22px 24px 20px !important;
+    border-radius: 14px !important;
+    border: 1px solid var(--looks-secondary, #3b82f6) !important;
+    background: var(--ui-modal-background, var(--ui-secondary, #242731)) !important;
+    color: var(--text-primary, #f2f4f8) !important;
+    box-shadow: 0 20px 70px rgba(0, 0, 0, .62) !important;
+    font-family: "Helvetica Neue", Helvetica, Arial, "WenQuanYi Micro Hei", sans-serif !important;
+    pointer-events: auto !important;
+    opacity: 0;
+    transform: translateY(8px);
+    transition: opacity .16s ease, transform .16s ease !important;
+}
+.bl-tour-card.is-in { opacity: 1 !important; transform: translateY(0) !important; }
+.bl-tour-card.is-center {
+    left: 50% !important; top: 50% !important;
+    transform: translate(-50%, -46%) !important;
+}
+.bl-tour-card.is-center.is-in { transform: translate(-50%, -50%) !important; }
+.bl-tour-card.is-bottom {
+    left: 50% !important; bottom: 26px !important;
+    transform: translate(-50%, 8px) !important;
+}
+.bl-tour-card.is-bottom.is-in { transform: translate(-50%, 0) !important; }
+.bl-tour-eyebrow {
+    margin: 0 0 8px !important;
+    font-size: 11px !important; font-weight: 800 !important;
+    letter-spacing: .08em !important; text-transform: uppercase !important;
+    color: var(--looks-secondary, #3b82f6) !important;
+}
+.bl-tour-card h2 {
+    margin: 0 0 10px !important;
+    font-size: 19px !important; font-weight: 800 !important;
+    line-height: 1.35 !important; letter-spacing: .01em !important;
+}
+.bl-tour-card p {
+    margin: 0 0 16px !important;
+    font-size: 13px !important; line-height: 1.65 !important;
+    color: var(--text-primary, #f2f4f8) !important; opacity: .78 !important;
+}
+.bl-tour-row { display: flex !important; gap: 10px !important; flex-wrap: wrap !important; }
+.bl-tour-btn {
+    flex: 1 1 0 !important; min-width: 130px !important;
+    box-sizing: border-box !important;
+    padding: 11px 14px !important; border-radius: 9px !important;
+    font: inherit !important; font-size: 13px !important; font-weight: 800 !important;
+    cursor: pointer !important;
+    border: 1px solid var(--ui-black-transparent, rgba(255,255,255,.2)) !important;
+    background: var(--ui-secondary, rgba(255,255,255,.06)) !important;
+    color: var(--text-primary, #f2f4f8) !important;
+    transition: background-color .14s ease !important;
+}
+.bl-tour-btn:hover { background: var(--ui-tertiary, rgba(255,255,255,.12)) !important; }
+.bl-tour-btn.is-primary {
+    background: var(--looks-secondary, #3b82f6) !important;
+    border-color: var(--looks-secondary, #3b82f6) !important;
+    color: var(--bl-on-accent, #fff) !important;
+}
+.bl-tour-input {
+    box-sizing: border-box !important; width: 100% !important;
+    padding: 11px 13px !important; margin: 0 0 14px !important;
+    border-radius: 9px !important;
+    border: 1px solid var(--ui-black-transparent, rgba(255,255,255,.2)) !important;
+    background: var(--ui-secondary, rgba(255,255,255,.06)) !important;
+    color: var(--text-primary, #f2f4f8) !important;
+    font: inherit !important; font-size: 14px !important;
+}
+.bl-tour-input:focus {
+    outline: none !important;
+    border-color: var(--looks-secondary, #3b82f6) !important;
+}
+.bl-tour-meta {
+    display: flex !important; align-items: center !important; gap: 10px !important;
+    margin: 0 0 10px !important;
+    font-size: 11px !important; font-weight: 700 !important;
+    color: var(--text-primary, #f2f4f8) !important; opacity: .6 !important;
+}
+.bl-tour-bar {
+    height: 4px !important; border-radius: 999px !important;
+    background: var(--ui-tertiary, rgba(255,255,255,.12)) !important;
+    overflow: hidden !important; margin: 0 0 12px !important;
+}
+.bl-tour-bar > i {
+    display: block !important; height: 100% !important;
+    background: var(--looks-secondary, #3b82f6) !important;
+    width: 0 !important;
+}
+.bl-tour-skip {
+    padding: 5px 10px !important; border-radius: 7px !important;
+    border: 1px solid var(--ui-black-transparent, rgba(255,255,255,.2)) !important;
+    background: transparent !important; color: var(--text-primary, #f2f4f8) !important;
+    font: inherit !important; font-size: 11px !important; cursor: pointer !important;
+}
+.bl-tour-demo {
+    position: fixed !important;
+    z-index: 2147483646 !important;
+    width: 360px !important; max-width: 84vw !important;
+    border-radius: 12px !important;
+    border: 1px solid var(--ui-black-transparent, rgba(255,255,255,.2)) !important;
+    background: var(--ui-modal-background, var(--ui-secondary, #242731)) !important;
+    color: var(--text-primary, #f2f4f8) !important;
+    box-shadow: 0 16px 44px rgba(0,0,0,.5) !important;
+    overflow: hidden !important;
+}
+.bl-tour-demo .addon-window-header {
+    display: flex !important; align-items: center !important;
+    padding: 9px 12px !important;
+    background: var(--ui-modal-header-background, var(--ui-tertiary)) !important;
+    font-size: 12px !important; font-weight: 800 !important;
+}
+.bl-tour-demo .bl-tour-demo-body {
+    padding: 13px 14px !important; font-size: 12px !important;
+    line-height: 1.6 !important; opacity: .82 !important;
+}
+@media (max-width: 620px) {
+    .bl-tour-card { padding: 18px 16px !important; }
+    .bl-tour-card h2 { font-size: 16px !important; }
+    .bl-tour-row { flex-direction: column !important; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .bl-tour-card { transition: none !important; }
+}

@@ -1,0 +1,102 @@
+
+
+/* ── [B108] 主题色 / 顶部栏 / 弹窗优化 ───────────────────────────── */
+html:root .tw-panel {
+    width: 330px;
+    transition: opacity .22s ease, transform .26s cubic-bezier(.2,.9,.3,1.1);
+}
+html:root .tw-panel.is-open { opacity: 1; transform: none; }
+html:root .tw-panel .tw-panel-head { padding: 9px 12px 7px; }
+html:root .tw-panel .tw-panel-body { scrollbar-width: thin; padding: 4px 6px; }
+html:root .tw-panel .tw-group { margin-bottom: 4px; }
+html:root .tw-panel .tw-group-title { padding: 2px 4px 3px; }
+html:root .tw-panel .tw-swatches {
+    grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
+    gap: 1px !important;
+}
+html:root .tw-panel .tw-slot { min-width: 0; }
+html:root .tw-panel .tw-swatch { padding: 3px 0 2px; gap: 2px; border-radius: 7px; }
+html:root .tw-panel .tw-swatch-ball {
+    width: 19px !important; height: 19px !important;
+    border-width: 1.5px !important;
+    background-image: none !important;
+    box-shadow: 0 1px 2px rgba(0,0,0,.14) !important;
+    transition: transform .16s ease, box-shadow .16s ease;
+}
+html:root .tw-panel .tw-swatch:hover .tw-swatch-ball,
+html:root .tw-panel .tw-swatch:focus-visible .tw-swatch-ball {
+    transform: scale(1.14);
+    box-shadow: 0 0 0 2px var(--looks-secondary, #4c97ff) !important;
+}
+html:root .tw-panel .tw-swatch.is-active .tw-swatch-ball {
+    box-shadow: 0 0 0 2px var(--looks-secondary, #4c97ff) !important;
+}
+html:root .tw-panel .tw-swatch-check { width: 14px; height: 14px; top: -4px; right: -4px; }
+html:root .tw-panel .tw-swatch-check svg { width: 10px; height: 10px; }
+html:root .tw-panel .tw-swatch-name { font-size: 10px; }
+html:root .tw-panel .tw-panel-foot { flex-shrink: 0; }
+
+/* 自定义主题色（渐变编辑器）弹窗：纯色跟随主题、分段清楚、无渐变底 */
+html:root .grad-win {
+    background: var(--ui-modal-background, #fff) !important;
+    background-image: none !important;
+    border-color: var(--ui-black-transparent, rgba(0,0,0,.15)) !important;
+    color: var(--text-primary, #575e75) !important;
+    transition: opacity .22s ease, transform .26s cubic-bezier(.2,.9,.3,1.1);
+}
+html:root .grad-win .addon-window-header {
+    background: var(--ui-modal-header-background, #f2f5f9) !important;
+    color: var(--ui-modal-header-foreground, #575e75) !important;
+}
+html:root .grad-win .addon-window-content { padding: 12px 14px !important; }
+html:root .grad-win input[type="text"],
+html:root .grad-win input[type="color"],
+html:root .grad-win select {
+    border: 1px solid var(--ui-black-transparent, rgba(0,0,0,.16)) !important;
+    background: var(--ui-secondary, #f2f5f9) !important;
+    color: var(--text-primary, #575e75) !important;
+    border-radius: 6px;
+}
+html:root .grad-win .grad-preset {
+    border: 1px solid var(--ui-black-transparent, rgba(0,0,0,.14)) !important;
+    background: var(--ui-secondary, #f2f5f9) !important;
+    color: var(--text-primary, #575e75) !important;
+    border-radius: 7px;
+}
+html:root .grad-win .grad-preset-chip { border-radius: 4px; }
+html:root .grad-win button:not(.addon-window-btn) {
+    background: var(--ui-secondary, #f2f5f9) !important;
+    color: var(--text-primary, #575e75) !important;
+    border: 1px solid var(--ui-black-transparent, rgba(0,0,0,.14)) !important;
+    background-image: none !important;
+    border-radius: 7px;
+}
+html:root .grad-win .grad-btn-primary,
+html:root .grad-win .grad-btn-main {
+    background: var(--looks-secondary, #4c97ff) !important;
+    color: var(--bl-on-accent, #fff) !important;
+    border-color: transparent !important;
+}
+
+/* 顶部栏（造型编辑器顶部工具行）右边缘可拖宽度 */
+html:root [data-bl-top-resize] { position: relative !important; }
+html:root .bl-top-resize {
+    position: absolute; top: 0; right: -4px; width: 10px; height: 100%;
+    cursor: ew-resize; z-index: 60; pointer-events: auto; background: transparent;
+    touch-action: none;
+}
+html:root .bl-top-resize::after {
+    content: ''; position: absolute; right: 2px; top: 28%; height: 44%; width: 3px;
+    border-radius: 2px; background: var(--ui-black-transparent, rgba(0,0,0,.28));
+    opacity: 0; transition: opacity .16s ease;
+}
+html:root [data-bl-top-resize]:hover > .bl-top-resize::after,
+html:root .bl-top-resize:hover::after,
+html:root .bl-top-resize.is-active::after { opacity: 1; }
+html:root .bl-top-resize.is-active::after { background: var(--looks-secondary, #4c97ff); }
+html:root [data-bl-top-resize].bl-top-resizing { user-select: none !important; }
+@media (prefers-reduced-motion: reduce) {
+    html:root .tw-panel, html:root .grad-win,
+    html:root .tw-panel .tw-swatch-ball { transition: none !important; }
+}
+
